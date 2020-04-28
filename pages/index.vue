@@ -6,7 +6,11 @@
             <ButtonComponent text="Generate engine" @click="onGenerateEngine"/>
         </div>
         <div id="bus-groups">
-            <BusGroupComponent v-for="busGroup in busGroups" :key="busGroup.busGroupName"/>
+            <BusGroupComponent
+                    v-for="busGroup in busGroups"
+                    :key="busGroup.busGroupName"
+                    :bus-group="busGroup"
+            />
         </div>
     </div>
 </template>
@@ -71,9 +75,15 @@
 <style scoped lang="scss">
     #header {
         display: grid;
-        grid-template-columns: repeat(3, 2fr);
+        grid-template-columns: repeat(3, 1fr);
         place-content: center;
         place-items: center;
         margin: 0 10%;
+    }
+    #bus-groups {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        grid-gap: 30px 80px;
+        margin: 10% 0;
     }
 </style>
