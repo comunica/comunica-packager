@@ -3,6 +3,7 @@
         <p>{{busGroup.busGroupName}}</p>
         <div id="bus-group">
             <select v-model="selectedActor" class="select">
+                <option value="" disabled selected hidden>Choose actor</option>
                 <option v-for="actor in busGroup.actors"
                         :key="actor"
                         :value="actor"
