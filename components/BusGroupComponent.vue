@@ -1,23 +1,40 @@
 <template>
     <div>
-        <p>{{busGroup.busGroupName}}</p>
+        <h2><strong>{{busGroup.busGroupName}}</strong></h2>
         <div id="bus-group">
-            <select v-model="selectedActor" class="select">
-                <option value="" disabled selected hidden>Choose actor</option>
-                <option v-for="actor in busGroup.actors"
-                        :key="actor"
-                        :value="actor"
-                >
-                    {{actor}}
-                </option>
-            </select>
-            <ButtonComponent :is-small="true" text="Add" @click="onAdd"/>
+            <!-- TODO: fix correct color for arrow -->
+            <div id="bus-group-input">
+                <select v-model="selectedActor" class="select">
+                    <option value="" disabled selected hidden>Choose actor</option>
+                    <option v-for="actor in busGroupActors"
+                            :key="actor"
+                            :value="actor"
+                    >
+                        {{actor}}
+                    </option>
+                </select>
+                <ButtonComponent :is-small="true" text="Add" @click="onAdd"/>
+            </div>
+
+            <div id="bus-group-actors">
+                <div v-for="actor in addedActors" :key="actor" class="actor">
+                    <div class="actor-header">
+                        <p><u>{{actor}}</u></p>
+                        <ButtonComponent :is-small="true" text="x" @click="onDelete"/>
+                    </div>
+                    <div class="actor-parameter">
+                        <p>TODO: parameter</p>
+                        <input>
+                    </div>
+                </div>
+            </div>
+
         </div>
+
     </div>
 </template>
 
-<script lang="ts">
-    import {BusGroup} from "~/assets/interfaces";
+<script>
     import ButtonComponent from "~/components/ButtonComponent.vue";
 
     export default {
@@ -25,7 +42,7 @@
         components: {ButtonComponent},
         props: {
             busGroup: {
-                type: Object as () => BusGroup,
+                type: Object,
                 default: () => {
                     return {
                         busGroupName: 'Placeholder busGroupName',
@@ -39,27 +56,66 @@
         }),
         methods: {
             onAdd() {
-                console.log('Pressed add for a busgroup!')
+                this.$store.commit('addActor', {
+                    busGroup: this.busGroup.busGroupName,
+                    actor: this.selectedActor
+                });
+            },
+            onDelete() {
+                console.log('Pressed delete!')
+            }
+        },
+        computed: {
+            addedActors() {
+                return this.$store.state[this.busGroup.busGroupName] ? this.$store.state[this.busGroup.busGroupName] : [];
+            },
+            busGroupActors() {
+                return this.busGroup.actors.filter(actor => !this.addedActors.includes(actor));
             }
         }
     }
 </script>
 
 <style scoped lang="scss">
+
     #bus-group {
+        background: $comunica-dark-red;
+        border-radius: 7px;
+        padding: 7px;
+    }
+
+    #bus-group-input {
         display: grid;
         grid-template-columns: 10fr 1fr;
         grid-column-gap: 7px;
-        background: $comunica-dark-red;
+    }
+
+    #bus-group-actors {
+        display: grid;
+        grid-row-gap: 7px;
+        margin-top: 7px;
+    }
+
+    .actor {
+        background: $comunica-red;
         border-radius: 7px;
+        padding: 7px;
+    }
+
+    .actor-header {
+        display: grid;
+        grid-template-columns: 10fr 1fr;
+    }
+
+    .actor-parameter {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
         padding: 7px;
     }
 
     .select {
         display: block;
         font-size: 16px;
-        font-family: sans-serif;
-        font-weight: 700;
         color: white;
         line-height: 1.3;
         padding: .6em 1.4em .5em .8em;
@@ -78,20 +134,10 @@
         background-position: right .7em top 50%, 0 0;
         background-size: .65em auto, 100%;
     }
-    .select-css::-ms-expand {
-        display: none;
-    }
-    .select-css:hover {
-        border-color: #888;
-    }
-    .select-css:focus {
-        border-color: #aaa;
-        box-shadow: 0 0 1px 3px rgba(59, 153, 252, .7);
-        box-shadow: 0 0 0 3px -moz-mac-focusring;
-        color: #222;
+
+    .select:focus {
+        color: white;
         outline: none;
     }
-    .select-css option {
-        font-weight:normal;
-    }
+
 </style>

@@ -1,15 +1,18 @@
 import {BusGroup} from "~/assets/interfaces";
+import Vue from 'vue';
 
-interface State {
-  busGroups: BusGroup[],
-}
-
-export const state: () => State = () => ({
-  busGroups: [],
+export const state: () => any = () => ({
+    busGroups: []
 })
 
 export const mutations = {
-  addBusGroups (state: State, busGroups: BusGroup[]) {
-    state.busGroups = busGroups;
-  }
+    addBusGroups(state: any, busGroups: BusGroup[]) {
+        state.busGroups = busGroups;
+    },
+
+    addActor(state: any, actor: any) {
+        const updatedAddedActors = state[actor.busGroup] ? state[actor.busGroup] : [];
+        updatedAddedActors.push(actor.actor);
+        Vue.set(state, actor.busGroup, updatedAddedActors);
+    }
 }
