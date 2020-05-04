@@ -5,7 +5,7 @@
             <ButtonComponent text="New engine" @click="onNew"/>
             <ButtonComponent text="Generate engine" @click="onGenerateEngine"/>
         </div>
-        <div id="bus-groups">
+        <div id="bus-groups" v-if="busGroups">
             <BusGroupComponent
                     v-for="busGroup in busGroups"
                     :key="busGroup.busGroupName"
@@ -15,7 +15,7 @@
     </div>
 </template>
 
-<script lang="ts">
+<script>
 
     import ButtonComponent from "~/components/ButtonComponent.vue";
     import BusGroupComponent from "~/components/BusGroupComponent.vue";
@@ -29,41 +29,26 @@
         data () {
             return {
                 // TODO: replace this with actual actors
-                busGroups: [
-                    {
-                        busGroupName: 'Sparql',
-                        actors: [
-                            {
-                                // Testcase 2 args, strings
-                                actorName: 'ActorSparqlTest',
-                                args: {
-                                    arg1: 'testArg1',
-                                    arg2: 'testArg2'
-                                }
-                            }
-                        ]
-                    },
-                    {
-                        busGroupName: 'RDF',
-                        actors: [
-                            {
-                                // Testcase 1 arg, int
-                                actorName: 'ActorRDFTest',
-                                args: {
-                                    arg1: 0
-                                }
-                            },
-                            {
-                                // Testcase 0 args
-                                actorName: 'ActorRDFTest2'
-                            }
-                        ]
-                    }
-                ]
+                // busGroups: [
+                //     {
+                //         busGroupName: 'Sparql',
+                //         actors: ['ActorSparql1', 'ActorSparql2', 'ActorSparql3']
+                //     },
+                //     {
+                //         busGroupName: 'Rdf',
+                //         actors: ['ActorRdf1', 'ActorRdf2']
+                //     }
+                // ]
+            }
+        },
+        computed: {
+            busGroups() {
+                return this.$store.state.busGroups;
             }
         },
         methods: {
             onNew() {
+                // console.log(this);
                 console.log('Pressed on new!');
             },
             onGenerateEngine() {

@@ -23,10 +23,7 @@
                 default: () => {
                     return {
                         busGroupName: 'Placeholder busGroupName',
-                        actors: [{
-                            actorName: 'Placeholder actorName',
-                            args: {}
-                        }]
+                        actors: ['Placeholder actor 1', 'Placeholder actor 2']
                     }
                 }
             }

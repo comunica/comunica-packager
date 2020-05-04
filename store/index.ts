@@ -1,13 +1,15 @@
+import {BusGroup} from "~/assets/interfaces";
+
 interface State {
-  buses: string[],
+  busGroups: BusGroup[],
 }
 
 export const state: () => State = () => ({
-  buses: [],
+  busGroups: [],
 })
 
 export const mutations = {
-  addBus (state: State, payload: string) {
-    state.buses.push(payload)
+  addBusGroup (state: State, busGroup: BusGroup) {
+    state.busGroups.push(busGroup)
   }
 }
