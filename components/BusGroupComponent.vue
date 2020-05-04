@@ -20,7 +20,7 @@
                 <div v-for="actor in addedActors" :key="actor" class="actor">
                     <div class="actor-header">
                         <p><u>{{actor}}</u></p>
-                        <ButtonComponent :is-small="true" text="x" @click="onDelete"/>
+                        <DeleteButtonComponent @click="onDelete()"/>
                     </div>
                     <div class="actor-parameter">
                         <p>TODO: parameter</p>
@@ -36,10 +36,11 @@
 
 <script>
     import ButtonComponent from "~/components/ButtonComponent.vue";
+    import DeleteButtonComponent from "./DeleteButtonComponent";
 
     export default {
         name: "BusGroupComponent",
-        components: {ButtonComponent},
+        components: {DeleteButtonComponent, ButtonComponent},
         props: {
             busGroup: {
                 type: Object,
