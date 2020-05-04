@@ -9,7 +9,7 @@ export const state: () => State = () => ({
 })
 
 export const mutations = {
-  addBusGroup (state: State, busGroup: BusGroup) {
-    state.busGroups.push(busGroup)
+  addBusGroups (state: State, busGroups: BusGroup[]) {
+    state.busGroups = busGroups;
   }
 }

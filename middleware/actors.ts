@@ -21,11 +21,10 @@ export default async ({$axios, store}: Context) => {
     const packageNames = packages.map((p: Package) => p.name);
     const buses = packageNames.filter((p: string) => p.substring(0, 3) === 'bus').map((p: string) => p.substring(4));
 
-    buses.forEach((bus: string) => {
-        const busGroup: BusGroup = {
+    store.commit('addBusGroups', buses.map((bus: string) => {
+        return {
             busGroupName: kebabCaseToPascalCase(bus),
             actors: packageNames.filter((p: string) => p.startsWith(`actor-${bus}`)).map(kebabCaseToPascalCase)
-        }
-        store.commit('addBusGroup', busGroup);
-    });
+        };
+    }))
 }

@@ -27,19 +27,7 @@
         },
         middleware: ['actors'],
         data () {
-            return {
-                // TODO: replace this with actual actors
-                // busGroups: [
-                //     {
-                //         busGroupName: 'Sparql',
-                //         actors: ['ActorSparql1', 'ActorSparql2', 'ActorSparql3']
-                //     },
-                //     {
-                //         busGroupName: 'Rdf',
-                //         actors: ['ActorRdf1', 'ActorRdf2']
-                //     }
-                // ]
-            }
+            return {}
         },
         computed: {
             busGroups() {

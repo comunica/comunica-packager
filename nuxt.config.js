@@ -44,7 +44,7 @@ export default {
     */
     modules: [
         // Doc: https://axios.nuxtjs.org/usage
-        '@nuxtjs/axios',
+        '@nuxtjs/axios'
     ],
     /*
     ** Axios module configuration
@@ -58,7 +58,14 @@ export default {
     */
     vuetify: {
         customVariables: ['~/assets/variables.scss'],
-        theme: {disable: true}
+        theme: {
+            themes: {
+                light: {
+                    primary: 'rgb(192, 58, 34)',
+                    secondary: 'rgb(117, 31, 8)'
+                }
+            }
+        }
     },
     /*
     ** Build configuration
