@@ -25,6 +25,7 @@
             BusGroupComponent,
             ButtonComponent
         },
+        middleware: ['actors'],
         data () {
             return {
                 // TODO: replace this with actual actors
