@@ -29,7 +29,7 @@
                     </div>
                     <div v-for="parameter in actor.parameters" class="actor-parameter">
                         <p><v-icon small color="#fff">mdi-tune</v-icon></p>
-                        <p>{{parameter['comment']}}</p>
+                        <p class="parameter-text">{{parameter['@id']}}</p>
                         <input class="input-param" type="text">
                     </div>
                 </div>
@@ -50,12 +50,7 @@
         props: {
             busGroup: {
                 type: Object,
-                default: () => {
-                    return {
-                        busGroupName: 'Placeholder busGroupName',
-                        actors: ['Placeholder actor 1', 'Placeholder actor 2']
-                    }
-                }
+                default: () => {}
             }
         },
         data: () => ({
@@ -125,12 +120,19 @@
     .actor-parameter {
         display: grid;
         grid-template-columns: 1fr 5fr 3fr;
+        column-gap: 5px;
         padding: 7px;
     }
 
     .input-param {
         border: 1px solid $comunica-dark-red;
         border-radius: 7px;
+    }
+
+    .parameter-text {
+        overflow-wrap: break-word;
+        word-wrap: break-word;
+        overflow: hidden;
     }
 
     .select {
