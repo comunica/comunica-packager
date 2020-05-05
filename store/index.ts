@@ -3,7 +3,6 @@ import Vue from 'vue';
 import {pascalCaseToKebabCase} from "~/utils/alpha";
 
 const baseUrl = 'https://raw.githubusercontent.com/comunica/comunica/master/packages/';
-// const suffix = '?ref=master';
 
 export const state: () => any = () => ({
     busGroups: []
@@ -24,25 +23,35 @@ export const mutations = {
     },
 
     deleteActor(state: any, actor: any) {
-        Vue.set(state, actor.busGroup, state[actor.busGroup].filter((a: any) => a.actorName !== a.actor));
+        Vue.set(state, actor.busGroup, state[actor.busGroup].filter((a: any) => a.actorName !== actor.actorName));
+    },
+
+    addParametersToActor(state: any, payload: any) {
+        const currentBusGroup = state[payload.busGroup]
+        const index = currentBusGroup.findIndex((x: any) => x.actorName === payload.actorName);
+        currentBusGroup[index].parameters.push(...payload.parameters);
+        Vue.set(state, payload.busGroup, currentBusGroup);
     }
 }
 
 export const actions = {
 
-    async getArguments(context: any, actor: string) {
-        actor = pascalCaseToKebabCase(actor);
-        const componentsConfig = await this.$axios.$get(`${baseUrl}${actor}/components/components.jsonld`);
+    async getArguments(context: any, actor: any) {
+        const actorName = pascalCaseToKebabCase(actor.actorName);
+        const componentsConfig = await this.$axios.$get(`${baseUrl}${actorName}/components/components.jsonld`);
 
         const actorConfigUrlParts = componentsConfig.import[0].split('/');
         actorConfigUrlParts.shift();
 
-        const actorConfig = await this.$axios.$get(`${baseUrl}${actor}/components/${actorConfigUrlParts.join('/')}`);
+        const actorConfig = await this.$axios.$get(`${baseUrl}${actorName}/components/${actorConfigUrlParts.join('/')}`);
         const component = actorConfig.components[0];
 
-        console.log(context.state);
         if (component.parameters) {
-            // return component.parameters;
+            context.commit('addParametersToActor', {
+                busGroup: actor.busGroup,
+                actorName: actor.actorName,
+                parameters: component.parameters,
+            });
         }
 
         // TODO: handle super class as well (if "extends" is present)

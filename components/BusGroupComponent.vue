@@ -27,9 +27,9 @@
                                 style="justify-self: end;"
                         />
                     </div>
-                    <div class="actor-parameter">
+                    <div v-for="parameter in actor.parameters" class="actor-parameter">
                         <p><v-icon small color="#fff">mdi-tune</v-icon></p>
-                        <p>Parameter 1</p>
+                        <p>{{parameter['comment']}}</p>
                         <input class="input-param" type="text">
                     </div>
                 </div>
@@ -68,12 +68,15 @@
                     actorName: this.selectedActor
                 });
 
-                await this.$store.dispatch('getArguments', this.selectedActor);
+                await this.$store.dispatch('getArguments', {
+                    busGroup: this.busGroup.busGroupName,
+                    actorName: this.selectedActor
+                });
             },
             onDelete(deletedActor) {
                 this.$store.commit('deleteActor', {
                     busGroup: this.busGroup.busGroupName,
-                    actor: deletedActor
+                    actorName: deletedActor
                 })
             }
         },
@@ -82,7 +85,6 @@
                 return this.$store.state[this.busGroup.busGroupName] ? this.$store.state[this.busGroup.busGroupName] : [];
             },
             busGroupActors() {
-                console.log(this.addedActors);
                 return this.busGroup.actors.filter(actor => !this.addedActors.map(a => a.actorName).includes(actor));
             }
         }
