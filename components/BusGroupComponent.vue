@@ -19,12 +19,18 @@
             <div id="bus-group-actors">
                 <div v-for="actor in addedActors" :key="actor" class="actor">
                     <div class="actor-header">
-                        <p><u>{{actor}}</u></p>
-                        <DeleteButtonComponent @click="onDelete()"/>
+                        <h3 style="align-self: center;">
+                            {{actor}}
+                        </h3>
+                        <DeleteButtonComponent
+                                @click="onDelete(actor)"
+                                style="justify-self: end;"
+                        />
                     </div>
                     <div class="actor-parameter">
-                        <p>TODO: parameter</p>
-                        <input>
+                        <p><v-icon small color="#fff">mdi-tune</v-icon></p>
+                        <p>Parameter 1</p>
+                        <input class="input-param" type="text">
                     </div>
                 </div>
             </div>
@@ -62,8 +68,11 @@
                     actor: this.selectedActor
                 });
             },
-            onDelete() {
-                console.log('Pressed delete!')
+            onDelete(deletedActor) {
+                this.$store.commit('deleteActor', {
+                    busGroup: this.busGroup.busGroupName,
+                    actor: deletedActor
+                })
             }
         },
         computed: {
@@ -110,8 +119,13 @@
 
     .actor-parameter {
         display: grid;
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: 1fr 5fr 3fr;
         padding: 7px;
+    }
+
+    .input-param {
+        border: 1px solid $comunica-dark-red;
+        border-radius: 7px;
     }
 
     .select {

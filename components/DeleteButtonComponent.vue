@@ -1,6 +1,6 @@
 <template>
-    <v-btn color="rgb(117, 31, 8)" fab x-small @click="onClick($event)">
-        <v-icon>mdi-close</v-icon>
+    <v-btn color="rgb(255, 255, 255)" icon @click="onClick($event)">
+        <v-icon>mdi-close-circle</v-icon>
     </v-btn>
 </template>
 

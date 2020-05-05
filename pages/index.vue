@@ -36,7 +36,6 @@
         },
         methods: {
             onNew() {
-                // console.log(this);
                 console.log('Pressed on new!');
             },
             onGenerateEngine() {

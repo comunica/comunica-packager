@@ -14,5 +14,9 @@ export const mutations = {
         const updatedAddedActors = state[actor.busGroup] ? state[actor.busGroup] : [];
         updatedAddedActors.push(actor.actor);
         Vue.set(state, actor.busGroup, updatedAddedActors);
+    },
+
+    deleteActor(state: any, actor: any) {
+        Vue.set(state, actor.busGroup, state[actor.busGroup].filter((p: string) => p !== actor.actor));
     }
 }
