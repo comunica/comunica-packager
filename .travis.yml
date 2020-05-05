@@ -3,9 +3,9 @@ node_js:
   - "10"
 install:
   - npm install
+  - npm run generate
 script:
-  - npm run build
-  - npm run start
+  - echo "No tests"
 cache:
   directories:
     - node_modules
