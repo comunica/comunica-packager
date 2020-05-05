@@ -11,10 +11,9 @@ cache:
     - node_modules
 deploy:
   provider: pages
-  skip_cleanup: true
-  github_token: $GITHUB_TOKEN
-  keep_history: true
-  local_dir: build
+  skip-cleanup: true
+  github-token: $GITHUB_TOKEN
+  target-branch: gh-pages
+  local-dir: dist
   on:
     branch: master
-    node_js: "node"
