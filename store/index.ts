@@ -38,12 +38,12 @@ export const actions = {
 
     async getArguments(context: any, actor: any) {
         const actorName = pascalCaseToKebabCase(actor.actorName);
-        const componentsConfig = await this.$axios.$get(`${baseUrl}${actorName}/components/components.jsonld`);
+        const componentsConfig = await (this as any).$axios.$get(`${baseUrl}${actorName}/components/components.jsonld`);
 
         const actorConfigUrlParts = componentsConfig.import[0].split('/');
         actorConfigUrlParts.shift();
 
-        const actorConfig = await this.$axios.$get(`${baseUrl}${actorName}/components/${actorConfigUrlParts.join('/')}`);
+        const actorConfig = await (this as any).$axios.$get(`${baseUrl}${actorName}/components/${actorConfigUrlParts.join('/')}`);
         const component = actorConfig.components[0];
 
         if (component.parameters) {
