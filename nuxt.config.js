@@ -1,6 +1,9 @@
 import colors from 'vuetify/es5/util/colors'
 
 export default {
+    router: {
+      base: '/comunica-packager/'
+    },
     mode: 'spa',
     /*
     ** Headers of the page
