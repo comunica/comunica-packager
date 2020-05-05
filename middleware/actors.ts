@@ -1,4 +1,4 @@
-import {BusGroup} from "~/assets/interfaces";
+import {kebabCaseToPascalCase} from "~/utils/alpha";
 
 interface Context {
     $axios: any,
@@ -9,10 +9,6 @@ interface Package {
     name: string,
     size: number,
     url: string,
-}
-
-function kebabCaseToPascalCase(s: string): string {
-    return s.replace(/(^\w|-\w)/g, (s_: string): string => s_.replace(/-/, '').toUpperCase());
 }
 
 export default async ({$axios, store}: Context) => {

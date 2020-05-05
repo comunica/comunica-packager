@@ -17,13 +17,13 @@
             </div>
 
             <div id="bus-group-actors">
-                <div v-for="actor in addedActors" :key="actor" class="actor">
+                <div v-for="actor in addedActors" :key="actor.actorName" class="actor">
                     <div class="actor-header">
                         <h3 style="align-self: center;">
-                            {{actor}}
+                            {{actor.actorName}}
                         </h3>
                         <DeleteButtonComponent
-                                @click="onDelete(actor)"
+                                @click="onDelete(actor.actorName)"
                                 style="justify-self: end;"
                         />
                     </div>
@@ -62,11 +62,13 @@
             selectedActor: ''
         }),
         methods: {
-            onAdd() {
+            async onAdd() {
                 this.$store.commit('addActor', {
                     busGroup: this.busGroup.busGroupName,
-                    actor: this.selectedActor
+                    actorName: this.selectedActor
                 });
+
+                await this.$store.dispatch('getArguments', this.selectedActor);
             },
             onDelete(deletedActor) {
                 this.$store.commit('deleteActor', {
@@ -80,7 +82,8 @@
                 return this.$store.state[this.busGroup.busGroupName] ? this.$store.state[this.busGroup.busGroupName] : [];
             },
             busGroupActors() {
-                return this.busGroup.actors.filter(actor => !this.addedActors.includes(actor));
+                console.log(this.addedActors);
+                return this.busGroup.actors.filter(actor => !this.addedActors.map(a => a.actorName).includes(actor));
             }
         }
     }
