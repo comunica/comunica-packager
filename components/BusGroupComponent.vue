@@ -16,24 +16,29 @@
                 <ButtonComponent :is-small="true" text="Add" @click="onAdd"/>
             </div>
 
-            <div id="bus-group-actors">
-                <div v-for="actor in addedActors" :key="actor.actorName" class="actor">
-                    <div class="actor-header">
-                        <h3 style="align-self: center;">
-                            {{actor.actorName}}
-                        </h3>
-                        <DeleteButtonComponent
-                                @click="onDelete(actor.actorName)"
-                                style="justify-self: end;"
-                        />
-                    </div>
-                    <div v-for="parameter in actor.parameters" class="actor-parameter">
-                        <p><v-icon small color="#fff">mdi-tune</v-icon></p>
-                        <p class="parameter-text">{{parameter['@id']}}</p>
-                        <input class="input-param" type="text">
-                    </div>
-                </div>
-            </div>
+            <ObjectComponent v-for="actor in addedActors"
+                    :object-name="actor.actorName"
+                    :parameters="actor.parameters"
+            />
+
+<!--            <div id="bus-group-actors">-->
+<!--                <div v-for="actor in addedActors" :key="actor.actorName" class="actor">-->
+<!--                    <div class="actor-header">-->
+<!--                        <h3 style="align-self: center;">-->
+<!--                            {{actor.actorName}}-->
+<!--                        </h3>-->
+<!--                        <DeleteButtonComponent-->
+<!--                                @click="onDelete(actor.actorName)"-->
+<!--                                style="justify-self: end;"-->
+<!--                        />-->
+<!--                    </div>-->
+<!--                    <div v-for="parameter in actor.parameters" class="actor-parameter">-->
+<!--                        <p><v-icon small color="#fff">mdi-tune</v-icon></p>-->
+<!--                        <p class="parameter-text">{{parameter['@id']}}</p>-->
+<!--                        <input class="input-param" type="text">-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--            </div>-->
 
         </div>
 
@@ -43,10 +48,11 @@
 <script>
     import ButtonComponent from "~/components/ButtonComponent.vue";
     import DeleteButtonComponent from "./DeleteButtonComponent";
+    import ObjectComponent from "./ObjectComponent";
 
     export default {
         name: "BusGroupComponent",
-        components: {DeleteButtonComponent, ButtonComponent},
+        components: {ObjectComponent, DeleteButtonComponent, ButtonComponent},
         props: {
             busGroup: {
                 type: Object,
@@ -98,41 +104,6 @@
         display: grid;
         grid-template-columns: 10fr 1fr;
         grid-column-gap: 7px;
-    }
-
-    #bus-group-actors {
-        display: grid;
-        grid-row-gap: 7px;
-        margin-top: 7px;
-    }
-
-    .actor {
-        background: $comunica-red;
-        border-radius: 7px;
-        padding: 7px;
-    }
-
-    .actor-header {
-        display: grid;
-        grid-template-columns: 10fr 1fr;
-    }
-
-    .actor-parameter {
-        display: grid;
-        grid-template-columns: 1fr 5fr 3fr;
-        column-gap: 5px;
-        padding: 7px;
-    }
-
-    .input-param {
-        border: 1px solid $comunica-dark-red;
-        border-radius: 7px;
-    }
-
-    .parameter-text {
-        overflow-wrap: break-word;
-        word-wrap: break-word;
-        overflow: hidden;
     }
 
     .select {
