@@ -2,7 +2,8 @@ import {BusGroup} from "~/assets/interfaces";
 import Vue from 'vue';
 import {pascalCaseToKebabCase} from "~/utils/alpha";
 
-const baseUrl = 'https://raw.githubusercontent.com/comunica/comunica/master/packages/';
+const baseUrl = 'https://api.github.com/repos/comunica/comunica/contents/packages/';
+const baseSuffix = '?ref=master';
 
 export const state: () => any = () => ({
     busGroups: []
@@ -38,13 +39,18 @@ export const actions = {
 
     async getArguments(context: any, actor: any) {
         const actorName = pascalCaseToKebabCase(actor.actorName);
-        const componentsConfig = await (this as any).$axios.$get(`${baseUrl}${actorName}/components/components.jsonld`);
+        const componentsConfig = await (this as any).$axios.$get(`${baseUrl}${actorName}/components/components.jsonld${baseSuffix}`);
+        const componentsConfigContent = JSON.parse(atob(componentsConfig.content));
 
-        const actorConfigUrlParts = componentsConfig.import[0].split('/');
+        const actorConfigUrlParts = componentsConfigContent.import[0].split('/');
         actorConfigUrlParts.shift();
 
-        const actorConfig = await (this as any).$axios.$get(`${baseUrl}${actorName}/components/${actorConfigUrlParts.join('/')}`);
-        const component = actorConfig.components[0];
+        const actorConfig = await (this as any).$axios.$get(
+            `${baseUrl}${actorName}/components/${actorConfigUrlParts.join('/')}${baseSuffix}`
+        );
+
+        const actorConfigContent = JSON.parse(atob(actorConfig.content));
+        const component = actorConfigContent.components[0];
 
         if (component.parameters) {
             context.commit('addParametersToActor', {
