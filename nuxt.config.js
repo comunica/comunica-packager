@@ -64,8 +64,8 @@ export default {
         theme: {
             themes: {
                 light: {
-                    primary: 'rgb(192, 58, 34)',
-                    secondary: 'rgb(117, 31, 8)'
+                    primary: '#be1622',
+                    secondary: '#9C0510'
                 }
             }
         }

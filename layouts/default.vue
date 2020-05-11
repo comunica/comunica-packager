@@ -15,7 +15,7 @@ export default {
 <style lang="scss">
     #app {
         padding: 5vh 20vw 3vh 20vw;
-        background: rgb(192, 58, 34);
+        background: $comunica-red;
         font-family: 'Open Sans', Verdana, Arial, sans-serif;
         color: white;
     }

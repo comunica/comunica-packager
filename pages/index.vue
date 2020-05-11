@@ -1,7 +1,7 @@
 <template>
     <div id="container">
         <div id="header">
-            <v-img id="logo" max-width="130px" max-height="185px" src="./comunica_white.svg"/>
+            <img id="logo" src="comunica_white.svg"/>
             <ButtonComponent text="New engine" @click="onNew"/>
             <ButtonComponent text="Generate engine" @click="onGenerateEngine"/>
         </div>
@@ -58,5 +58,9 @@
         grid-template-columns: repeat(2, 1fr);
         grid-gap: 30px 80px;
         margin: 10% 0;
+    }
+    #logo {
+        max-width: 130px;
+        max-height: 185px;
     }
 </style>
