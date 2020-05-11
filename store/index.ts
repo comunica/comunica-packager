@@ -5,6 +5,28 @@ import {pascalCaseToKebabCase} from "~/utils/alpha";
 const baseUrl = 'https://api.github.com/repos/comunica/comunica/contents/packages/';
 const baseSuffix = '?ref=master';
 
+function getParentComponentUrl(extend: string): any {
+
+    if (extend === 'cc:Actor')
+        return `${baseUrl}core/components/Actor.jsonld${baseSuffix}`
+
+    const parts = extend.split(':');
+    const packageType = parts[0][1] === 'a' ? 'actor' : 'bus';
+    let componentParts = parts[1].split('/')[1].split(/(?=[A-Z])/);
+
+    // Special edge case where the standard rule does not apply
+    if (componentParts[1] === 'Media' && componentParts[2] === 'Typed') {
+        componentParts[1] += 'typed';
+        componentParts.splice(2, 1);
+    }
+
+    let busGroup: any = componentParts.splice(0, parts[0].substring(2).length);
+    busGroup = pascalCaseToKebabCase(busGroup.join(''));
+
+    return `${baseUrl}${packageType}-${busGroup}/components/Actor/${extend.split('/')[1]}.jsonld${baseSuffix}`
+
+}
+
 export const state: () => any = () => ({
     busGroups: []
 })
@@ -39,6 +61,7 @@ export const actions = {
 
     async getArguments(context: any, actor: any) {
         const actorName = pascalCaseToKebabCase(actor.actorName);
+
         const componentsConfig = await (this as any).$axios.$get(`${baseUrl}${actorName}/components/components.jsonld${baseSuffix}`);
         const componentsConfigContent = JSON.parse(atob(componentsConfig.content));
 
@@ -50,17 +73,33 @@ export const actions = {
         );
 
         const actorConfigContent = JSON.parse(atob(actorConfig.content));
-        const component = actorConfigContent.components[0];
+        let componentContent = actorConfigContent.components[0];
 
-        if (component.parameters) {
+        if (componentContent.parameters) {
             context.commit('addParametersToActor', {
                 busGroup: actor.busGroup,
                 actorName: actor.actorName,
-                parameters: component.parameters,
+                parameters: componentContent.parameters,
             });
         }
 
-        // TODO: handle super class as well (if "extends" is present)
+        while (componentContent.extends) {
+            const parentComponents = Array.isArray(componentContent.extends) ? componentContent.extends : [componentContent.extends];
+            for (const p of parentComponents) {
+                const componentUrl = getParentComponentUrl(p);
+                const component = await (this as any).$axios.$get(componentUrl);
+                componentContent = JSON.parse(atob(component.content)).components[0];
+                if (componentContent.parameters) {
+                    context.commit('addParametersToActor', {
+                        busGroup: actor.busGroup,
+                        actorName: actor.actorName,
+                        parameters: componentContent.parameters,
+                    });
+                }
+                console.log(componentContent);
+            }
+
+        }
     }
 
 }

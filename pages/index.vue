@@ -5,13 +5,22 @@
             <ButtonComponent text="New engine" @click="onNew"/>
             <ButtonComponent text="Generate engine" @click="onGenerateEngine"/>
         </div>
-        <div id="bus-groups" v-if="busGroups">
-            <BusGroupComponent
-                    v-for="busGroup in busGroups"
-                    :key="busGroup.busGroupName"
-                    :bus-group="busGroup"
-            />
+        <div id="content">
+            <div class="column" style="margin-right: 10px;" v-if="busGroups">
+                <h1>Actors</h1>
+                <BusGroupComponent
+                        v-for="busGroup in busGroups"
+                        :key="busGroup.busGroupName"
+                        :bus-group="busGroup"
+                        style="margin-top: 20px;"
+                />
+            </div>
+            <div class="column" style="margin-left: 10px;">
+                <h1>Mediators</h1>
+
+            </div>
         </div>
+
     </div>
 </template>
 
@@ -53,14 +62,15 @@
         place-items: center;
         margin: 0 10%;
     }
-    #bus-groups {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        grid-gap: 30px 80px;
-        margin: 10% 0;
-    }
     #logo {
         max-width: 130px;
         max-height: 185px;
+    }
+    #content {
+        display: flex;
+        margin: 10% 0;
+    }
+    .column {
+        flex: 50%;
     }
 </style>

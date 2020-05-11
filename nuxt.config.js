@@ -1,5 +1,3 @@
-import colors from 'vuetify/es5/util/colors'
-
 export default {
     router: {
       base: '/comunica-packager/'
@@ -53,8 +51,7 @@ export default {
     ** Axios module configuration
     ** See https://axios.nuxtjs.org/options
     */
-    axios: {
-    },
+    axios: {},
     /*
     ** vuetify module configuration
     ** https://github.com/nuxt-community/vuetify-module
