@@ -51,7 +51,13 @@ export default {
     ** Axios module configuration
     ** See https://axios.nuxtjs.org/options
     */
-    axios: {},
+    axios: {
+        headers: {
+            common: {
+                'Authorization': 'Basic Og==',
+            }
+        }
+    },
     /*
     ** vuetify module configuration
     ** https://github.com/nuxt-community/vuetify-module

@@ -70,7 +70,23 @@ export const mutations = {
         const currentBusGroup = state[payload.busGroup];
         const index = currentBusGroup.findIndex((x: any) => x.actorName === payload.actorName);
         currentBusGroup[index].parameters.push(...payload.parameters);
-        Vue.set(state, payload.busGroup, currentBusGroup);
+    },
+
+    mergeActorBusOfActor(state: any, payload: any) {
+        const currentBusGroup = state[payload.busGroup];
+        const index = currentBusGroup.findIndex((x: any) => x.actorName === payload.actorName);
+
+        let i = 0;
+
+        while (currentBusGroup[index].parameters[i]['@id'] !== 'cc:Actor/bus')
+            i++;
+
+        currentBusGroup[index].parameters[i] = {
+            ...currentBusGroup[index].parameters[i],
+            ...currentBusGroup[index].parameters[i+1]
+        };
+
+        currentBusGroup[index].parameters.splice(i+1, 1);
     },
 
     changeParameterValueOffActor(state: any, payload: any) {
@@ -111,12 +127,15 @@ export const actions = {
                 const componentUrl = getParentComponentUrl(p);
                 const component = await (this as any).$axios.$get(componentUrl);
                 componentContent = JSON.parse(atob(component.content)).components[0];
-                if (componentContent.parameters)
+                if (componentContent.parameters) {
                     context.commit('addParametersToActor', mapParameters(componentContent.parameters, actor));
+                }
 
             }
 
         }
+
+        context.commit('mergeActorBusOfActor', actor);
     }
 
 }

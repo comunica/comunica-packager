@@ -2,14 +2,12 @@
     <div>
         <h2><strong>{{busGroup.busGroupName}}</strong></h2>
         <div id="bus-group">
-            <!-- TODO: fix correct color for arrow -->
             <div id="bus-group-input">
                 <DropdownComponent
                     v-model="selectedActor"
                     :options="busGroupActors"
                     placeholder="Choose actor"
                 />
-
                 <ButtonComponent :is-small="true" text="Add" @click="onAdd"/>
             </div>
 
