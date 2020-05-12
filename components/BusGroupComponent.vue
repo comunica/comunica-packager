@@ -1,8 +1,8 @@
 <template>
     <div>
         <h2><strong>{{busGroup.busGroupName}}</strong></h2>
-        <div id="bus-group">
-            <div id="bus-group-input">
+        <div class="box">
+            <div class="dropdown-layout">
                 <DropdownComponent
                     v-model="selectedActor"
                     :options="busGroupActors"
@@ -10,16 +10,13 @@
                 />
                 <ButtonComponent :is-small="true" text="Add" @click="onAdd"/>
             </div>
-
             <ObjectComponent
-                    v-for="actor in addedActors"
-                    :bus-group-name="busGroup.busGroupName"
-                    :object-name="actor.actorName"
-                    :parameters="actor.parameters"
+                v-for="actor in addedActors"
+                :bus-group-name="busGroup.busGroupName"
+                :object-name="actor.actorName"
+                :parameters="actor.parameters"
             />
-
         </div>
-
     </div>
 </template>
 
@@ -72,17 +69,5 @@
 </script>
 
 <style scoped lang="scss">
-
-    #bus-group {
-        background: $comunica-dark-red;
-        border-radius: 7px;
-        padding: 7px;
-    }
-
-    #bus-group-input {
-        display: grid;
-        grid-template-columns: 10fr 1fr;
-        grid-column-gap: 7px;
-    }
 
 </style>

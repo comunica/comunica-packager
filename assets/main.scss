@@ -1,0 +1,11 @@
+.box {
+  background: $comunica-dark-red;
+  border-radius: 7px;
+  padding: 7px;
+}
+
+.dropdown-layout {
+  display: grid;
+  grid-template-columns: 10fr 1fr;
+  grid-column-gap: 7px;
+}

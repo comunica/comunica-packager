@@ -9,15 +9,15 @@
             <div class="column" style="margin-right: 10px;" v-if="busGroups">
                 <h1>Actors</h1>
                 <BusGroupComponent
-                        v-for="busGroup in busGroups"
-                        :key="busGroup.busGroupName"
-                        :bus-group="busGroup"
-                        style="margin-top: 20px;"
+                    v-for="busGroup in busGroups"
+                    :key="busGroup.busGroupName"
+                    :bus-group="busGroup"
+                    style="margin-top: 20px;"
                 />
             </div>
             <div class="column" style="margin-left: 10px;">
                 <h1>Mediators</h1>
-
+                <MediatorComponent style="margin-top: 20px;"/>
             </div>
         </div>
 
@@ -28,9 +28,11 @@
 
     import ButtonComponent from "~/components/ButtonComponent.vue";
     import BusGroupComponent from "~/components/BusGroupComponent.vue";
+    import MediatorComponent from "../components/MediatorComponent";
 
     export default {
         components: {
+            MediatorComponent,
             BusGroupComponent,
             ButtonComponent
         },
@@ -42,9 +44,7 @@
             busGroups() {
                 return this.$store.state.busGroups;
             },
-            mediators() {
-                return this.$store.state.mediators;
-            }
+
         },
         methods: {
             onNew() {
