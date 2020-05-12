@@ -16,29 +16,12 @@
                 <ButtonComponent :is-small="true" text="Add" @click="onAdd"/>
             </div>
 
-            <ObjectComponent v-for="actor in addedActors"
+            <ObjectComponent
+                    v-for="actor in addedActors"
+                    :bus-group-name="busGroup.busGroupName"
                     :object-name="actor.actorName"
                     :parameters="actor.parameters"
             />
-
-<!--            <div id="bus-group-actors">-->
-<!--                <div v-for="actor in addedActors" :key="actor.actorName" class="actor">-->
-<!--                    <div class="actor-header">-->
-<!--                        <h3 style="align-self: center;">-->
-<!--                            {{actor.actorName}}-->
-<!--                        </h3>-->
-<!--                        <DeleteButtonComponent-->
-<!--                                @click="onDelete(actor.actorName)"-->
-<!--                                style="justify-self: end;"-->
-<!--                        />-->
-<!--                    </div>-->
-<!--                    <div v-for="parameter in actor.parameters" class="actor-parameter">-->
-<!--                        <p><v-icon small color="#fff">mdi-tune</v-icon></p>-->
-<!--                        <p class="parameter-text">{{parameter['@id']}}</p>-->
-<!--                        <input class="input-param" type="text">-->
-<!--                    </div>-->
-<!--                </div>-->
-<!--            </div>-->
 
         </div>
 

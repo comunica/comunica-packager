@@ -27,6 +27,23 @@ function getParentComponentUrl(extend: string): any {
 
 }
 
+function mapParameters(parameters: any, actor: any): any {
+    parameters = parameters.map(
+        (x: any) => {
+            return {
+                ...x,
+                value: ''
+            }
+        }
+    );
+
+    return {
+        busGroup: actor.busGroup,
+        actorName: actor.actorName,
+        parameters: parameters
+    }
+}
+
 export const state: () => any = () => ({
     busGroups: []
 })
@@ -50,10 +67,20 @@ export const mutations = {
     },
 
     addParametersToActor(state: any, payload: any) {
-        const currentBusGroup = state[payload.busGroup]
+        const currentBusGroup = state[payload.busGroup];
         const index = currentBusGroup.findIndex((x: any) => x.actorName === payload.actorName);
         currentBusGroup[index].parameters.push(...payload.parameters);
         Vue.set(state, payload.busGroup, currentBusGroup);
+    },
+
+    changeParameterValueOffActor(state: any, payload: any) {
+        const currentBusGroup = state[payload.busGroup];
+        const indexActor = currentBusGroup.findIndex((x: any) => x.actorName === payload.actorName);
+        const indexParameter = currentBusGroup[indexActor].parameters.findIndex(
+            (x: any) => x['@id'] === payload.parameterID
+        );
+
+        state[payload.busGroup][indexActor].parameters[indexParameter].value = payload.value;
     }
 }
 
@@ -75,13 +102,8 @@ export const actions = {
         const actorConfigContent = JSON.parse(atob(actorConfig.content));
         let componentContent = actorConfigContent.components[0];
 
-        if (componentContent.parameters) {
-            context.commit('addParametersToActor', {
-                busGroup: actor.busGroup,
-                actorName: actor.actorName,
-                parameters: componentContent.parameters,
-            });
-        }
+        if (componentContent.parameters)
+            context.commit('addParametersToActor', mapParameters(componentContent.parameters, actor));
 
         while (componentContent.extends) {
             const parentComponents = Array.isArray(componentContent.extends) ? componentContent.extends : [componentContent.extends];
@@ -89,14 +111,9 @@ export const actions = {
                 const componentUrl = getParentComponentUrl(p);
                 const component = await (this as any).$axios.$get(componentUrl);
                 componentContent = JSON.parse(atob(component.content)).components[0];
-                if (componentContent.parameters) {
-                    context.commit('addParametersToActor', {
-                        busGroup: actor.busGroup,
-                        actorName: actor.actorName,
-                        parameters: componentContent.parameters,
-                    });
-                }
-                console.log(componentContent);
+                if (componentContent.parameters)
+                    context.commit('addParametersToActor', mapParameters(componentContent.parameters, actor));
+
             }
 
         }
