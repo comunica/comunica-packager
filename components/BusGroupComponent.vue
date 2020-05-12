@@ -4,15 +4,12 @@
         <div id="bus-group">
             <!-- TODO: fix correct color for arrow -->
             <div id="bus-group-input">
-                <select v-model="selectedActor" class="select">
-                    <option value="" disabled selected hidden>Choose actor</option>
-                    <option v-for="actor in busGroupActors"
-                            :key="actor"
-                            :value="actor"
-                    >
-                        {{actor}}
-                    </option>
-                </select>
+                <DropdownComponent
+                    v-model="selectedActor"
+                    :options="busGroupActors"
+                    placeholder="Choose actor"
+                />
+
                 <ButtonComponent :is-small="true" text="Add" @click="onAdd"/>
             </div>
 
@@ -32,10 +29,11 @@
     import ButtonComponent from "~/components/ButtonComponent.vue";
     import DeleteButtonComponent from "./DeleteButtonComponent";
     import ObjectComponent from "./ObjectComponent";
+    import DropdownComponent from "./DropdownComponent";
 
     export default {
         name: "BusGroupComponent",
-        components: {ObjectComponent, DeleteButtonComponent, ButtonComponent},
+        components: {DropdownComponent, ObjectComponent, DeleteButtonComponent, ButtonComponent},
         props: {
             busGroup: {
                 type: Object,
