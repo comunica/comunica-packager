@@ -15,6 +15,8 @@
                 :bus-group-name="busGroup.busGroupName"
                 :object-name="actor.actorName"
                 :parameters="actor.parameters"
+                @click="onDelete"
+                @param="onChangeParameter"
             />
         </div>
     </div>
@@ -55,6 +57,14 @@
                     busGroup: this.busGroup.busGroupName,
                     actorName: deletedActor
                 })
+            },
+            onChangeParameter(value, actorName, parameterName) {
+                this.$store.commit('changeParameterValueOffActor', {
+                    busGroup: this.busGroup.busGroupName,
+                    actorName: actorName,
+                    parameterID: parameterName,
+                    value: value
+                });
             }
         },
         computed: {

@@ -5,14 +5,14 @@
                 {{objectName}}
             </h3>
             <DeleteButtonComponent
-                    @click="onClick($event)"
+                    @click="$emit('click', $event)"
                     style="justify-self: end;"
             />
         </div>
         <div v-for="parameter in parameters" :key="parameter['@id']" class="parameter">
             <p><v-icon small color="#fff">mdi-tune</v-icon></p>
             <p class="parameter-text">{{parameter['@id']}}</p>
-            <input @change="onChangeParameter($event, parameter['@id'])" class="parameter-input" type="text">
+            <input @change="$emit('param', $event.target.value, objectName, parameter['@id'])" class="parameter-input" type="text">
         </div>
     </div>
 
@@ -35,19 +35,6 @@
             parameters: {
                 type: Array,
                 default: () => []
-            }
-        },
-        methods: {
-            onClick(e) {
-                this.$emit('click', e);
-            },
-            onChangeParameter(e, parameterID) {
-                this.$store.commit('changeParameterValueOffActor', {
-                    busGroup: this.busGroupName,
-                    actorName: this.objectName,
-                    parameterID: parameterID,
-                    value: e.target.value
-                });
             }
         }
     }

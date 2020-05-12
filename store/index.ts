@@ -47,6 +47,7 @@ function mapParameters(parameters: any, actor: any): any {
 export const state: () => any = () => ({
     busGroups: [],
     mediators: [],
+    createdMediators: [],
 })
 
 export const mutations = {
@@ -56,6 +57,14 @@ export const mutations = {
 
     addMediators(state: any, mediators: string[]) {
         state.mediators = mediators;
+    },
+
+    createNewMediator(state: any, mediator: any) {
+        const createdMediators = state.createdMediators;
+        createdMediators.push(
+            mediator
+        );
+        Vue.set(state, 'createdMediators', createdMediators);
     },
 
     addActor(state: any, actor: any) {
