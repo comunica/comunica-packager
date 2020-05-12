@@ -45,12 +45,17 @@ function mapParameters(parameters: any, actor: any): any {
 }
 
 export const state: () => any = () => ({
-    busGroups: []
+    busGroups: [],
+    mediators: [],
 })
 
 export const mutations = {
     addBusGroups(state: any, busGroups: BusGroup[]) {
         state.busGroups = busGroups;
+    },
+
+    addMediators(state: any, mediators: string[]) {
+        state.mediators = mediators;
     },
 
     addActor(state: any, actor: any) {

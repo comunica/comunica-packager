@@ -34,13 +34,16 @@
             BusGroupComponent,
             ButtonComponent
         },
-        middleware: ['actors'],
+        middleware: ['packages'],
         data () {
             return {}
         },
         computed: {
             busGroups() {
                 return this.$store.state.busGroups;
+            },
+            mediators() {
+                return this.$store.state.mediators;
             }
         },
         methods: {
