@@ -12,7 +12,6 @@
             </div>
             <ObjectComponent
                 v-for="actor in addedActors"
-                :bus-group-name="busGroup.busGroupName"
                 :object-name="actor.actorName"
                 :parameters="actor.parameters"
                 @click="onDelete"
@@ -56,13 +55,13 @@
                 this.$store.commit('deleteActor', {
                     busGroup: this.busGroup.busGroupName,
                     actorName: deletedActor
-                })
+                });
             },
             onChangeParameter(value, actorName, parameterName) {
-                this.$store.commit('changeParameterValueOffActor', {
+                this.$store.commit('changeParameterValueOfActor', {
                     busGroup: this.busGroup.busGroupName,
                     actorName: actorName,
-                    parameterID: parameterName,
+                    parameterName: parameterName,
                     value: value
                 });
             }

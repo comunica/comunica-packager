@@ -12,6 +12,7 @@
                 v-for="mediator in createdMediators"
                 :object-name="mediator.type"
                 :parameters="mediator.parameters"
+
         />
     </div>
 </template>
@@ -46,6 +47,17 @@
                 this.$store.commit('createNewMediator', {
                     type: this.selectedMediator,
                     parameters: parameters,
+                });
+            },
+            onDelete(mediator) {
+                this.$store.commit('deleteMediator', mediator);
+            },
+            onChangeParameter(value, mediatorName, parameterName) {
+                this.$store.commit('changeParameterValueOfActor', {
+                    busGroup: this.busGroup.busGroupName,
+                    name: mediatorName,
+                    parameterName: parameterName,
+                    value: value
                 });
             }
         }

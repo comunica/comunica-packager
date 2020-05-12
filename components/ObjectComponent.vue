@@ -5,7 +5,7 @@
                 {{objectName}}
             </h3>
             <DeleteButtonComponent
-                    @click="$emit('click', $event)"
+                    @click="$emit('click', objectName)"
                     style="justify-self: end;"
             />
         </div>
@@ -27,10 +27,6 @@
             objectName: {
                 type: String,
                 default: 'Placeholder object name'
-            },
-            busGroupName: {
-                type: String,
-                default: 'Placeholder busgroup name'
             },
             parameters: {
                 type: Array,
