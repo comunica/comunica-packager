@@ -1,3 +1,5 @@
+import webpack from 'webpack';
+
 export default {
     router: {
       base: '/comunica-packager/'
@@ -81,6 +83,11 @@ export default {
         ** You can extend webpack config here
         */
         extend(config, ctx) {
-        }
+        },
+        plugins: [
+            new webpack.ProvidePlugin({
+                '_': 'lodash'
+            })
+        ]
     }
 }

@@ -61,9 +61,7 @@ export const mutations = {
 
     createNewMediator(state: any, mediator: any) {
         const createdMediators = state.createdMediators;
-        createdMediators.push(
-            mediator
-        );
+        createdMediators.push(mediator);
         Vue.set(state, 'createdMediators', createdMediators);
     },
 
@@ -119,12 +117,14 @@ export const mutations = {
     },
 
     changeParameterValueOfMediator(state: any, payload: any) {
+
         const indexMediator = state.createdMediators.findIndex((x: any) => x['@id'] === payload['@id']);
         const indexParameter = state.createdMediators[indexMediator].parameters.findIndex(
             (x: any) => x['@id'] === payload.parameterName
         );
 
         state.createdMediators[indexMediator].parameters[indexParameter].value = payload.value;
+
     },
 
     changeIDOfActor(state: any, payload: any) {

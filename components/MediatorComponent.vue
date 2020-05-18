@@ -25,6 +25,7 @@
     import DropdownComponent from "./DropdownComponent";
     import ButtonComponent from "./ButtonComponent";
     import ObjectComponent from "./ObjectComponent";
+
     export default {
         name: "MediatorComponent",
         components: {ObjectComponent, ButtonComponent, DropdownComponent},
@@ -45,8 +46,7 @@
         methods: {
             onCreate() {
                 // Create new object of mediator type
-                // TODO: unique id
-                const parameters = this.mediators.find(m => m.name === this.selectedMediator).parameters;
+                const parameters = _.cloneDeep(this.mediators.find(m => m.name === this.selectedMediator).parameters);
                 this.$store.commit('createNewMediator', {
                     type: this.selectedMediator,
                     '@id': `${this.selectedMediator}#${this.createdMediators.length}`,
@@ -68,6 +68,7 @@
                     currentID: currentID,
                     newID: newID
                 })
+
             }
         }
     }
