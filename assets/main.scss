@@ -9,3 +9,11 @@
   grid-template-columns: 10fr 1fr;
   grid-column-gap: 7px;
 }
+
+.line {
+  height: 2px;
+  border: 1px solid lightgray;
+  background-color: lightgray;
+  border-radius: 5px;
+  margin: 7px 7px;
+}

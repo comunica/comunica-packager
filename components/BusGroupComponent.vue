@@ -8,14 +8,16 @@
                     :options="busGroupActors"
                     placeholder="Choose actor"
                 />
-                <ButtonComponent :is-small="true" text="Add" @click="onAdd"/>
+                <ButtonComponent :disabled="selectedActor === ''" :is-small="true" text="Add" @click="onAdd"/>
             </div>
             <ObjectComponent
                 v-for="actor in addedActors"
                 :object-name="actor.actorName"
+                :id="actor['@id']"
                 :parameters="actor.parameters"
                 @click="onDelete"
                 @param="onChangeParameter"
+                @id="onIDChange"
             />
         </div>
     </div>
@@ -41,28 +43,40 @@
         }),
         methods: {
             async onAdd() {
+
+                const selectedActor = this.selectedActor;
+                this.selectedActor = '';
+
                 this.$store.commit('addActor', {
                     busGroup: this.busGroup.busGroupName,
-                    actorName: this.selectedActor
+                    '@id': `${selectedActor}#${this.addedActors.length}`,
+                    actorName: selectedActor
                 });
 
                 await this.$store.dispatch('getArguments', {
                     busGroup: this.busGroup.busGroupName,
-                    actorName: this.selectedActor
+                    actorName: selectedActor
                 });
             },
             onDelete(deletedActor) {
                 this.$store.commit('deleteActor', {
                     busGroup: this.busGroup.busGroupName,
-                    actorName: deletedActor
+                    '@id': deletedActor
                 });
             },
-            onChangeParameter(value, actorName, parameterName) {
+            onChangeParameter(value, id, parameterName) {
                 this.$store.commit('changeParameterValueOfActor', {
                     busGroup: this.busGroup.busGroupName,
-                    actorName: actorName,
+                    '@id': id,
                     parameterName: parameterName,
                     value: value
+                });
+            },
+            onIDChange(currentID, newID) {
+                this.$store.commit('changeIDOfActor', {
+                    busGroup: this.busGroup.busGroupName,
+                    currentID: currentID,
+                    newID: newID
                 });
             }
         },

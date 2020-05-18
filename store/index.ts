@@ -71,17 +71,19 @@ export const mutations = {
         const updatedAddedActors = state[actor.busGroup] ? state[actor.busGroup] : [];
         updatedAddedActors.push({
             actorName: actor.actorName,
+            '@id': actor['@id'],
             parameters: []
         });
         Vue.set(state, actor.busGroup, updatedAddedActors);
     },
 
     deleteActor(state: any, actor: any) {
-        Vue.set(state, actor.busGroup, state[actor.busGroup].filter((a: any) => a.actorName !== actor.actorName));
+        Vue.set(state, actor.busGroup, state[actor.busGroup].filter((a: any) => a['@id'] !== actor['@id']));
     },
 
     deleteMediator(state: any, mediator: string) {
-        Vue.set(state, 'createdMediators', state.createdMediators.filter((m: any) => m.name !== mediator));
+        console.log(state);
+        Vue.set(state, 'createdMediators', state.createdMediators.filter((m: any) => m['@id'] !== mediator));
     },
 
     addParametersToActor(state: any, payload: any) {
@@ -109,7 +111,7 @@ export const mutations = {
 
     changeParameterValueOfActor(state: any, payload: any) {
         const currentBusGroup = state[payload.busGroup];
-        const indexActor = currentBusGroup.findIndex((x: any) => x.actorName === payload.actorName);
+        const indexActor = currentBusGroup.findIndex((x: any) => x['@id'] === payload['@id']);
         const indexParameter = currentBusGroup[indexActor].parameters.findIndex(
             (x: any) => x['@id'] === payload.parameterName
         );
@@ -118,12 +120,22 @@ export const mutations = {
     },
 
     changeParameterValueOfMediator(state: any, payload: any) {
-        const indexMediator = state.createdMediators.findIndex((x: any) => x.name === payload.name);
+        const indexMediator = state.createdMediators.findIndex((x: any) => x['@id'] === payload['@id']);
         const indexParameter = state.createdMediators[indexMediator].parameters.findIndex(
             (x: any) => x['@id'] === payload.parameterName
         );
 
         state.createdMediators[indexMediator].parameters[indexParameter].value = payload.value;
+    },
+
+    changeIDOfActor(state: any, payload: any) {
+        const currentBusGroup = state[payload.busGroup];
+        const indexActor = currentBusGroup.findIndex((x: any) => x['@id'] === payload.currentID);
+        state[payload.busGroup][indexActor]['@id'] = payload.newID;
+    },
+
+    changeIDOfMediator(state: any, payload: any) {
+
     }
 }
 

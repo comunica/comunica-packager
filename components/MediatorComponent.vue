@@ -6,13 +6,15 @@
                 :options="mediatorTypes"
                 placeholder="Choose mediator type"
             />
-            <ButtonComponent :is-small="true" text="Create" @click="onCreate"/>
+            <ButtonComponent :disabled="selectedMediator === ''" :is-small="true" text="Create" @click="onCreate"/>
         </div>
         <ObjectComponent
-                v-for="mediator in createdMediators"
-                :object-name="mediator.type"
-                :parameters="mediator.parameters"
-
+            v-for="mediator in createdMediators"
+            :object-name="mediator.type"
+            :id="mediator['@id']"
+            :parameters="mediator.parameters"
+            @click="onDelete(mediator['@id'])"
+            @param="onChangeParameter"
         />
     </div>
 </template>
@@ -25,7 +27,7 @@
         name: "MediatorComponent",
         components: {ObjectComponent, ButtonComponent, DropdownComponent},
         data: () => ({
-            selectedMediator: null
+            selectedMediator: ''
         }),
         computed: {
             mediators() {
@@ -46,6 +48,7 @@
                 console.log(parameters);
                 this.$store.commit('createNewMediator', {
                     type: this.selectedMediator,
+                    '@id': `${this.selectedMediator}#${this.createdMediators.length}`,
                     parameters: parameters,
                 });
             },
@@ -53,8 +56,8 @@
                 this.$store.commit('deleteMediator', mediator);
             },
             onChangeParameter(value, mediatorName, parameterName) {
-                this.$store.commit('changeParameterValueOfActor', {
-                    busGroup: this.busGroup.busGroupName,
+                this.$store.commit('changeParameterValueOfMediator', {
+                    busGroup: null,
                     name: mediatorName,
                     parameterName: parameterName,
                     value: value

@@ -1,5 +1,5 @@
 <template>
-    <button id="btn" :class="isSmall ? 'small ' : 'large'" @click="onClick($event)">
+    <button :disabled="disabled" id="btn" :class="isSmall ? 'small ' : 'large'" @click="onClick($event)">
         {{text}}
     </button>
 </template>
@@ -16,6 +16,10 @@
                 type: Boolean,
                 default: false
             },
+            disabled: {
+                type: Boolean,
+                default: false
+            }
         },
         methods: {
             onClick(e) {
