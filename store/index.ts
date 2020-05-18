@@ -82,7 +82,6 @@ export const mutations = {
     },
 
     deleteMediator(state: any, mediator: string) {
-        console.log(state);
         Vue.set(state, 'createdMediators', state.createdMediators.filter((m: any) => m['@id'] !== mediator));
     },
 
@@ -135,7 +134,8 @@ export const mutations = {
     },
 
     changeIDOfMediator(state: any, payload: any) {
-
+        const indexMediator = state.createdMediators.findIndex((x: any) => x['@id'] === payload.currentID);
+        state.createdMediators[indexMediator]['@id'] = payload.newID;
     }
 }
 

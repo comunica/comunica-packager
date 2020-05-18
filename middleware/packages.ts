@@ -70,8 +70,6 @@ export default async ({$axios, store}: Context) => {
         }
     }
 
-    console.log(mediatorsList);
-
     store.commit('addBusGroups', buses.map((bus: string) => {
         return {
             busGroupName: kebabCaseToPascalCase(bus),

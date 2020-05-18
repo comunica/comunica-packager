@@ -15,6 +15,7 @@
             :parameters="mediator.parameters"
             @click="onDelete(mediator['@id'])"
             @param="onChangeParameter"
+            @id="onChangeID"
         />
     </div>
 </template>
@@ -45,7 +46,6 @@
                 // Create new object of mediator type
                 // TODO: unique id
                 const parameters = this.mediators.find(m => m.name === this.selectedMediator).parameters;
-                console.log(parameters);
                 this.$store.commit('createNewMediator', {
                     type: this.selectedMediator,
                     '@id': `${this.selectedMediator}#${this.createdMediators.length}`,
@@ -55,13 +55,18 @@
             onDelete(mediator) {
                 this.$store.commit('deleteMediator', mediator);
             },
-            onChangeParameter(value, mediatorName, parameterName) {
+            onChangeParameter(value, id, parameterName) {
                 this.$store.commit('changeParameterValueOfMediator', {
-                    busGroup: null,
-                    name: mediatorName,
+                    '@id': id,
                     parameterName: parameterName,
                     value: value
                 });
+            },
+            onChangeID(currentID, newID) {
+                this.$store.commit('changeIDOfMediator', {
+                    currentID: currentID,
+                    newID: newID
+                })
             }
         }
     }
