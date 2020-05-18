@@ -22,12 +22,12 @@
         <div id="parameters">
             <div v-for="parameter in parameters" :key="parameter['@id']" class="parameter">
                 <p style="align-self: center;"><v-icon small color="#fff">mdi-tune</v-icon></p>
-                <p class="parameter-text">{{parameter['@id'].split('/').pop()}}</p>
+                <p class="parameter-text">{{trimIdentifier(parameter['@id'])}}</p>
                 <DropdownComponent
-                        v-if="parameter['@id'].split('/').pop().startsWith('mediator')"
+                        v-if="trimIdentifier(parameter['@id']).startsWith('mediator')"
                         :value="parameter.value"
                         @input="x => $emit('param', x, id, parameter['@id'])"
-                        placeholder="Choose mediate or"
+                        placeholder="Choose mediator"
                         :options="mediators"
                 />
                 <input
@@ -47,6 +47,7 @@
 <script>
     import DeleteButtonComponent from "./DeleteButtonComponent";
     import DropdownComponent from "./DropdownComponent";
+    import {trimIdentifier} from "../utils/alpha";
     export default {
         name: "ObjectComponent",
         components: {DropdownComponent, DeleteButtonComponent},
@@ -77,6 +78,9 @@
             onIDChange(value) {
                 this.$emit('id', this.id, value);
                 this.id = value;
+            },
+            trimIdentifier(s) {
+                return trimIdentifier(s);
             }
         },
         computed: {
