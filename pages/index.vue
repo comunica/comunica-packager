@@ -48,10 +48,10 @@
         },
         methods: {
             onNew() {
-                console.log('Pressed on new!');
+                console.log('TODO: open existing config file');
             },
             onGenerateEngine() {
-                console.log('Pressed on generate!');
+                this.$store.dispatch('downloadZip');
             }
         }
     }

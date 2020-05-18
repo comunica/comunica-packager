@@ -1,6 +1,8 @@
 import {BusGroup} from "~/assets/interfaces";
 import Vue from 'vue';
 import {pascalCaseToKebabCase} from "~/utils/alpha";
+import JSZip from "jszip";
+import { saveAs } from 'file-saver';
 
 const baseUrl = 'https://api.github.com/repos/comunica/comunica/contents/packages/';
 const baseSuffix = '?ref=master';
@@ -104,6 +106,7 @@ export const mutations = {
         };
 
         currentBusGroup[index].parameters.splice(i+1, 1);
+
     },
 
     changeParameterValueOfActor(state: any, payload: any) {
@@ -175,6 +178,16 @@ export const actions = {
         }
 
         context.commit('mergeActorBusOfActor', actor);
+    },
+
+    async downloadZip(context: any) {
+        let zip = new JSZip();
+        zip.file('hello.txt', 'Dit is een test\n');
+        zip.generateAsync({type: 'blob'}).then(
+            content => {
+                saveAs(content, 'example.zip');
+            }
+        )
     }
 
 }

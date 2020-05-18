@@ -23,20 +23,25 @@
             <div v-for="parameter in parameters" :key="parameter['@id']" class="parameter">
                 <p style="align-self: center;"><v-icon small color="#fff">mdi-tune</v-icon></p>
                 <p class="parameter-text">{{trimIdentifier(parameter['@id'])}}</p>
-                <DropdownComponent
-                        v-if="trimIdentifier(parameter['@id']).startsWith('mediator')"
-                        :value="parameter.value"
-                        @input="x => $emit('param', x, id, parameter['@id'])"
-                        placeholder="Choose mediator"
-                        :options="mediators"
-                />
-                <input
-                        v-else
-                        :value="parameter.value"
-                        @change="$emit('param', $event.target.value, id, parameter['@id'])"
-                        class="input parameter-input"
-                        type="text"
-                >
+
+
+                <div>
+                    <DropdownComponent
+                            v-if="trimIdentifier(parameter['@id']).startsWith('mediator')"
+                            :value="parameter.value"
+                            @input="x => $emit('param', x, id, parameter['@id'])"
+                            placeholder="Choose mediator"
+                            :options="mediators"
+                    />
+                    <input
+                            v-else
+                            :value="parameter.value"
+                            @change="$emit('param', $event.target.value, id, parameter['@id'])"
+                            class="input parameter-input"
+                            type="text"
+                    >
+                </div>
+
             </div>
         </div>
 
