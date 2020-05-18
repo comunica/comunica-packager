@@ -15,6 +15,7 @@
                 :object-name="actor.actorName"
                 :id="actor['@id']"
                 :parameters="actor.parameters"
+                :bus-group="busGroup.busGroupName"
                 @click="onDelete"
                 @param="onChangeParameter"
                 @id="onIDChange"

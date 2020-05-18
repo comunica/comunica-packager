@@ -19,19 +19,20 @@
             >
         </div>
 
-<!--        <hr class="line">-->
-
         <div id="parameters">
             <div v-for="parameter in parameters" :key="parameter['@id']" class="parameter">
                 <p style="align-self: center;"><v-icon small color="#fff">mdi-tune</v-icon></p>
                 <p class="parameter-text">{{parameter['@id'].split('/').pop()}}</p>
                 <DropdownComponent
                         v-if="parameter['@id'].split('/').pop().startsWith('mediator')"
-                        placeholder="Choose mediator"
-                        :options="['test', 'test2']"
+                        :value="parameter.value"
+                        @input="x => $emit('param', x, id, parameter['@id'])"
+                        placeholder="Choose mediate or"
+                        :options="mediators"
                 />
                 <input
                         v-else
+                        :value="parameter.value"
                         @change="$emit('param', $event.target.value, id, parameter['@id'])"
                         class="input parameter-input"
                         type="text"
@@ -61,6 +62,10 @@
             id: {
                 type: String,
                 default: 'placeholderID'
+            },
+            busGroup: {
+                type: String,
+                default: ''
             }
         },
         data() {
@@ -72,6 +77,12 @@
             onIDChange(value) {
                 this.$emit('id', this.id, value);
                 this.id = value;
+            }
+        },
+        computed: {
+            mediators() {
+                const mediators = this.$store.state.createdMediators;
+                return mediators.map(x => x['@id']);
             }
         }
     }

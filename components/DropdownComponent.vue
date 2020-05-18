@@ -2,10 +2,10 @@
     <select :value="value" @change="$emit('input', $event.target.value)" class="select">
         <option value="" disabled selected hidden>{{placeholder}}</option>
         <option v-for="option in options"
-                :key="option.name ? option.name : option"
+                :key="name ? option[name] : option"
                 :value="option"
         >
-            {{option.name ? option.name : option}}
+            {{name ? option[name] : option}}
         </option>
     </select>
 </template>
@@ -25,6 +25,10 @@
             value: {
                 type: String,
                 default: ''
+            },
+            name: {
+                type: String,
+                default: null
             }
         },
         methods: {
