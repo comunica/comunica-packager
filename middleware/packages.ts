@@ -55,12 +55,18 @@ export default async ({$axios, store}: Context) => {
         for (const mediator of mediators) {
             const mediatorConfig = await $axios.$get(mediator.url)
             const mediatorComponent = JSON.parse(atob(mediatorConfig.content)).components[0];
-            const parameters = [mediatorSuperParameter];
+            const parameters: any[] = [mediatorSuperParameter];
 
             if (mediatorComponent.parameters)
                 parameters.push(...mediatorComponent.parameters);
-            if (mediatorComponent.extends && mediatorComponent.extends !== 'cc:Mediator')
+            if (mediatorComponent.extends && mediatorComponent.extends !== 'cc:Mediator') {
+                parameters.splice(1, 1);
                 parameters.push(...numberSuperParameters);
+            }
+
+            for (let p of parameters)
+                if (p.hasOwnProperty('default'))
+                    p.value = p.default;
 
             mediatorsList.push({
                 name: mediatorComponent['@id'],

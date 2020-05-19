@@ -44,7 +44,6 @@
             busGroups() {
                 return this.$store.state.busGroups;
             },
-
         },
         methods: {
             onNew() {

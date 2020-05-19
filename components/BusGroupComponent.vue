@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div v-if="busGroupActors.length + addedActors.length">
         <h2><strong>{{busGroup.busGroupName}}</strong></h2>
         <div class="box">
             <div class="dropdown-layout">
@@ -47,10 +47,11 @@
 
                 const selectedActor = this.selectedActor;
                 this.selectedActor = '';
+                const id = `${selectedActor}#${this.addedActors.length}`
 
                 this.$store.commit('addActor', {
                     busGroup: this.busGroup.busGroupName,
-                    '@id': `${selectedActor}#${this.addedActors.length}`,
+                    '@id': id,
                     actorName: selectedActor
                 });
 
@@ -58,6 +59,11 @@
                     busGroup: this.busGroup.busGroupName,
                     actorName: selectedActor
                 });
+
+                this.$store.commit('fillInDefaults', {
+                    busGroup: this.busGroup.busGroupName,
+                    '@id': id,
+                })
             },
             onDelete(deletedActor) {
                 this.$store.commit('deleteActor', {

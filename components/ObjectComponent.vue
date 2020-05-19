@@ -22,9 +22,7 @@
         <div id="parameters">
             <div v-for="parameter in parameters" :key="parameter['@id']" class="parameter">
                 <p style="align-self: center;"><v-icon small color="#fff">mdi-tune</v-icon></p>
-                <p class="parameter-text">{{trimIdentifier(parameter['@id'])}}</p>
-
-
+                <p class="parameter-text">{{trimIdentifier(parameter['@id'])}} {{parameter.required ? '*' : ''}}</p>
                 <div>
                     <DropdownComponent
                             v-if="trimIdentifier(parameter['@id']).startsWith('mediator')"
@@ -41,7 +39,6 @@
                             type="text"
                     >
                 </div>
-
             </div>
         </div>
 
@@ -125,7 +122,7 @@
 
     .parameter {
         display: grid;
-        grid-template-columns: 1fr 5fr 4fr;
+        grid-template-columns: 1fr 6fr 7fr;
         column-gap: 5px;
         padding: 7px;
     }

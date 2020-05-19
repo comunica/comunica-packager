@@ -91,6 +91,24 @@ export const mutations = {
         currentBusGroup[index].parameters.push(...payload.parameters);
     },
 
+    fillInDefaults(state: any, payload: any) {
+        const currentBusGroup = state[payload.busGroup];
+        const indexActor = currentBusGroup.findIndex((x: any) => x['@id'] === payload['@id']);
+        for (const [i, p] of currentBusGroup[indexActor].parameters.entries()) {
+            if (p.hasOwnProperty('default'))
+                state[payload.busGroup][indexActor].parameters[i].value = JSON.stringify(p.default);
+            if (p.hasOwnProperty('defaultScoped')) {
+
+                const t = JSON.stringify(p.defaultScoped.defaultScopedValue);
+                console.log(t);
+
+                state[payload.busGroup][indexActor].parameters[i].value = t
+            }
+
+
+        }
+    },
+
     mergeActorBusOfActor(state: any, payload: any) {
         const currentBusGroup = state[payload.busGroup];
         const index = currentBusGroup.findIndex((x: any) => x.actorName === payload.actorName);
