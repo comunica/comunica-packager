@@ -46,10 +46,31 @@ function mapParameters(parameters: any, actor: any): any {
     }
 }
 
+function handleDefault(range: any, defaultValue: any) {
+    switch (range) {
+        case 'cc:Logger': {
+            return defaultValue['@type'];
+        }
+        case 'cc:Bus': {
+            return defaultValue['@id'];
+        }
+        default: {
+            if (typeof defaultValue === 'string')
+                return defaultValue;
+            else
+                return JSON.stringify(defaultValue);
+        }
+    }
+}
+
 export const state: () => any = () => ({
     busGroups: [],
     mediators: [],
     createdMediators: [],
+    loggers: [],
+    buses: [],
+    // TODO: context
+    context: []
 })
 
 export const mutations = {
@@ -59,6 +80,14 @@ export const mutations = {
 
     addMediators(state: any, mediators: string[]) {
         state.mediators = mediators;
+    },
+
+    addLoggers(state: any, loggers: string[]) {
+        state.loggers = loggers;
+    },
+
+    addBuses(state: any, buses: string[]) {
+        state.buses = buses;
     },
 
     createNewMediator(state: any, mediator: any) {
@@ -96,15 +125,9 @@ export const mutations = {
         const indexActor = currentBusGroup.findIndex((x: any) => x['@id'] === payload['@id']);
         for (const [i, p] of currentBusGroup[indexActor].parameters.entries()) {
             if (p.hasOwnProperty('default'))
-                state[payload.busGroup][indexActor].parameters[i].value = JSON.stringify(p.default);
-            if (p.hasOwnProperty('defaultScoped')) {
-
-                const t = JSON.stringify(p.defaultScoped.defaultScopedValue);
-                console.log(t);
-
-                state[payload.busGroup][indexActor].parameters[i].value = t
-            }
-
+                state[payload.busGroup][indexActor].parameters[i].value = handleDefault(p.range, p.default);
+            if (p.hasOwnProperty('defaultScoped'))
+                state[payload.busGroup][indexActor].parameters[i].value = handleDefault(p.range, p.defaultScoped.defaultScopedValue);
 
         }
     },
@@ -200,10 +223,10 @@ export const actions = {
 
     async downloadZip(context: any) {
         let zip = new JSZip();
-        zip.file('hello.txt', 'Dit is een test\n');
+        zip.file('test.json', context.state);
         zip.generateAsync({type: 'blob'}).then(
             content => {
-                saveAs(content, 'example.zip');
+                saveAs(content, 'engine.zip');
             }
         )
     }

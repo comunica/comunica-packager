@@ -23,22 +23,34 @@
             <div v-for="parameter in parameters" :key="parameter['@id']" class="parameter">
                 <p style="align-self: center;"><v-icon small color="#fff">mdi-tune</v-icon></p>
                 <p class="parameter-text">{{trimIdentifier(parameter['@id'])}} {{parameter.required ? '*' : ''}}</p>
-                <div>
-                    <DropdownComponent
-                            v-if="trimIdentifier(parameter['@id']).startsWith('mediator')"
-                            :value="parameter.value"
-                            @input="x => $emit('param', x, id, parameter['@id'])"
-                            placeholder="Choose mediator"
-                            :options="mediators"
-                    />
-                    <input
-                            v-else
-                            :value="parameter.value"
-                            @change="$emit('param', $event.target.value, id, parameter['@id'])"
-                            class="input parameter-input"
-                            type="text"
-                    >
-                </div>
+                <DropdownComponent
+                    v-if="trimIdentifier(parameter['@id']).startsWith('mediator')"
+                    :value="parameter.value"
+                    @input="x => $emit('param', x, id, parameter['@id'])"
+                    placeholder="Choose mediator"
+                    :options="mediators"
+                />
+                <DropdownComponent
+                    v-else-if="parameter.range === 'cc:Bus'"
+                    :value="parameter.value"
+                    @input="x => $emit('param', x, id, parameter['@id'])"
+                    placeholder="Choose bus"
+                    :options="buses"
+                />
+                <DropdownComponent
+                    v-else-if="parameter.range === 'cc:Logger'"
+                    :value="parameter.value"
+                    @input="x => $emit('param', x, id, parameter['@id'])"
+                    placeholder="Choose logger"
+                    :options="loggers"
+                />
+                <input
+                    v-else
+                    :value="parameter.value"
+                    @change="$emit('param', $event.target.value, id, parameter['@id'])"
+                    class="input parameter-input"
+                    type="text"
+                >
             </div>
         </div>
 
@@ -89,6 +101,12 @@
             mediators() {
                 const mediators = this.$store.state.createdMediators;
                 return mediators.map(x => x['@id']);
+            },
+            loggers() {
+                return this.$store.state.loggers;
+            },
+            buses() {
+                return this.$store.state.buses;
             }
         }
     }

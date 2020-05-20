@@ -16,10 +16,14 @@ const baseSuffix = '?ref=master';
 
 export default async ({$axios, store}: Context) => {
 
+    // TODO: add @context
     const packages = await $axios.$get(baseUrl + baseSuffix);
     const packageNames = packages.map((p: Package) => p.name);
     const buses = packageNames.filter((p: string) => p.substring(0, 3) === 'bus').map((p: string) => p.substring(4));
     const mediatorPackages = packageNames.filter((p: string) => p.startsWith('mediator-'));
+    const loggerPackages = packageNames.filter((p: string) => p.startsWith('logger-'));
+
+    console.log(buses);
 
     // TODO: clean up and avoid hardcode
     const mediatorSuperParameter = {
@@ -72,7 +76,6 @@ export default async ({$axios, store}: Context) => {
                 name: mediatorComponent['@id'],
                 parameters: parameters,
             });
-
         }
     }
 
@@ -84,4 +87,11 @@ export default async ({$axios, store}: Context) => {
     }));
 
     store.commit('addMediators', mediatorsList);
+
+    store.commit('addLoggers', loggerPackages.map(kebabCaseToPascalCase));
+
+    store.commit('addBuses', buses.map((bus: string) => {
+        let prefix = 'cb' + bus.split('-').map(x => x[0]).join('');
+        return `${prefix}:Bus/${kebabCaseToPascalCase(bus)}`
+    }));
 }
