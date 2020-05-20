@@ -1,21 +1,13 @@
 <template>
-    <div v-if="busGroupActors.length + addedActors.length">
-        <h2><strong>{{busGroup.busGroupName}}</strong></h2>
+    <div style="margin-top: 20px;">
+        <h3><strong>{{busGroup}}</strong></h3>
         <div class="box">
-            <div class="dropdown-layout">
-                <DropdownComponent
-                    v-model="selectedActor"
-                    :options="busGroupActors"
-                    placeholder="Choose actor"
-                />
-                <ButtonComponent :disabled="selectedActor === ''" :is-small="true" text="Add" @click="onAdd"/>
-            </div>
             <ObjectComponent
                 v-for="actor in addedActors"
                 :object-name="actor.actorName"
                 :id="actor['@id']"
                 :parameters="actor.parameters"
-                :bus-group="busGroup.busGroupName"
+                :bus-group="busGroup"
                 @click="onDelete"
                 @param="onChangeParameter"
                 @id="onIDChange"
@@ -35,36 +27,11 @@
         components: {DropdownComponent, ObjectComponent, DeleteButtonComponent, ButtonComponent},
         props: {
             busGroup: {
-                type: Object,
-                default: () => {}
+                type: String,
+                default: 'Placeholder busgroup'
             }
         },
-        data: () => ({
-            selectedActor: ''
-        }),
         methods: {
-            async onAdd() {
-
-                const selectedActor = this.selectedActor;
-                this.selectedActor = '';
-                const id = `${selectedActor}#${this.addedActors.length}`
-
-                this.$store.commit('addActor', {
-                    busGroup: this.busGroup.busGroupName,
-                    '@id': id,
-                    actorName: selectedActor
-                });
-
-                await this.$store.dispatch('getArguments', {
-                    busGroup: this.busGroup.busGroupName,
-                    actorName: selectedActor
-                });
-
-                this.$store.commit('fillInDefaults', {
-                    busGroup: this.busGroup.busGroupName,
-                    '@id': id,
-                })
-            },
             onDelete(deletedActor) {
                 this.$store.commit('deleteActor', {
                     busGroup: this.busGroup.busGroupName,
@@ -81,7 +48,7 @@
             },
             onIDChange(currentID, newID) {
                 this.$store.commit('changeIDOfActor', {
-                    busGroup: this.busGroup.busGroupName,
+                    busGroup: this.busGroup,
                     currentID: currentID,
                     newID: newID
                 });
@@ -89,10 +56,7 @@
         },
         computed: {
             addedActors() {
-                return this.$store.state[this.busGroup.busGroupName] ? this.$store.state[this.busGroup.busGroupName] : [];
-            },
-            busGroupActors() {
-                return this.busGroup.actors.filter(actor => !this.addedActors.map(a => a.actorName).includes(actor));
+                return this.$store.state.createdActors[this.busGroup];
             }
         }
     }

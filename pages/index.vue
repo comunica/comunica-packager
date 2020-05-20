@@ -8,19 +8,13 @@
         <div id="content">
             <div class="column" style="margin-right: 10px;" v-if="busGroups">
                 <h1>Actors</h1>
-                <BusGroupComponent
-                    v-for="busGroup in busGroups"
-                    :key="busGroup.busGroupName"
-                    :bus-group="busGroup"
-                    style="margin-top: 20px;"
-                />
+                <ActorsComponent style="margin-top: 20px;"/>
             </div>
             <div class="column" style="margin-left: 10px;">
                 <h1>Mediators</h1>
                 <MediatorComponent style="margin-top: 20px;"/>
             </div>
         </div>
-
     </div>
 </template>
 
@@ -28,10 +22,12 @@
 
     import ButtonComponent from "~/components/ButtonComponent.vue";
     import BusGroupComponent from "~/components/BusGroupComponent.vue";
-    import MediatorComponent from "../components/MediatorComponent";
+    import MediatorComponent from "../components/MediatorsComponent";
+    import ActorsComponent from "../components/ActorsComponent";
 
     export default {
         components: {
+            ActorsComponent,
             MediatorComponent,
             BusGroupComponent,
             ButtonComponent
@@ -57,6 +53,9 @@
 </script>
 
 <style scoped lang="scss">
+    #container {
+        height: 100%;
+    }
     #header {
         display: grid;
         grid-template-columns: repeat(3, 1fr);

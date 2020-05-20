@@ -3,6 +3,7 @@ import Vue from 'vue';
 import {pascalCaseToKebabCase} from "~/utils/alpha";
 import JSZip from "jszip";
 import { saveAs } from 'file-saver';
+import {stateToJsonld} from "~/store/json";
 
 const baseUrl = 'https://api.github.com/repos/comunica/comunica/contents/packages/';
 const baseSuffix = '?ref=master';
@@ -66,6 +67,7 @@ function handleDefault(range: any, defaultValue: any) {
 export const state: () => any = () => ({
     busGroups: [],
     mediators: [],
+    createdActors: {},
     createdMediators: [],
     loggers: [],
     buses: [],
@@ -76,6 +78,9 @@ export const state: () => any = () => ({
 export const mutations = {
     addBusGroups(state: any, busGroups: BusGroup[]) {
         state.busGroups = busGroups;
+        busGroups.forEach((bs) => {
+            state.createdActors[bs.busGroupName] = []
+        });
     },
 
     addMediators(state: any, mediators: string[]) {
@@ -96,14 +101,14 @@ export const mutations = {
         Vue.set(state, 'createdMediators', createdMediators);
     },
 
-    addActor(state: any, actor: any) {
-        const updatedAddedActors = state[actor.busGroup] ? state[actor.busGroup] : [];
+    addActor(state: any, payload: any) {
+        const updatedAddedActors = state.createdActors[payload.busGroup];
         updatedAddedActors.push({
-            actorName: actor.actorName,
-            '@id': actor['@id'],
-            parameters: []
+            actorName: payload.actorName,
+            '@id': payload['@id'],
+            parameters: [{'@id': 'Joder'}]
         });
-        Vue.set(state, actor.busGroup, updatedAddedActors);
+        Vue.set(state.createdActors, payload.busGroup, updatedAddedActors);
     },
 
     deleteActor(state: any, actor: any) {
@@ -115,25 +120,26 @@ export const mutations = {
     },
 
     addParametersToActor(state: any, payload: any) {
-        const currentBusGroup = state[payload.busGroup];
+        const currentBusGroup = state.createdActors[payload.busGroup];
         const index = currentBusGroup.findIndex((x: any) => x.actorName === payload.actorName);
         currentBusGroup[index].parameters.push(...payload.parameters);
+        Vue.set(state.createdActors, payload.busGroup, currentBusGroup);
+        console.log('yeet');
     },
 
     fillInDefaults(state: any, payload: any) {
-        const currentBusGroup = state[payload.busGroup];
+        const currentBusGroup = state.createdActors[payload.busGroup];
         const indexActor = currentBusGroup.findIndex((x: any) => x['@id'] === payload['@id']);
         for (const [i, p] of currentBusGroup[indexActor].parameters.entries()) {
             if (p.hasOwnProperty('default'))
-                state[payload.busGroup][indexActor].parameters[i].value = handleDefault(p.range, p.default);
+                Vue.set(state.createdActors[payload.busGroup][indexActor].parameters[i], 'value', handleDefault(p.range, p.default));
             if (p.hasOwnProperty('defaultScoped'))
-                state[payload.busGroup][indexActor].parameters[i].value = handleDefault(p.range, p.defaultScoped.defaultScopedValue);
-
+                Vue.set(state.createdActors[payload.busGroup][indexActor].parameters[i], 'value', handleDefault(p.range, p.defaultScoped.defaultScopedValue))
         }
     },
 
     mergeActorBusOfActor(state: any, payload: any) {
-        const currentBusGroup = state[payload.busGroup];
+        const currentBusGroup = state.createdActors[payload.busGroup];
         const index = currentBusGroup.findIndex((x: any) => x.actorName === payload.actorName);
 
         let i = 0;
@@ -172,9 +178,9 @@ export const mutations = {
     },
 
     changeIDOfActor(state: any, payload: any) {
-        const currentBusGroup = state[payload.busGroup];
+        const currentBusGroup = state.createdActors[payload.busGroup];
         const indexActor = currentBusGroup.findIndex((x: any) => x['@id'] === payload.currentID);
-        state[payload.busGroup][indexActor]['@id'] = payload.newID;
+        state.createdActors[payload.busGroup][indexActor]['@id'] = payload.newID;
     },
 
     changeIDOfMediator(state: any, payload: any) {
@@ -185,8 +191,8 @@ export const mutations = {
 
 export const actions = {
 
-    async getArguments(context: any, actor: any) {
-        const actorName = pascalCaseToKebabCase(actor.actorName);
+    async getArguments(context: any, payload: any) {
+        const actorName = pascalCaseToKebabCase(payload.actorName);
 
         const componentsConfig = await (this as any).$axios.$get(`${baseUrl}${actorName}/components/components.jsonld${baseSuffix}`);
         const componentsConfigContent = JSON.parse(atob(componentsConfig.content));
@@ -202,7 +208,7 @@ export const actions = {
         let componentContent = actorConfigContent.components[0];
 
         if (componentContent.parameters)
-            context.commit('addParametersToActor', mapParameters(componentContent.parameters, actor));
+            context.commit('addParametersToActor', mapParameters(componentContent.parameters, payload));
 
         while (componentContent.extends) {
             const parentComponents = Array.isArray(componentContent.extends) ? componentContent.extends : [componentContent.extends];
@@ -211,19 +217,17 @@ export const actions = {
                 const component = await (this as any).$axios.$get(componentUrl);
                 componentContent = JSON.parse(atob(component.content)).components[0];
                 if (componentContent.parameters) {
-                    context.commit('addParametersToActor', mapParameters(componentContent.parameters, actor));
+                    context.commit('addParametersToActor', mapParameters(componentContent.parameters, payload));
                 }
-
             }
-
         }
 
-        context.commit('mergeActorBusOfActor', actor);
+        context.commit('mergeActorBusOfActor', payload);
     },
 
     async downloadZip(context: any) {
         let zip = new JSZip();
-        zip.file('test.json', context.state);
+        zip.file('test.json', stateToJsonld(context.state));
         zip.generateAsync({type: 'blob'}).then(
             content => {
                 saveAs(content, 'engine.zip');

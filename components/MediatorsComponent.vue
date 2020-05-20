@@ -5,7 +5,6 @@
                 v-model="selectedMediator"
                 :options="mediatorTypes"
                 placeholder="Choose mediator type"
-
             />
             <ButtonComponent :disabled="selectedMediator === ''" :is-small="true" text="Create" @click="onCreate"/>
         </div>
@@ -27,7 +26,7 @@
     import ObjectComponent from "./ObjectComponent";
 
     export default {
-        name: "MediatorComponent",
+        name: "MediatorsComponent",
         components: {ObjectComponent, ButtonComponent, DropdownComponent},
         data: () => ({
             selectedMediator: ''

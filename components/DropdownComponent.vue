@@ -1,11 +1,29 @@
 <template>
-    <select :value="value" @change="$emit('input', $event.target.value)" class="select">
+    <select v-if="groups"
+            :value="value"
+            @change="$emit('input', $event.target.value)"
+            class="select">
+        <option :value="null" disabled selected hidden>{{placeholder}}</option>
+        <optgroup v-if="group.options.length"
+                  v-for="group in options"
+                  :label="group.groupName">
+            <option v-for="option in group.options"
+                    :key="option"
+                    :value="`${group.groupName}|${option}`">
+                {{option}}
+            </option>
+        </optgroup>
+    </select>
+
+    <select v-else
+            :value="value"
+            @change="$emit('input', $event.target.value)"
+            class="select">
         <option value="" disabled selected hidden>{{placeholder}}</option>
         <option v-for="option in options"
-                :key="name ? option[name] : option"
-                :value="option"
-        >
-            {{name ? option[name] : option}}
+                :key="option"
+                :value="option">
+            {{option}}
         </option>
     </select>
 </template>
@@ -29,6 +47,10 @@
             name: {
                 type: String,
                 default: null
+            },
+            groups: {
+                type: Boolean,
+                default: false
             }
         },
         methods: {

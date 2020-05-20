@@ -23,8 +23,6 @@ export default async ({$axios, store}: Context) => {
     const mediatorPackages = packageNames.filter((p: string) => p.startsWith('mediator-'));
     const loggerPackages = packageNames.filter((p: string) => p.startsWith('logger-'));
 
-    console.log(buses);
-
     // TODO: clean up and avoid hardcode
     const mediatorSuperParameter = {
         "@id": "cc:Mediator/bus",
