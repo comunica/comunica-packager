@@ -30,23 +30,6 @@ function getParentComponentUrl(extend: string): any {
 
 }
 
-function mapParameters(parameters: any, actor: any): any {
-    parameters = parameters.map(
-        (x: any) => {
-            return {
-                ...x,
-                value: ''
-            }
-        }
-    );
-
-    return {
-        busGroup: actor.busGroup,
-        actorName: actor.actorName,
-        parameters: parameters
-    }
-}
-
 function handleDefault(range: any, defaultValue: any) {
     switch (range) {
         case 'cc:Logger': {
@@ -124,8 +107,8 @@ export const mutations = {
         Vue.set(state.createdActors, payload.busGroup, updatedAddedActors);
     },
 
-    deleteActor(state: any, actor: any) {
-        Vue.set(state, actor.busGroup, state[actor.busGroup].filter((a: any) => a['@id'] !== actor['@id']));
+    deleteActor(state: any, payload: any) {
+        Vue.set(state.createdActors, payload.busGroup, state.createdActors[payload.busGroup].filter((a: any) => a['@id'] !== payload['@id']));
     },
 
     deleteMediator(state: any, mediator: string) {
@@ -133,13 +116,15 @@ export const mutations = {
     },
 
     changeParameterValueOfActor(state: any, payload: any) {
-        const currentBusGroup = state[payload.busGroup];
+        const currentBusGroup = state.createdActors[payload.busGroup];
+        console.log(payload);
+        console.log(currentBusGroup);
         const indexActor = currentBusGroup.findIndex((x: any) => x['@id'] === payload['@id']);
         const indexParameter = currentBusGroup[indexActor].parameters.findIndex(
             (x: any) => x['@id'] === payload.parameterName
         );
 
-        state[payload.busGroup][indexActor].parameters[indexParameter].value = payload.value;
+        state.createdActors[payload.busGroup][indexActor].parameters[indexParameter].value = payload.value;
     },
 
     changeParameterValueOfMediator(state: any, payload: any) {

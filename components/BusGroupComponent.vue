@@ -34,13 +34,13 @@
         methods: {
             onDelete(deletedActor) {
                 this.$store.commit('deleteActor', {
-                    busGroup: this.busGroup.busGroupName,
+                    busGroup: this.busGroup,
                     '@id': deletedActor
                 });
             },
             onChangeParameter(value, id, parameterName) {
                 this.$store.commit('changeParameterValueOfActor', {
-                    busGroup: this.busGroup.busGroupName,
+                    busGroup: this.busGroup,
                     '@id': id,
                     parameterName: parameterName,
                     value: value
