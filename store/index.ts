@@ -3,7 +3,7 @@ import Vue from 'vue';
 import {pascalCaseToKebabCase} from "~/utils/alpha";
 import JSZip from "jszip";
 import { saveAs } from 'file-saver';
-import {stateToJsonld} from "~/store/json";
+import {stateToJsonld} from "~/utils/json";
 
 const baseUrl = 'https://api.github.com/repos/comunica/comunica/contents/packages/';
 const baseSuffix = '?ref=master';

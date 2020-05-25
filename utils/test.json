@@ -1,0 +1,22 @@
+"actors": [
+  {
+  "@id": "config-sets:sparql-queryoperators.json#myAskQueryOperator",
+  "@type": "ActorQueryOperationAsk",
+  "cbqo:mediatorQueryOperation": {
+  "@id": "config-sets:sparql-queryoperators.json#mediatorQueryOperation",
+  "@type": "MediatorNumberMin",
+  "field": "httpRequests",
+  "ignoreErrors": true,
+  "cc:Mediator/bus": { "@id": "cbqo:Bus/QueryOperation" }
+  }
+},
+{
+  "@context": [
+  "https://linkedsoftwaredependencies.org/bundles/npm/@comunica/runner/^1.0.0/components/context.jsonld"
+  "https://linkedsoftwaredependencies.org/bundles/npm/@comunica/core/^1.0.0/components/context.jsonld"
+  ...
+  ],
+  "@graph": [
+
+  ]
+}
