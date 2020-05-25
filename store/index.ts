@@ -71,7 +71,7 @@ export const state: () => any = () => ({
     loggers: [],
     buses: [],
     // TODO: context
-    context: []
+    context: new Set(["https://linkedsoftwaredependencies.org/bundles/npm/@comunica/runner/^1.0.0/components/context.jsonld"])
 })
 
 export const mutations = {
@@ -117,8 +117,6 @@ export const mutations = {
 
     changeParameterValueOfActor(state: any, payload: any) {
         const currentBusGroup = state.createdActors[payload.busGroup];
-        console.log(payload);
-        console.log(currentBusGroup);
         const indexActor = currentBusGroup.findIndex((x: any) => x['@id'] === payload['@id']);
         const indexParameter = currentBusGroup[indexActor].parameters.findIndex(
             (x: any) => x['@id'] === payload.parameterName
@@ -147,6 +145,13 @@ export const mutations = {
     changeIDOfMediator(state: any, payload: any) {
         const indexMediator = state.createdMediators.findIndex((x: any) => x['@id'] === payload.currentID);
         state.createdMediators[indexMediator]['@id'] = payload.newID;
+    },
+
+    addToContext(state: any, payload: any) {
+        if (typeof payload === 'string')
+            state.context.add(payload);
+        else
+            payload.forEach((x: string) => state.context.add(x));
     }
 }
 
@@ -157,12 +162,14 @@ export const actions = {
         const actorName = pascalCaseToKebabCase(payload.actorName);
         const componentsConfig = await (this as any).$axios.$get(`${baseUrl}${actorName}/components/components.jsonld${baseSuffix}`);
         const componentsConfigContent = JSON.parse(atob(componentsConfig.content));
+        context.commit('addToContext', componentsConfigContent['@context']);
         const actorConfigUrlParts = componentsConfigContent.import[0].split('/');
         actorConfigUrlParts.shift();
         const actorConfig = await (this as any).$axios.$get(
             `${baseUrl}${actorName}/components/${actorConfigUrlParts.join('/')}${baseSuffix}`
         );
         const actorConfigContent = JSON.parse(atob(actorConfig.content));
+        context.commit('addToContext', actorConfigContent['@context']);
         let componentContent = actorConfigContent.components[0];
         let parameters = []
 

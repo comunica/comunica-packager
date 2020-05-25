@@ -1,11 +1,9 @@
 import _ from 'lodash';
+import {trimIdentifier} from "~/utils/alpha";
 
 export function stateToJsonld(state: any) {
-    let s = _.cloneDeep(state);
-    console.log(s);
-
     let addedActors: any = [];
-    const createdActors: any[] = state.createdActors
+    const createdActors: any[] = state.createdActors;
 
     for (let [busGroup, actors] of  Object.entries(createdActors)) {
         if (actors.length) {
@@ -36,9 +34,9 @@ export function stateToJsonld(state: any) {
                                 }
                                 default: {
                                     try {
-                                        actorToAdd[parameter['@id']] = JSON.parse(parameter.value);
+                                        actorToAdd[trimIdentifier(parameter['@id'])] = JSON.parse(parameter.value);
                                     } catch (err) {
-                                        actorToAdd[parameter['@id']] = parameter.value;
+                                        actorToAdd[trimIdentifier(parameter['@id'])] = parameter.value;
                                     }
                                 }
                             }
@@ -54,14 +52,37 @@ export function stateToJsonld(state: any) {
         '@id': 'urn:comunica:my',
         '@type': 'Runner',
         'actors': addedActors
-    }
+    };
 
-    let graph = [runner]
+    let graph: any[] = [runner];
+
+    const createdMediators: any[] = state.createdMediators;
+
+    for (let mediator of createdMediators) {
+        let mediatorToAdd: any = {
+            '@id': mediator['@id'],
+            '@type': mediator.type,
+        }
+        for (let parameter of mediator.parameters) {
+            if (parameter.range == 'cc:Bus') {
+                mediatorToAdd[parameter['@id']] = {
+                    '@id': parameter.value
+                }
+            } else {
+                try {
+                    mediatorToAdd[parameter['@id']] = JSON.parse(parameter.value);
+                } catch (err) {
+                    mediatorToAdd[parameter['@id']] = parameter.value;
+                }
+            }
+        }
+        graph.push(mediatorToAdd);
+    }
 
     let output = {
-        '@context': [],
+        '@context': [...state.context],
         '@graph': graph
-    }
+    };
 
     return JSON.stringify(output, null, '  ');
 }

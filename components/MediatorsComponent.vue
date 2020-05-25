@@ -45,12 +45,13 @@
         methods: {
             onCreate() {
                 // Create new object of mediator type
-                const parameters = _.cloneDeep(this.mediators.find(m => m.name === this.selectedMediator).parameters);
+                const selectedMediatorType =  _.cloneDeep(this.mediators.find(m => m.name === this.selectedMediator));
                 this.$store.commit('createNewMediator', {
                     type: this.selectedMediator,
                     '@id': `${this.selectedMediator}#${this.createdMediators.length}`,
-                    parameters: parameters,
+                    parameters: selectedMediatorType.parameters,
                 });
+                this.$store.commit('addToContext', selectedMediatorType.context);
             },
             onDelete(mediator) {
                 this.$store.commit('deleteMediator', mediator);
