@@ -64,6 +64,22 @@ function handleDefault(range: any, defaultValue: any) {
     }
 }
 
+function mergeDuplicateKeys(o: any, key: string) {
+    let i = 0;
+
+    while (o[i]['@id'] !== key)
+        i++;
+
+    o[i] = {
+        ...o[i],
+        ...o[i+1]
+    };
+
+    o.splice(i+1, 1);
+
+    return o;
+}
+
 export const state: () => any = () => ({
     busGroups: [],
     mediators: [],
@@ -103,11 +119,8 @@ export const mutations = {
 
     addActor(state: any, payload: any) {
         const updatedAddedActors = state.createdActors[payload.busGroup];
-        updatedAddedActors.push({
-            actorName: payload.actorName,
-            '@id': payload['@id'],
-            parameters: [{'@id': 'Joder'}]
-        });
+        updatedAddedActors.push(payload.actor);
+        delete state.createdActors[payload.busGroup];
         Vue.set(state.createdActors, payload.busGroup, updatedAddedActors);
     },
 
@@ -117,43 +130,6 @@ export const mutations = {
 
     deleteMediator(state: any, mediator: string) {
         Vue.set(state, 'createdMediators', state.createdMediators.filter((m: any) => m['@id'] !== mediator));
-    },
-
-    addParametersToActor(state: any, payload: any) {
-        const currentBusGroup = state.createdActors[payload.busGroup];
-        const index = currentBusGroup.findIndex((x: any) => x.actorName === payload.actorName);
-        currentBusGroup[index].parameters.push(...payload.parameters);
-        Vue.set(state.createdActors, payload.busGroup, currentBusGroup);
-        console.log('yeet');
-    },
-
-    fillInDefaults(state: any, payload: any) {
-        const currentBusGroup = state.createdActors[payload.busGroup];
-        const indexActor = currentBusGroup.findIndex((x: any) => x['@id'] === payload['@id']);
-        for (const [i, p] of currentBusGroup[indexActor].parameters.entries()) {
-            if (p.hasOwnProperty('default'))
-                Vue.set(state.createdActors[payload.busGroup][indexActor].parameters[i], 'value', handleDefault(p.range, p.default));
-            if (p.hasOwnProperty('defaultScoped'))
-                Vue.set(state.createdActors[payload.busGroup][indexActor].parameters[i], 'value', handleDefault(p.range, p.defaultScoped.defaultScopedValue))
-        }
-    },
-
-    mergeActorBusOfActor(state: any, payload: any) {
-        const currentBusGroup = state.createdActors[payload.busGroup];
-        const index = currentBusGroup.findIndex((x: any) => x.actorName === payload.actorName);
-
-        let i = 0;
-
-        while (currentBusGroup[index].parameters[i]['@id'] !== 'cc:Actor/bus')
-            i++;
-
-        currentBusGroup[index].parameters[i] = {
-            ...currentBusGroup[index].parameters[i],
-            ...currentBusGroup[index].parameters[i+1]
-        };
-
-        currentBusGroup[index].parameters.splice(i+1, 1);
-
     },
 
     changeParameterValueOfActor(state: any, payload: any) {
@@ -191,24 +167,22 @@ export const mutations = {
 
 export const actions = {
 
-    async getArguments(context: any, payload: any) {
-        const actorName = pascalCaseToKebabCase(payload.actorName);
+    async addActor(context: any, payload: any) {
 
+        const actorName = pascalCaseToKebabCase(payload.actorName);
         const componentsConfig = await (this as any).$axios.$get(`${baseUrl}${actorName}/components/components.jsonld${baseSuffix}`);
         const componentsConfigContent = JSON.parse(atob(componentsConfig.content));
-
         const actorConfigUrlParts = componentsConfigContent.import[0].split('/');
         actorConfigUrlParts.shift();
-
         const actorConfig = await (this as any).$axios.$get(
             `${baseUrl}${actorName}/components/${actorConfigUrlParts.join('/')}${baseSuffix}`
         );
-
         const actorConfigContent = JSON.parse(atob(actorConfig.content));
         let componentContent = actorConfigContent.components[0];
+        let parameters = []
 
         if (componentContent.parameters)
-            context.commit('addParametersToActor', mapParameters(componentContent.parameters, payload));
+            parameters.push(...componentContent.parameters);
 
         while (componentContent.extends) {
             const parentComponents = Array.isArray(componentContent.extends) ? componentContent.extends : [componentContent.extends];
@@ -217,12 +191,27 @@ export const actions = {
                 const component = await (this as any).$axios.$get(componentUrl);
                 componentContent = JSON.parse(atob(component.content)).components[0];
                 if (componentContent.parameters) {
-                    context.commit('addParametersToActor', mapParameters(componentContent.parameters, payload));
+                    parameters.push(...componentContent.parameters);
                 }
             }
         }
 
-        context.commit('mergeActorBusOfActor', payload);
+        parameters = mergeDuplicateKeys(parameters, 'cc:Actor/bus');
+
+        for (const [i, p] of parameters.entries()) {
+            if (p.hasOwnProperty('default'))
+                parameters[i].value = handleDefault(p.range, p.default);
+            if (p.hasOwnProperty('defaultScoped'))
+                parameters[i].value = handleDefault(p.range, p.defaultScoped.defaultScopedValue);
+        }
+
+        const actor = {
+            actorName: payload.actorName,
+            '@id': payload['@id'],
+            parameters: parameters
+        };
+
+        context.commit('addActor', {busGroup: payload.busGroup, actor: actor});
     },
 
     async downloadZip(context: any) {

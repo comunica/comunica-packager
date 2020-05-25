@@ -85,7 +85,7 @@
         },
         data() {
             return {
-
+                objectParameters: this.parameters
             }
         },
         methods: {

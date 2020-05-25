@@ -12,10 +12,10 @@
             </div>
         </div>
         <BusGroupComponent
-            v-for="busGroup in Object.keys(busGroups)"
-            v-if="busGroups[busGroup].length"
-            :key="busGroup"
-            :bus-group="busGroup"
+            v-for="(value, key) in busGroups"
+            v-if="value.length"
+            :key="key"
+            :bus-group="key"
         />
     </div>
 
@@ -25,6 +25,7 @@
     import DropdownComponent from "./DropdownComponent";
     import ButtonComponent from "./ButtonComponent";
     import BusGroupComponent from "./BusGroupComponent";
+
     export default {
         name: "ActorsComponent",
         components: {BusGroupComponent, ButtonComponent, DropdownComponent},
@@ -40,23 +41,28 @@
                 const actorName = selectedActor[1];
                 const id = `mytest:${actorName}`
 
-                this.$store.commit('addActor', {
+                await this.$store.dispatch('addActor', {
                     busGroup: busGroup,
                     '@id': id,
                     actorName: actorName
                 });
 
-                await this.$store.dispatch('getArguments', {
-                    busGroup: busGroup,
-                    actorName: actorName
-                });
+                // this.$store.commit('addActor', {
+                //     busGroup: busGroup,
+                //     '@id': id,
+                //     actorName: actorName
+                // });
+                //
+                // await this.$store.dispatch('getArguments', {
+                //     busGroup: busGroup,
+                //     actorName: actorName
+                // });
+                //
+                // this.$store.commit('fillInDefaults', {
+                //     busGroup: busGroup,
+                //     '@id': id,
+                // });
 
-                this.$store.commit('fillInDefaults', {
-                    busGroup: busGroup,
-                    '@id': id,
-                });
-
-                this.$forceUpdate();
             }
         },
         computed: {
