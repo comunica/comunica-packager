@@ -47,22 +47,6 @@
                     actorName: actorName
                 });
 
-                // this.$store.commit('addActor', {
-                //     busGroup: busGroup,
-                //     '@id': id,
-                //     actorName: actorName
-                // });
-                //
-                // await this.$store.dispatch('getArguments', {
-                //     busGroup: busGroup,
-                //     actorName: actorName
-                // });
-                //
-                // this.$store.commit('fillInDefaults', {
-                //     busGroup: busGroup,
-                //     '@id': id,
-                // });
-
             }
         },
         computed: {

@@ -26,7 +26,6 @@
     import MediatorComponent from "../components/MediatorsComponent";
     import ActorsComponent from "../components/ActorsComponent";
     import FileInputComponent from "../components/FileInputComponent";
-    import JSZip from 'jszip';
 
     export default {
         components: {
@@ -53,7 +52,7 @@
                 this.$store.dispatch('downloadZip');
             },
             onResetEngine() {
-
+                this.$store.commit('resetState');
             }
         }
     }

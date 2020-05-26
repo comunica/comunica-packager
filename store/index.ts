@@ -4,6 +4,7 @@ import {pascalCaseToKebabCase} from "~/utils/alpha";
 import JSZip from "jszip";
 import { saveAs } from 'file-saver';
 import {stateToJsonld} from "~/utils/json";
+import _ from 'lodash';
 
 const baseUrl = 'https://api.github.com/repos/comunica/comunica/contents/packages/';
 const baseSuffix = '?ref=master';
@@ -63,15 +64,19 @@ function mergeDuplicateKeys(o: any, key: string) {
     return o;
 }
 
-export const state: () => any = () => ({
-    busGroups: [],
-    mediators: [],
-    createdActors: {},
-    createdMediators: [],
-    loggers: [],
-    buses: [],
-    context: new Set(["https://linkedsoftwaredependencies.org/bundles/npm/@comunica/runner/^1.0.0/components/context.jsonld"])
-})
+function getDefaultState() {
+    return {
+        busGroups: [],
+        mediators: [],
+        createdActors: {},
+        createdMediators: [],
+        loggers: [],
+        buses: [],
+        context: new Set(["https://linkedsoftwaredependencies.org/bundles/npm/@comunica/runner/^1.0.0/components/context.jsonld"])
+    }
+}
+
+export const state = getDefaultState();
 
 export const mutations = {
     addBusGroups(state: any, busGroups: BusGroup[]) {
@@ -151,6 +156,14 @@ export const mutations = {
             state.context.add(payload);
         else
             payload.forEach((x: string) => state.context.add(x));
+    },
+
+    resetState(state: any) {
+        state.context = new Set(["https://linkedsoftwaredependencies.org/bundles/npm/@comunica/runner/^1.0.0/components/context.jsonld"]);
+        state.createdMediators = [];
+        Object.keys(state.createdActors).forEach(key => {
+            state.createdActors[key] = [];
+        });
     }
 }
 
