@@ -70,7 +70,6 @@ export const state: () => any = () => ({
     createdMediators: [],
     loggers: [],
     buses: [],
-    // TODO: context
     context: new Set(["https://linkedsoftwaredependencies.org/bundles/npm/@comunica/runner/^1.0.0/components/context.jsonld"])
 })
 
@@ -208,12 +207,21 @@ export const actions = {
 
     async downloadZip(context: any) {
         let zip = new JSZip();
-        zip.file('test.json', stateToJsonld(context.state));
+        zip.file('config.json', stateToJsonld(context.state));
         zip.generateAsync({type: 'blob'}).then(
             content => {
                 saveAs(content, 'engine.zip');
             }
         )
+    },
+
+    async uploadZip(context: any, file: any) {
+        let zip = new JSZip();
+        zip.loadAsync(file).then(function(z) {
+            zip.file('config.json').async('text').then(function(json) {
+                console.log(JSON.parse(json));
+            });
+        }, function() {alert('Invalid zip.')});
     }
 
 }

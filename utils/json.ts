@@ -1,4 +1,3 @@
-import _ from 'lodash';
 import {trimIdentifier} from "~/utils/alpha";
 
 export function stateToJsonld(state: any) {

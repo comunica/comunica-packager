@@ -16,7 +16,6 @@ const baseSuffix = '?ref=master';
 
 export default async ({$axios, store}: Context) => {
 
-    // TODO: add @context
     const packages = await $axios.$get(baseUrl + baseSuffix);
     const packageNames = packages.map((p: Package) => p.name);
     const buses = packageNames.filter((p: string) => p.substring(0, 3) === 'bus').map((p: string) => p.substring(4));

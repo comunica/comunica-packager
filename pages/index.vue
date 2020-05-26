@@ -2,7 +2,7 @@
     <div id="container">
         <div id="header">
             <img id="logo" src="comunica_white.svg"/>
-            <FileInputComponent text="New engine"/>
+            <FileInputComponent text="New engine" @click="onNew"/>
             <ButtonComponent text="Generate engine" @click="onGenerateEngine"/>
             <ButtonComponent text="Reset engine" @click="onResetEngine"/>
         </div>
@@ -26,6 +26,7 @@
     import MediatorComponent from "../components/MediatorsComponent";
     import ActorsComponent from "../components/ActorsComponent";
     import FileInputComponent from "../components/FileInputComponent";
+    import JSZip from 'jszip';
 
     export default {
         components: {
@@ -45,8 +46,8 @@
             },
         },
         methods: {
-            onNew() {
-                console.log('TODO: open existing config file');
+            onNew(file) {
+                this.$store.dispatch('uploadZip', file);
             },
             onGenerateEngine() {
                 this.$store.dispatch('downloadZip');

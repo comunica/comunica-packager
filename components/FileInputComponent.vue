@@ -1,6 +1,6 @@
 <template>
     <div>
-        <input type="file" id="file" accept="application/zip" @change="file => handleFile(file)">
+        <input type="file" id="file" accept="application/zip" @change="handleFile">
         <label for="file">{{text}}</label>
     </div>
 </template>
@@ -16,7 +16,7 @@
         },
         methods: {
             handleFile(file) {
-                console.log(file);
+                this.$emit('click', file.target.files[0]);
             }
         }
     }
