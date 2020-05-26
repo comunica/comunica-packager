@@ -2,8 +2,9 @@
     <div id="container">
         <div id="header">
             <img id="logo" src="comunica_white.svg"/>
-            <ButtonComponent text="New engine" @click="onNew"/>
+            <FileInputComponent text="New engine"/>
             <ButtonComponent text="Generate engine" @click="onGenerateEngine"/>
+            <ButtonComponent text="Reset engine" @click="onResetEngine"/>
         </div>
         <div id="content">
             <div class="column" style="margin-right: 10px;" v-if="busGroups">
@@ -24,9 +25,11 @@
     import BusGroupComponent from "~/components/BusGroupComponent.vue";
     import MediatorComponent from "../components/MediatorsComponent";
     import ActorsComponent from "../components/ActorsComponent";
+    import FileInputComponent from "../components/FileInputComponent";
 
     export default {
         components: {
+            FileInputComponent,
             ActorsComponent,
             MediatorComponent,
             BusGroupComponent,
@@ -47,6 +50,9 @@
             },
             onGenerateEngine() {
                 this.$store.dispatch('downloadZip');
+            },
+            onResetEngine() {
+
             }
         }
     }
@@ -58,7 +64,7 @@
     }
     #header {
         display: grid;
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(4, 1fr);
         place-content: center;
         place-items: center;
         margin: 0 10%;
