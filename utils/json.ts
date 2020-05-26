@@ -87,5 +87,32 @@ export function stateToJsonld(state: any) {
 }
 
 export function jsonldToState(jsonld: any) {
-    // TODO: start from existing json
+    let id = '';
+    let actors: any[] = [];
+    let mediators: any[] = [];
+
+    // Handle graph based jsonlds
+    if (jsonld.hasOwnProperty('@graph')) {
+        let runner = jsonld['@graph'][0];
+        id = runner['@id'];
+        runner.actors.forEach((a: any) => {
+            actors.push(a);
+        });
+        if (jsonld['@graph'].length > 1) {
+            for (let i = 1; i < jsonld['@graph'].length; i++) {
+                mediators.push(jsonld['@graph'][i]);
+            }
+        }
+    // Handle single object jsonlds
+    } else {
+        // TODO: version without graph and mediators in actors
+        alert('Version without graph not yet supported!');
+    }
+
+    return {
+        id: id,
+        actors: actors,
+        mediators: mediators,
+        context: jsonld['@context']
+    }
 }

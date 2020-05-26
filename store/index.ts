@@ -3,7 +3,7 @@ import Vue from 'vue';
 import {pascalCaseToKebabCase} from "~/utils/alpha";
 import JSZip from "jszip";
 import { saveAs } from 'file-saver';
-import {stateToJsonld} from "~/utils/json";
+import {jsonldToState, stateToJsonld} from "~/utils/json";
 import _ from 'lodash';
 
 const baseUrl = 'https://api.github.com/repos/comunica/comunica/contents/packages/';
@@ -66,6 +66,7 @@ function mergeDuplicateKeys(o: any, key: string) {
 
 function getDefaultState() {
     return {
+        id: 'urn:comunica:my',
         busGroups: [],
         mediators: [],
         createdActors: {},
@@ -74,6 +75,18 @@ function getDefaultState() {
         buses: [],
         context: new Set(["https://linkedsoftwaredependencies.org/bundles/npm/@comunica/runner/^1.0.0/components/context.jsonld"])
     }
+}
+
+function getBusGroupOfActor(busGroups: any, actor: string) {
+    let b = '';
+
+    busGroups.forEach((busGroup: any) => {
+        if (busGroup.actors.includes(actor)) {
+            b = busGroup.busGroupName;
+        }
+    });
+
+    return b;
 }
 
 export const state = getDefaultState();
@@ -164,6 +177,10 @@ export const mutations = {
         Object.keys(state.createdActors).forEach(key => {
             state.createdActors[key] = [];
         });
+    },
+
+    changeID(state: any, id: string) {
+        state.id = id;
     }
 }
 
@@ -232,7 +249,35 @@ export const actions = {
         let zip = new JSZip();
         zip.loadAsync(file).then(function(z) {
             zip.file('config.json').async('text').then(function(json) {
-                console.log(JSON.parse(json));
+                context.commit('resetState');
+                const s = jsonldToState(JSON.parse(json));
+                context.commit('changeID', s.id);
+                context.commit('addToContext', s.context);
+                // Handle mediators
+                s.mediators.forEach((mediator: any) => {
+                    const mediatorType = _.cloneDeep(context.state.mediators.find((m: any) => m.name === mediator['@type']));
+                    for (let param of mediatorType.parameters) {
+                        if (mediator.hasOwnProperty(param['@id'])) {
+                            if (param.range === 'cc:Bus')
+                                param.value = mediator[param['@id']]['@id'];
+                            else
+                                param.value = mediator[param['@id']];
+                        }
+                    }
+                    context.commit('createNewMediator', {
+                        type: mediator['@type'],
+                        '@id': mediator['@id'],
+                        parameters: mediatorType.parameters
+                    });
+                });
+                // Handle actors
+                s.actors.forEach((actor: any) => {
+                    context.dispatch('addActor', {
+                        actorName: actor['@type'],
+                        '@id': actor['@id'],
+                        busGroup: getBusGroupOfActor(context.state.busGroups, actor['@type'])
+                    });
+                });
             });
         }, function() {alert('Invalid zip.')});
     }
