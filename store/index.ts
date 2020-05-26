@@ -219,12 +219,26 @@ export const actions = {
 
         parameters = mergeDuplicateKeys(parameters, 'cc:Actor/bus');
 
-        for (const [i, p] of parameters.entries()) {
-            if (p.hasOwnProperty('default'))
-                parameters[i].value = handleDefault(p.range, p.default);
-            if (p.hasOwnProperty('defaultScoped'))
-                parameters[i].value = handleDefault(p.range, p.defaultScoped.defaultScopedValue);
+        if (payload.parameters) {
+            for (let p of parameters) {
+                if (payload.parameters.hasOwnProperty(p['@id'])) {
+                    if (p.range === 'cc:Logger')
+                        p.value = payload.parameters[p['@id']]['@type'];
+                    else if (p.range === 'cc:Bus' || p['@id'].includes('mediator'))
+                        p.value = payload.parameters[p['@id']]['@id'];
+                    else
+                        p.value = JSON.stringify(payload.parameters['@id']);
+                }
+            }
+        } else {
+            for (const [i, p] of parameters.entries()) {
+                if (p.hasOwnProperty('default'))
+                    parameters[i].value = handleDefault(p.range, p.default);
+                if (p.hasOwnProperty('defaultScoped'))
+                    parameters[i].value = handleDefault(p.range, p.defaultScoped.defaultScopedValue);
+            }
         }
+
 
         const actor = {
             actorName: payload.actorName,
@@ -275,7 +289,8 @@ export const actions = {
                     context.dispatch('addActor', {
                         actorName: actor['@type'],
                         '@id': actor['@id'],
-                        busGroup: getBusGroupOfActor(context.state.busGroups, actor['@type'])
+                        busGroup: getBusGroupOfActor(context.state.busGroups, actor['@type']),
+                        parameters: actor
                     });
                 });
             });
