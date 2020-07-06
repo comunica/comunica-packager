@@ -5,6 +5,7 @@ import JSZip from "jszip";
 import { saveAs } from 'file-saver';
 import {jsonldToState, stateToJsonld} from "~/utils/json";
 import _ from 'lodash';
+import * as jsonldParser from 'jsonld';
 
 const baseUrl = 'https://api.github.com/repos/comunica/comunica/contents/packages/';
 const baseSuffix = '?ref=master';
@@ -191,16 +192,16 @@ export const actions = {
         const actorName = pascalCaseToKebabCase(payload.actorName);
         const componentsConfig = await (this as any).$axios.$get(`${baseUrl}${actorName}/components/components.jsonld${baseSuffix}`);
         const componentsConfigContent = JSON.parse(atob(componentsConfig.content));
-        context.commit('addToContext', componentsConfigContent['@context']);
         const actorConfigUrlParts = componentsConfigContent.import[0].split('/');
         actorConfigUrlParts.shift();
         const actorConfig = await (this as any).$axios.$get(
             `${baseUrl}${actorName}/components/${actorConfigUrlParts.join('/')}${baseSuffix}`
         );
         const actorConfigContent = JSON.parse(atob(actorConfig.content));
+        console.log(await jsonldParser.expand(actorConfigContent));
         context.commit('addToContext', actorConfigContent['@context']);
         let componentContent = actorConfigContent.components[0];
-        let parameters = []
+        let parameters = [];
 
         if (componentContent.parameters)
             parameters.push(...componentContent.parameters);
