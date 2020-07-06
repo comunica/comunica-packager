@@ -1,7 +1,7 @@
 <template>
     <div id="container">
         <div id="header">
-            <img id="logo" src="comunica_white.svg"/>
+            <LogoComponent/>
             <FileInputComponent text="Import" @click="onNew"/>
             <ButtonComponent text="Export" @click="onGenerateEngine"/>
             <ButtonComponent text="Reset" @click="onResetEngine"/>
@@ -37,9 +37,11 @@
     import MediatorComponent from "../components/MediatorsComponent";
     import ActorsComponent from "../components/ActorsComponent";
     import FileInputComponent from "../components/FileInputComponent";
+    import LogoComponent from "../components/LogoComponent";
 
     export default {
         components: {
+            LogoComponent,
             FileInputComponent,
             ActorsComponent,
             MediatorComponent,
@@ -74,11 +76,14 @@
         height: 100%;
     }
     #header {
+        background-color: $comunica-dark-red;
         display: grid;
         grid-template-columns: repeat(4, 1fr);
         place-content: center;
         place-items: center;
-        margin: 0 10%;
+        margin: 0 15%;
+        padding: 20px 0;
+        border-radius: 0 0 15px 15px;
     }
     #logo {
         max-width: 130px;

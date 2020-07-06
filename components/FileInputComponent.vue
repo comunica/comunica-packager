@@ -32,8 +32,8 @@
         color: white;
         text-align: center;
         border-radius: 8px;
-        font-size: 16pt;
-        background: $comunica-dark-red;
+        font-size: max(2vmin, 13pt);
+        background: $comunica-red;
         padding: 15px 32px;
         cursor: pointer;
     }

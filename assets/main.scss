@@ -1,3 +1,11 @@
+@font-face {
+  font-family: 'bignoodletitlingregular';
+  src: url('big_noodle_titling-webfont.woff2') format('woff2'),
+  url('big_noodle_titling-webfont.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
+
 html {
   background: $comunica-red;
 }
@@ -23,18 +31,14 @@ html {
 }
 
 .text-large {
-  font-size: 5vmin;
+  font-size: max(3vmin, 16pt);
   font-weight: bold;
 }
 
 .text-medium {
-  font-size: 3vmin;
+  font-size: max(2vmin, 13pt);
 }
 
 .text-small {
-  font-size: 2vmin;
-}
-
-.text-tiny {
-  font-size: 1vmin;
+  font-size: max(1vmin, 11pt)
 }

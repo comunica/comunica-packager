@@ -37,14 +37,14 @@
     }
 
     .small {
-        font-size: 12pt;
+        font-size: max(1vmin, 11pt);
         background: $comunica-red;
         padding: 7px 16px;
     }
 
     .large {
-        font-size: 16pt;
-        background: $comunica-dark-red;
+        font-size: max(2vmin, 13pt);
+        background: $comunica-red;
         padding: 15px 32px;
     }
 </style>
