@@ -16,6 +16,10 @@
                 <MediatorComponent style="margin-top: 20px;"/>
             </div>
         </div>
+        <div id="footer">
+            <a href="https://github.com/comunica/comunica-packager">Source code</a>
+            <a href="https://github.com/comunica/comunica-packager/issues">Report a bug</a>
+        </div>
     </div>
 </template>
 
@@ -79,5 +83,25 @@
     }
     .column {
         flex: 50%;
+    }
+
+    #footer {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        text-align: center;
+        background-color: $comunica-dark-red;
+        height: 5vh;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        place-items: center;
+        grid-gap: 20px;
+        padding: 0 30%;
+    }
+
+    a {
+        text-decoration: none;
+        color: white;
     }
 </style>
