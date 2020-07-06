@@ -7,29 +7,15 @@ import {jsonldToState, stateToJsonld} from "~/utils/json";
 import _ from 'lodash';
 import * as jsonldParser from 'jsonld';
 
-const baseUrl = 'https://api.github.com/repos/comunica/comunica/contents/packages/';
-const baseSuffix = '?ref=master';
+
+const bUrl = 'https://linkedsoftwaredependencies.org/bundles/npm/@comunica/'
+const bContext = `${bUrl}runner/^1.0.0/components/context.jsonld`
 
 function getParentComponentUrl(extend: string): any {
 
-    if (extend === 'cc:Actor')
-        return `${baseUrl}core/components/Actor.jsonld${baseSuffix}`
-
-    const parts = extend.split(':');
-    const packageType = parts[0][1] === 'a' ? 'actor' : 'bus';
-    let componentParts = parts[1].split('/')[1].split(/(?=[A-Z])/);
-
-    // Special edge case where the standard rule does not apply
-    if (componentParts[1] === 'Media' && componentParts[2] === 'Typed') {
-        componentParts[1] += 'typed';
-        componentParts.splice(2, 1);
-    }
-
-    let busGroup: any = componentParts.splice(0, parts[0].substring(2).length);
-    busGroup = pascalCaseToKebabCase(busGroup.join(''));
-
-    return `${baseUrl}${packageType}-${busGroup}/components/Actor/${extend.split('/')[1]}.jsonld${baseSuffix}`
-
+    let urlParts = extend.split('/');
+    urlParts.splice(7, 0, '^1.0.0', 'components');
+    return urlParts.join('/') + '.jsonld';
 }
 
 function handleDefault(range: any, defaultValue: any) {
@@ -74,7 +60,7 @@ function getDefaultState() {
         createdMediators: [],
         loggers: [],
         buses: [],
-        context: new Set(["https://linkedsoftwaredependencies.org/bundles/npm/@comunica/runner/^1.0.0/components/context.jsonld"])
+        context: new Set([bContext])
     }
 }
 
@@ -173,7 +159,7 @@ export const mutations = {
     },
 
     resetState(state: any) {
-        state.context = new Set(["https://linkedsoftwaredependencies.org/bundles/npm/@comunica/runner/^1.0.0/components/context.jsonld"]);
+        state.context = new Set([bContext]);
         state.createdMediators = [];
         Object.keys(state.createdActors).forEach(key => {
             state.createdActors[key] = [];
@@ -190,31 +176,31 @@ export const actions = {
     async addActor(context: any, payload: any) {
 
         const actorName = pascalCaseToKebabCase(payload.actorName);
-        const componentsConfig = await (this as any).$axios.$get(`${baseUrl}${actorName}/components/components.jsonld${baseSuffix}`);
-        const componentsConfigContent = JSON.parse(atob(componentsConfig.content));
-        const actorConfigUrlParts = componentsConfigContent.import[0].split('/');
-        actorConfigUrlParts.shift();
-        const actorConfig = await (this as any).$axios.$get(
-            `${baseUrl}${actorName}/components/${actorConfigUrlParts.join('/')}${baseSuffix}`
-        );
-        const actorConfigContent = JSON.parse(atob(actorConfig.content));
-        console.log(await jsonldParser.expand(actorConfigContent));
-        context.commit('addToContext', actorConfigContent['@context']);
-        let componentContent = actorConfigContent.components[0];
+        const componentsConfig = await (this as any).$axios.$get(`${bUrl}${actorName}/^1.0.0/components/components.jsonld`);
+        const componentsConfigExpanded : any = await jsonldParser.expand(componentsConfig);
+        const actorConfig = await (this as any).$axios.$get(componentsConfigExpanded[0]['http://www.w3.org/2002/07/owl#imports'][0]['@id'])
+
+        let componentContent = actorConfig.components[0];
         let parameters = [];
 
         if (componentContent.parameters)
             parameters.push(...componentContent.parameters);
 
+        let atContext = actorConfig['@context'];
+
         while (componentContent.extends) {
             const parentComponents = Array.isArray(componentContent.extends) ? componentContent.extends : [componentContent.extends];
-            for (const p of parentComponents) {
-                const componentUrl = getParentComponentUrl(p);
-                const component = await (this as any).$axios.$get(componentUrl);
-                componentContent = JSON.parse(atob(component.content)).components[0];
-                if (componentContent.parameters) {
+            const expansion : any = await jsonldParser.expand({
+                '@context': atContext,
+                'extends': parentComponents,
+            });
+            for (const p of expansion[0]['http://www.w3.org/2000/01/rdf-schema#subClassOf']) {
+                const componentURL = getParentComponentUrl(p['@id']);
+                let componentContentRaw = (await (this as any).$axios.$get(componentURL));
+                atContext = componentContentRaw['@context'];
+                componentContent = componentContentRaw.components[0]
+                if (componentContent.parameters)
                     parameters.push(...componentContent.parameters);
-                }
             }
         }
 
