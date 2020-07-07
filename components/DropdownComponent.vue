@@ -21,9 +21,9 @@
             class="select">
         <option value="" disabled selected hidden>{{placeholder}}</option>
         <option v-for="option in options"
-                :key="option"
-                :value="option">
-            {{option}}
+                :key="option.fullName ? option.fullName : option"
+                :value="option.fullName ? option.fullName : option">
+            {{option.name ? option.name : option}}
         </option>
     </select>
 </template>
@@ -62,7 +62,6 @@
 
     .select {
         display: block;
-        font-size: 16px;
         color: white;
         line-height: 1.3;
         padding: .6em 1.4em .5em .8em;
@@ -85,6 +84,10 @@
     .select:focus {
         color: white;
         outline: none;
+    }
+
+    option {
+        font-size: max(1vmin, 11pt);
     }
 
 </style>

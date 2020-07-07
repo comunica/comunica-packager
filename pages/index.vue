@@ -1,16 +1,19 @@
 <template>
     <div id="container">
         <div id="header">
-            <img id="logo" src="comunica_white.svg"/>
-            <FileInputComponent text="Import" @click="onNew"/>
-            <ButtonComponent text="Export" @click="onGenerateEngine"/>
-            <ButtonComponent text="Reset" @click="onResetEngine"/>
+            <LogoComponent/>
+            <div id="buttons">
+                <FileInputComponent text="Import" @click="onNew"/>
+                <ButtonComponent text="Export" @click="onGenerateEngine"/>
+                <ButtonComponent text="Reset" @click="onResetEngine"/>
+            </div>
         </div>
         <div id="content">
             <div class="column" style="margin-right: 10px;" v-if="busGroups">
                 <p class="text-large">Actor</p>
                 <ActorsComponent style="margin-top: 20px;"/>
             </div>
+            <hr style="height:2px;border-width:0;color:gray;background-color:white;border-radius:2px">
             <div class="column" style="margin-left: 10px;">
                 <p class="text-large">Mediators</p>
                 <MediatorComponent style="margin-top: 20px;"/>
@@ -37,9 +40,11 @@
     import MediatorComponent from "../components/MediatorsComponent";
     import ActorsComponent from "../components/ActorsComponent";
     import FileInputComponent from "../components/FileInputComponent";
+    import LogoComponent from "../components/LogoComponent";
 
     export default {
         components: {
+            LogoComponent,
             FileInputComponent,
             ActorsComponent,
             MediatorComponent,
@@ -70,26 +75,48 @@
 </script>
 
 <style scoped lang="scss">
+
     #container {
         height: 100%;
     }
+
     #header {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        place-content: center;
-        place-items: center;
-        margin: 0 10%;
+        background-color: $comunica-dark-red;
+        display: flex;
+        justify-content: space-between;
+        padding: 20px 20px;
+        border-radius: 0 0 15px 15px;
     }
+
+    #buttons {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        place-items: center;
+        grid-gap: 10px;
+    }
+
     #logo {
         max-width: 130px;
         max-height: 185px;
     }
+
     #content {
         display: flex;
-        margin: 10% 0;
+        margin: 5% 0;
     }
+
     .column {
-        flex: 50%;
+        margin: 0 10px;
+    }
+
+    @media screen and (max-width: 900px) {
+        #content {
+            flex-direction: column;
+        }
+
+        .column {
+            margin: 10px 0 !important;
+        }
     }
 
     #footer {
@@ -104,7 +131,7 @@
         grid-template-columns: 1fr 1fr;
         place-items: center;
         grid-gap: 20px;
-        padding: 0 30%;
+        padding: 0 25%;
     }
 
     a {

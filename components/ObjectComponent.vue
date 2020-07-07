@@ -1,70 +1,74 @@
 <template>
     <div id="object">
         <div id="object-header">
-            <h3 style="align-self: center;">
-                {{objectName.split('/').pop()}}
-            </h3>
-            <DeleteButtonComponent
+            <p class="text-medium" style="align-self: center;">{{objectName}}</p>
+            <IconButtonComponent
+                @click="close = !close"
+                style="justify-self: end;"
+                icon-tag="mdi-tune"
+            />
+            <IconButtonComponent
                     @click="$emit('click', id)"
                     style="justify-self: end;"
+                    icon-tag="mdi-close-circle"
             />
         </div>
-        <div id="id-input">
-            <h4 style="align-self: center;">@id</h4>
-            <input
-                :value="id"
-                @change="onIDChange($event.target.value)"
-                class="input id-input"
-                type="text"
-            >
-        </div>
-
-        <div id="parameters">
-            <div v-for="parameter in parameters" :key="parameter['@id']" class="parameter">
-                <p style="align-self: center;"><v-icon small color="#fff">mdi-tune</v-icon></p>
-                <p class="parameter-text">{{trimIdentifier(parameter['@id'])}} {{parameter.required ? '*' : ''}}</p>
-                <DropdownComponent
-                    v-if="trimIdentifier(parameter['@id']).startsWith('mediator')"
-                    :value="parameter.value"
-                    @input="x => $emit('param', x, id, parameter['@id'])"
-                    placeholder="Choose mediator"
-                    :options="mediators"
-                />
-                <DropdownComponent
-                    v-else-if="parameter.range === 'cc:Bus'"
-                    :value="parameter.value"
-                    @input="x => $emit('param', x, id, parameter['@id'])"
-                    placeholder="Choose bus"
-                    :options="buses"
-                />
-                <DropdownComponent
-                    v-else-if="parameter.range === 'cc:Logger'"
-                    :value="parameter.value"
-                    @input="x => $emit('param', x, id, parameter['@id'])"
-                    placeholder="Choose logger"
-                    :options="loggers"
-                />
+        <div id="variables" v-if="!close">
+            <div id="id-input">
+                <p class="text-small" style="align-self: center;">@id</p>
                 <input
-                    v-else
-                    :value="parameter.value"
-                    @change="$emit('param', $event.target.value, id, parameter['@id'])"
-                    class="input parameter-input"
-                    type="text"
+                        :value="id"
+                        @change="onIDChange($event.target.value)"
+                        class="input id-input"
+                        type="text"
                 >
             </div>
+            <div id="parameters">
+                <div v-for="parameter in parameters" :key="parameter['@id']" class="parameter">
+                    <p class="parameter-text text-small" v-if="parameter.required"><b>{{trimIdentifier(parameter['@id'])}}</b></p>
+                    <p class="parameter-text text-small" v-else><i>{{trimIdentifier(parameter['@id'])}}</i></p>
+                    <DropdownComponent
+                            v-if="trimIdentifier(parameter['@id']).startsWith('mediator')"
+                            :value="parameter.value"
+                            @input="x => $emit('param', x, id, parameter['@id'])"
+                            placeholder="Choose mediator"
+                            :options="mediators"
+                    />
+                    <DropdownComponent
+                            v-else-if="parameter.range === 'cc:Bus'"
+                            :value="parameter.value"
+                            @input="x => $emit('param', x, id, parameter['@id'])"
+                            placeholder="Choose bus"
+                            :options="buses"
+                    />
+                    <DropdownComponent
+                            v-else-if="parameter.range === 'cc:Logger'"
+                            :value="parameter.value"
+                            @input="x => $emit('param', x, id, parameter['@id'])"
+                            placeholder="Choose logger"
+                            :options="loggers"
+                    />
+                    <input
+                            v-else
+                            :value="parameter.value"
+                            @change="$emit('param', $event.target.value, id, parameter['@id'])"
+                            class="input parameter-input"
+                            type="text"
+                    >
+                </div>
+            </div>
         </div>
-
     </div>
-
 </template>
 
 <script>
-    import DeleteButtonComponent from "./DeleteButtonComponent";
+    import DeleteButtonComponent from "./IconButtonComponent";
     import DropdownComponent from "./DropdownComponent";
-    import {trimIdentifier} from "../utils/alpha";
+    import {extractLabel, trimIdentifier} from "../utils/alpha";
+    import IconButtonComponent from "./IconButtonComponent";
     export default {
         name: "ObjectComponent",
-        components: {DropdownComponent, DeleteButtonComponent},
+        components: {IconButtonComponent, DropdownComponent, DeleteButtonComponent},
         props: {
             objectName: {
                 type: String,
@@ -85,7 +89,8 @@
         },
         data() {
             return {
-                objectParameters: this.parameters
+                objectParameters: this.parameters,
+                close: true
             }
         },
         methods: {
@@ -106,7 +111,10 @@
                 return this.$store.state.loggers;
             },
             buses() {
-                return this.$store.state.buses;
+                return this.$store.state.buses.map(p => ({
+                    fullName: p,
+                    name: extractLabel(p)
+                }));
             }
         }
     }
@@ -123,7 +131,7 @@
 
     #object-header {
         display: grid;
-        grid-template-columns: 10fr 1fr;
+        grid-template-columns: 10fr 1fr 1fr;
         padding: 0 7px;
     }
 
@@ -140,7 +148,7 @@
 
     .parameter {
         display: grid;
-        grid-template-columns: 1fr 6fr 7fr;
+        grid-template-columns: 6fr 7fr;
         column-gap: 5px;
         padding: 7px;
     }
@@ -157,6 +165,7 @@
         width: 100%;
         max-width: 100%;
         padding: .6em 1.4em .5em .6em;
+        font-size: max(1vmin, 11pt);
     }
 
     .id-input {

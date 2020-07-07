@@ -1,6 +1,6 @@
 <template>
     <div style="margin-top: 20px;">
-        <h3><strong>{{busGroup}}</strong></h3>
+        <p class="text-medium">{{busGroup}}</p>
         <div class="box">
             <ObjectComponent
                 v-for="actor in addedActors"
@@ -18,7 +18,7 @@
 
 <script>
     import ButtonComponent from "~/components/ButtonComponent.vue";
-    import DeleteButtonComponent from "./DeleteButtonComponent";
+    import DeleteButtonComponent from "./IconButtonComponent";
     import ObjectComponent from "./ObjectComponent";
     import DropdownComponent from "./DropdownComponent";
 
