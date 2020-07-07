@@ -2,9 +2,11 @@
     <div id="container">
         <div id="header">
             <LogoComponent/>
-            <FileInputComponent text="Import" @click="onNew"/>
-            <ButtonComponent text="Export" @click="onGenerateEngine"/>
-            <ButtonComponent text="Reset" @click="onResetEngine"/>
+            <div id="buttons">
+                <FileInputComponent text="Import" @click="onNew"/>
+                <ButtonComponent text="Export" @click="onGenerateEngine"/>
+                <ButtonComponent text="Reset" @click="onResetEngine"/>
+            </div>
         </div>
         <div id="content">
             <div class="column" style="margin-right: 10px;" v-if="busGroups">
@@ -77,13 +79,16 @@
     }
     #header {
         background-color: $comunica-dark-red;
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        place-content: center;
-        place-items: center;
-        margin: 0 15%;
-        padding: 20px 0;
+        display: flex;
+        justify-content: space-between;
+        padding: 20px 20px;
         border-radius: 0 0 15px 15px;
+    }
+    #buttons {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        place-items: center;
+        grid-gap: 10px;
     }
     #logo {
         max-width: 130px;
@@ -91,7 +96,7 @@
     }
     #content {
         display: flex;
-        margin: 10% 0;
+        margin: 5% 0;
     }
     .column {
         flex: 50%;
