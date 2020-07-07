@@ -25,7 +25,8 @@
             </div>
             <div id="parameters">
                 <div v-for="parameter in parameters" :key="parameter['@id']" class="parameter">
-                    <p class="parameter-text text-small">{{trimIdentifier(parameter['@id'])}} {{parameter.required ? '*' : ''}}</p>
+                    <p class="parameter-text text-small" v-if="parameter.required"><b>{{trimIdentifier(parameter['@id'])}}</b></p>
+                    <p class="parameter-text text-small" v-else><i>{{trimIdentifier(parameter['@id'])}}</i></p>
                     <DropdownComponent
                             v-if="trimIdentifier(parameter['@id']).startsWith('mediator')"
                             :value="parameter.value"
