@@ -21,9 +21,9 @@
             class="select">
         <option value="" disabled selected hidden>{{placeholder}}</option>
         <option v-for="option in options"
-                :key="option"
-                :value="option">
-            {{option}}
+                :key="option.fullName ? option.fullName : option"
+                :value="option.fullName ? option.fullName : option">
+            {{option.name ? option.name : option}}
         </option>
     </select>
 </template>

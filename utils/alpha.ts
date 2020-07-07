@@ -14,3 +14,9 @@ export function trimIdentifier(s: string): string {
     }
     return s;
 }
+
+export function extractLabel(s: string): string {
+    const t = s.split(':');
+    t.shift();
+    return t.join('').split('/').join('');
+}

@@ -10,7 +10,7 @@
         </div>
         <ObjectComponent
             v-for="mediator in createdMediators"
-            :object-name="mediator.type"
+            :object-name="mediator.name"
             :id="mediator['@id']"
             :parameters="mediator.parameters"
             @click="onDelete(mediator['@id'])"
@@ -24,6 +24,7 @@
     import DropdownComponent from "./DropdownComponent";
     import ButtonComponent from "./ButtonComponent";
     import ObjectComponent from "./ObjectComponent";
+    import {extractLabel} from "../utils/alpha";
 
     export default {
         name: "MediatorsComponent",
@@ -36,7 +37,10 @@
                 return this.$store.state.mediators;
             },
             mediatorTypes() {
-                return this.mediators.map(p => p.name);
+                return this.mediators.map(p => ({
+                    fullName: p.name,
+                    name: extractLabel(p.name)
+                }));
             },
             createdMediators() {
                 return this.$store.state.createdMediators;
@@ -50,6 +54,7 @@
                     type: this.selectedMediator,
                     '@id': `${this.selectedMediator}#${this.createdMediators.length}`,
                     parameters: selectedMediatorType.parameters,
+                    name: extractLabel(this.selectedMediator)
                 });
                 this.$store.commit('addToContext', selectedMediatorType.context);
             },

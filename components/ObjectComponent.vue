@@ -61,7 +61,7 @@
 <script>
     import DeleteButtonComponent from "./DeleteButtonComponent";
     import DropdownComponent from "./DropdownComponent";
-    import {trimIdentifier} from "../utils/alpha";
+    import {extractLabel, trimIdentifier} from "../utils/alpha";
     export default {
         name: "ObjectComponent",
         components: {DropdownComponent, DeleteButtonComponent},
@@ -106,7 +106,10 @@
                 return this.$store.state.loggers;
             },
             buses() {
-                return this.$store.state.buses;
+                return this.$store.state.buses.map(p => ({
+                    fullName: p,
+                    name: extractLabel(p)
+                }));
             }
         }
     }
