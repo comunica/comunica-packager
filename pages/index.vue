@@ -3,10 +3,17 @@
         <div id="header">
             <LogoComponent/>
             <div id="buttons">
-                <FileInputComponent text="Import" @click="onNew"/>
-                <ButtonComponent text="Export" @click="onGenerateEngine"/>
-                <ButtonComponent text="Reset" @click="onResetEngine"/>
+                <ButtonComponent text="Import" @click="presets"/>
+                <ButtonComponent text="Export" @click="onExport"/>
+                <FileInputComponent text="Upload" @click="onUpload"/>
+                <ButtonComponent text="Reset" @click="onReset"/>
             </div>
+        </div>
+        <div v-if="imp" id="preset-selector" class="dropdown-layout">
+<!--            <DropdownComponent-->
+<!--                v-model=""-->
+<!--            />-->
+            <ButtonComponent :disabled="!presetActor" :is-small="true" text="Import" @click="onImport"/>
         </div>
         <div id="content">
             <div class="column" style="margin-right: 10px;" v-if="busGroups">
@@ -41,9 +48,11 @@
     import ActorsComponent from "../components/ActorsComponent";
     import FileInputComponent from "../components/FileInputComponent";
     import LogoComponent from "../components/LogoComponent";
+    import DropdownComponent from "../components/DropdownComponent";
 
     export default {
         components: {
+            DropdownComponent,
             LogoComponent,
             FileInputComponent,
             ActorsComponent,
@@ -53,7 +62,10 @@
         },
         middleware: ['packages'],
         data () {
-            return {}
+            return {
+                presetActor: undefined,
+                imp: false
+            }
         },
         computed: {
             busGroups() {
@@ -61,14 +73,20 @@
             },
         },
         methods: {
-            onNew(file) {
+            onUpload(file) {
                 this.$store.dispatch('uploadZip', file);
             },
-            onGenerateEngine() {
+            onImport() {
+                this.presetDialog = true;
+            },
+            onExport() {
                 this.$store.dispatch('downloadZip');
             },
-            onResetEngine() {
+            onReset() {
                 this.$store.commit('resetState');
+            },
+            presets() {
+                return this.$axios.$get('/comunica-packager/presets.json');
             }
         }
     }
@@ -90,7 +108,7 @@
 
     #buttons {
         display: grid;
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(4, 1fr);
         place-items: center;
         grid-gap: 10px;
     }
