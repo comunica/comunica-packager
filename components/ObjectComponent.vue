@@ -1,16 +1,14 @@
 <template>
     <div id="object">
         <div id="object-header">
-            <h3 style="align-self: center;">
-                {{objectName.split('/').pop()}}
-            </h3>
+            <p class="text-medium" style="align-self: center;">{{objectName}}</p>
             <DeleteButtonComponent
                     @click="$emit('click', id)"
                     style="justify-self: end;"
             />
         </div>
         <div id="id-input">
-            <h4 style="align-self: center;">@id</h4>
+            <p class="text-small" style="align-self: center;">@id</p>
             <input
                 :value="id"
                 @change="onIDChange($event.target.value)"
@@ -21,8 +19,7 @@
 
         <div id="parameters">
             <div v-for="parameter in parameters" :key="parameter['@id']" class="parameter">
-                <p style="align-self: center;"><v-icon small color="#fff">mdi-tune</v-icon></p>
-                <p class="parameter-text">{{trimIdentifier(parameter['@id'])}} {{parameter.required ? '*' : ''}}</p>
+                <p class="parameter-text text-small">{{trimIdentifier(parameter['@id'])}} {{parameter.required ? '*' : ''}}</p>
                 <DropdownComponent
                     v-if="trimIdentifier(parameter['@id']).startsWith('mediator')"
                     :value="parameter.value"
@@ -143,7 +140,7 @@
 
     .parameter {
         display: grid;
-        grid-template-columns: 1fr 6fr 7fr;
+        grid-template-columns: 6fr 7fr;
         column-gap: 5px;
         padding: 7px;
     }
@@ -160,6 +157,7 @@
         width: 100%;
         max-width: 100%;
         padding: .6em 1.4em .5em .6em;
+        font-size: max(1vmin, 11pt);
     }
 
     .id-input {

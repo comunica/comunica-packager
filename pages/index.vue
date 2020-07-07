@@ -13,6 +13,7 @@
                 <p class="text-large">Actor</p>
                 <ActorsComponent style="margin-top: 20px;"/>
             </div>
+            <hr style="height:2px;border-width:0;color:gray;background-color:white;border-radius:2px">
             <div class="column" style="margin-left: 10px;">
                 <p class="text-large">Mediators</p>
                 <MediatorComponent style="margin-top: 20px;"/>
@@ -74,9 +75,11 @@
 </script>
 
 <style scoped lang="scss">
+
     #container {
         height: 100%;
     }
+
     #header {
         background-color: $comunica-dark-red;
         display: flex;
@@ -84,22 +87,36 @@
         padding: 20px 20px;
         border-radius: 0 0 15px 15px;
     }
+
     #buttons {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
         place-items: center;
         grid-gap: 10px;
     }
+
     #logo {
         max-width: 130px;
         max-height: 185px;
     }
+
     #content {
         display: flex;
         margin: 5% 0;
     }
+
     .column {
-        flex: 50%;
+        margin: 0 10px;
+    }
+
+    @media screen and (max-width: 900px) {
+        #content {
+            flex-direction: column;
+        }
+
+        .column {
+            margin: 10px 0 !important;
+        }
     }
 
     #footer {
@@ -114,7 +131,7 @@
         grid-template-columns: 1fr 1fr;
         place-items: center;
         grid-gap: 20px;
-        padding: 0 30%;
+        padding: 0 25%;
     }
 
     a {
