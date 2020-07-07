@@ -18,7 +18,7 @@
 
 <script>
     import ButtonComponent from "~/components/ButtonComponent.vue";
-    import DeleteButtonComponent from "./DeleteButtonComponent";
+    import DeleteButtonComponent from "./IconButtonComponent";
     import ObjectComponent from "./ObjectComponent";
     import DropdownComponent from "./DropdownComponent";
 

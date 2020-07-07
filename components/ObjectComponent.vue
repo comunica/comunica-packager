@@ -2,66 +2,72 @@
     <div id="object">
         <div id="object-header">
             <p class="text-medium" style="align-self: center;">{{objectName}}</p>
-            <DeleteButtonComponent
+            <IconButtonComponent
+                @click="close = !close"
+                style="justify-self: end;"
+                icon-tag="mdi-tune"
+            />
+            <IconButtonComponent
                     @click="$emit('click', id)"
                     style="justify-self: end;"
+                    icon-tag="mdi-close-circle"
             />
         </div>
-        <div id="id-input">
-            <p class="text-small" style="align-self: center;">@id</p>
-            <input
-                :value="id"
-                @change="onIDChange($event.target.value)"
-                class="input id-input"
-                type="text"
-            >
-        </div>
-
-        <div id="parameters">
-            <div v-for="parameter in parameters" :key="parameter['@id']" class="parameter">
-                <p class="parameter-text text-small">{{trimIdentifier(parameter['@id'])}} {{parameter.required ? '*' : ''}}</p>
-                <DropdownComponent
-                    v-if="trimIdentifier(parameter['@id']).startsWith('mediator')"
-                    :value="parameter.value"
-                    @input="x => $emit('param', x, id, parameter['@id'])"
-                    placeholder="Choose mediator"
-                    :options="mediators"
-                />
-                <DropdownComponent
-                    v-else-if="parameter.range === 'cc:Bus'"
-                    :value="parameter.value"
-                    @input="x => $emit('param', x, id, parameter['@id'])"
-                    placeholder="Choose bus"
-                    :options="buses"
-                />
-                <DropdownComponent
-                    v-else-if="parameter.range === 'cc:Logger'"
-                    :value="parameter.value"
-                    @input="x => $emit('param', x, id, parameter['@id'])"
-                    placeholder="Choose logger"
-                    :options="loggers"
-                />
+        <div id="variables" v-if="!close">
+            <div id="id-input">
+                <p class="text-small" style="align-self: center;">@id</p>
                 <input
-                    v-else
-                    :value="parameter.value"
-                    @change="$emit('param', $event.target.value, id, parameter['@id'])"
-                    class="input parameter-input"
-                    type="text"
+                        :value="id"
+                        @change="onIDChange($event.target.value)"
+                        class="input id-input"
+                        type="text"
                 >
             </div>
+            <div id="parameters">
+                <div v-for="parameter in parameters" :key="parameter['@id']" class="parameter">
+                    <p class="parameter-text text-small">{{trimIdentifier(parameter['@id'])}} {{parameter.required ? '*' : ''}}</p>
+                    <DropdownComponent
+                            v-if="trimIdentifier(parameter['@id']).startsWith('mediator')"
+                            :value="parameter.value"
+                            @input="x => $emit('param', x, id, parameter['@id'])"
+                            placeholder="Choose mediator"
+                            :options="mediators"
+                    />
+                    <DropdownComponent
+                            v-else-if="parameter.range === 'cc:Bus'"
+                            :value="parameter.value"
+                            @input="x => $emit('param', x, id, parameter['@id'])"
+                            placeholder="Choose bus"
+                            :options="buses"
+                    />
+                    <DropdownComponent
+                            v-else-if="parameter.range === 'cc:Logger'"
+                            :value="parameter.value"
+                            @input="x => $emit('param', x, id, parameter['@id'])"
+                            placeholder="Choose logger"
+                            :options="loggers"
+                    />
+                    <input
+                            v-else
+                            :value="parameter.value"
+                            @change="$emit('param', $event.target.value, id, parameter['@id'])"
+                            class="input parameter-input"
+                            type="text"
+                    >
+                </div>
+            </div>
         </div>
-
     </div>
-
 </template>
 
 <script>
-    import DeleteButtonComponent from "./DeleteButtonComponent";
+    import DeleteButtonComponent from "./IconButtonComponent";
     import DropdownComponent from "./DropdownComponent";
     import {extractLabel, trimIdentifier} from "../utils/alpha";
+    import IconButtonComponent from "./IconButtonComponent";
     export default {
         name: "ObjectComponent",
-        components: {DropdownComponent, DeleteButtonComponent},
+        components: {IconButtonComponent, DropdownComponent, DeleteButtonComponent},
         props: {
             objectName: {
                 type: String,
@@ -82,7 +88,8 @@
         },
         data() {
             return {
-                objectParameters: this.parameters
+                objectParameters: this.parameters,
+                close: true
             }
         },
         methods: {
@@ -123,7 +130,7 @@
 
     #object-header {
         display: grid;
-        grid-template-columns: 10fr 1fr;
+        grid-template-columns: 10fr 1fr 1fr;
         padding: 0 7px;
     }
 
