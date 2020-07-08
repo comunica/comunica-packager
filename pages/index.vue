@@ -3,17 +3,19 @@
         <div id="header">
             <LogoComponent/>
             <div id="buttons">
-                <ButtonComponent text="Import" @click="presets"/>
+                <ButtonComponent text="Import" @click="imp = true"/>
                 <ButtonComponent text="Export" @click="onExport"/>
                 <FileInputComponent text="Upload" @click="onUpload"/>
                 <ButtonComponent text="Reset" @click="onReset"/>
             </div>
         </div>
         <div v-if="imp" id="preset-selector" class="dropdown-layout">
-<!--            <DropdownComponent-->
-<!--                v-model=""-->
-<!--            />-->
-            <ButtonComponent :disabled="!presetActor" :is-small="true" text="Import" @click="onImport"/>
+            <DropdownComponent
+                v-model="actorLink"
+                :options="presets"
+                placeholder="Choose preset"
+            />
+            <ButtonComponent :disabled="!actorLink" :is-small="true" text="Import" @click="onImport"/>
         </div>
         <div id="content">
             <div class="column" style="margin-right: 10px;" v-if="busGroups">
@@ -63,31 +65,41 @@
         middleware: ['packages'],
         data () {
             return {
-                presetActor: undefined,
-                imp: false
+                actorLink: undefined,
+                imp: false,
+                presets: [],
             }
         },
         computed: {
             busGroups() {
                 return this.$store.state.busGroups;
-            },
+            }
         },
         methods: {
             onUpload(file) {
                 this.$store.dispatch('uploadZip', file);
             },
             onImport() {
-                this.presetDialog = true;
+                console.log(this.actorLink);
+                this.imp = false;
             },
             onExport() {
                 this.$store.dispatch('downloadZip');
             },
             onReset() {
                 this.$store.commit('resetState');
-            },
-            presets() {
-                return this.$axios.$get('/comunica-packager/presets.json');
             }
+        },
+        async asyncData(context) {
+            const rawPresets = await context.$axios.$get('/comunica-packager/presets.json');
+            return {
+                presets: Object.keys(rawPresets).map(a => {
+                    return {
+                        name: a,
+                        fullName: rawPresets[a]
+                    };
+                })
+            };
         }
     }
 </script>
