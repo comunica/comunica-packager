@@ -1,5 +1,6 @@
 import {kebabCaseToPascalCase} from "~/utils/alpha";
 import * as jsonldParser from 'jsonld';
+import {getExpandedIRI} from "~/utils/json";
 
 interface Context {
     $axios: any,
@@ -72,6 +73,11 @@ export default async ({$axios, store}: Context) => {
             for (let p of parameters)
                 if (p.hasOwnProperty('default'))
                     p.value = p.default;
+
+            for (const p of parameters) {
+                console.log(await getExpandedIRI(mediatorJson['@context'], p['@id']));
+
+            }
 
             mediatorsList.push({
                 context: mediatorJson['@context'],

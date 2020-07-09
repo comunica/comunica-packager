@@ -51,6 +51,7 @@
     import FileInputComponent from "../components/FileInputComponent";
     import LogoComponent from "../components/LogoComponent";
     import DropdownComponent from "../components/DropdownComponent";
+    import * as jsonldParser from "jsonld";
 
     export default {
         components: {
@@ -79,8 +80,13 @@
             onUpload(file) {
                 this.$store.dispatch('uploadZip', file);
             },
-            onImport() {
-                console.log(this.actorLink);
+            async onImport() {
+                const data = await this.$axios.$get(this.actorLink);
+                const dataExpanded = await jsonldParser.expand(data);
+                for (const d of dataExpanded[0]['http://www.w3.org/2002/07/owl#imports']) {
+                    const i = await this.$axios.$get(d['@id']);
+                    console.log(await jsonldParser.expand(i));
+                }
                 this.imp = false;
             },
             onExport() {

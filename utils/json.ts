@@ -1,4 +1,5 @@
 import {trimIdentifier} from "~/utils/alpha";
+import * as jsonldParser from 'jsonld';
 
 export function stateToJsonld(state: any) {
     let addedActors: any = [];
@@ -115,4 +116,13 @@ export function jsonldToState(jsonld: any) {
         mediators: mediators,
         context: jsonld['@context']
     }
+}
+
+export async function getExpandedIRI(context: any, compactIRI: string) {
+    const jsonld : any = {
+        '@context': context,
+    };
+    jsonld[compactIRI] = compactIRI;
+    const parsed = await jsonldParser.expand(jsonld);
+    return Object.keys(parsed[0])[0];
 }
