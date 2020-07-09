@@ -1,6 +1,7 @@
 import {kebabCaseToPascalCase} from "~/utils/alpha";
 import * as jsonldParser from 'jsonld';
 import {getExpandedIRI} from "~/utils/json";
+import {ContextParser, FetchDocumentLoader} from "jsonld-context-parser";
 
 interface Context {
     $axios: any,
@@ -13,7 +14,7 @@ interface Package {
     url: string,
 }
 
-const bUrl = 'https://linkedsoftwaredependencies.org/bundles/npm/@comunica/'
+const baseURL = 'https://linkedsoftwaredependencies.org/bundles/npm/@comunica/'
 
 export default async ({$axios, store}: Context) => {
 
@@ -24,6 +25,7 @@ export default async ({$axios, store}: Context) => {
     const mediatorPackages = packageNames.filter((p: string) => p.startsWith('mediator-'));
     const loggerPackages = packageNames.filter((p: string) => p.startsWith('logger-'));
 
+    // TODO: optimizations
     // Every mediator has a bus parameter
     const mediatorSuperParameter = {
         "@id": "cc:Mediator/bus",
@@ -54,8 +56,9 @@ export default async ({$axios, store}: Context) => {
 
     const mediatorsList = [];
 
+
     for (const m of mediatorPackages) {
-        const mediatorComponents : any = await $axios.$get(`${bUrl}/${m}/^1.0.0/components/components.jsonld`);
+        const mediatorComponents : any = await $axios.$get(`${baseURL}/${m}/^1.0.0/components/components.jsonld`);
         const mediatorComponentsExpanded : any = await jsonldParser.expand(mediatorComponents);
         for (const mediatorURL of mediatorComponentsExpanded[0]['http://www.w3.org/2002/07/owl#imports']) {
 

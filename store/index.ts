@@ -9,7 +9,7 @@ import * as jsonldParser from 'jsonld';
 
 
 const baseUrl = 'https://linkedsoftwaredependencies.org/bundles/npm/@comunica/';
-const baseContext = [`${baseUrl}runner/^1.0.0/components/context.jsonld`, `${baseUrl}core/^1.0.0/components/context.jsonld`];
+const baseContext = [`${baseUrl}runner/^1.0.0/components/context.jsonld`];
 
 function getParentComponentUrl(extend: string): any {
     let urlParts = extend.split('/');
@@ -36,8 +36,6 @@ function handleDefault(range: any, defaultValue: any) {
 
 function mergeDuplicateKeys(o: any, key: string) {
     let i = 0;
-
-    console.log(o);
 
     while (o[i]['@id'] !== key)
         i++;
@@ -187,35 +185,28 @@ export const actions = {
 
         context.commit('addToContext', atContext);
         if (componentContent.parameters) {
-            for (const p of componentContent.parameters) {
-                p['@id'] = await getExpandedIRI(atContext, p['@id']);
-            }
             parameters.push(...componentContent.parameters);
         }
 
         while (componentContent.extends) {
             const parentComponents = Array.isArray(componentContent.extends) ? componentContent.extends : [componentContent.extends];
-            const expansion : any = await jsonldParser.expand({
-                '@context': atContext,
-                'extends': parentComponents,
-            });
-            for (const p of expansion[0]['http://www.w3.org/2000/01/rdf-schema#subClassOf']) {
-                const componentURL = getParentComponentUrl(p['@id']);
+            for (const p of parentComponents) {
+                //@ts-ignore
+                const componentURL = getParentComponentUrl(await getExpandedIRI(atContext, p));
                 let componentContentRaw = (await (this as any).$axios.$get(componentURL));
-                atContext = componentContentRaw['@context'];
                 componentContent = componentContentRaw.components[0];
-                context.commit('addToContext', atContext);
                 if (componentContent.parameters) {
-                    for (const p of componentContent.parameters) {
-                        p['@id'] = await getExpandedIRI(atContext, p['@id']);
-                    }
                     parameters.push(...componentContent.parameters);
                 }
             }
         }
 
-        // TODO: check if only one parse for all parameters is faster/more efficient than individual parses.
-        parameters = mergeDuplicateKeys(parameters, 'https://linkedsoftwaredependencies.org/bundles/npm/@comunica/core/Actor/bus');
+        parameters = mergeDuplicateKeys(parameters, 'cc:Actor/bus');
+        for (const p of parameters) {
+            console.log(p);
+            p['@id'] = await getExpandedIRI(atContext, p['@id']);
+            console.log(p);
+        }
 
         if (payload.parameters) {
             for (let p of parameters) {

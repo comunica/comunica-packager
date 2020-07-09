@@ -2,20 +2,22 @@
     <div id="container">
         <div id="header">
             <LogoComponent/>
-            <div id="buttons">
-                <ButtonComponent text="Import" @click="imp = true"/>
-                <ButtonComponent text="Export" @click="onExport"/>
-                <FileInputComponent text="Upload" @click="onUpload"/>
-                <ButtonComponent text="Reset" @click="onReset"/>
+            <div id="input">
+                <div id="buttons">
+                    <ButtonComponent text="Import" @click="imp = true"/>
+                    <ButtonComponent text="Export" @click="onExport"/>
+                    <FileInputComponent text="Upload" @click="onUpload"/>
+                    <ButtonComponent text="Reset" @click="onReset"/>
+                </div>
+                <div v-if="imp" id="preset-selector" class="dropdown-layout">
+                    <DropdownComponent
+                            v-model="actorLink"
+                            :options="presets"
+                            placeholder="Choose preset"
+                    />
+                    <ButtonComponent :disabled="!actorLink" :is-small="true" text="Import" @click="onImport"/>
+                </div>
             </div>
-        </div>
-        <div v-if="imp" id="preset-selector" class="dropdown-layout">
-            <DropdownComponent
-                v-model="actorLink"
-                :options="presets"
-                placeholder="Choose preset"
-            />
-            <ButtonComponent :disabled="!actorLink" :is-small="true" text="Import" @click="onImport"/>
         </div>
         <div id="content">
             <div class="column" style="margin-right: 10px;" v-if="busGroups">
@@ -52,6 +54,8 @@
     import LogoComponent from "../components/LogoComponent";
     import DropdownComponent from "../components/DropdownComponent";
     import * as jsonldParser from "jsonld";
+    import {extractJson} from "../utils/mapping";
+    import {getExpandedIRI} from "../utils/json";
 
     export default {
         components: {
@@ -81,11 +85,14 @@
                 this.$store.dispatch('uploadZip', file);
             },
             async onImport() {
+                console.log(await getExpandedIRI('https://linkedsoftwaredependencies.org/bundles/npm/%40comunica%2Fcore/1.13.0/components/context.jsonld', 'beforeActor'))
+                // First reset everything
+                this.$store.commit('resetState');
                 const data = await this.$axios.$get(this.actorLink);
                 const dataExpanded = await jsonldParser.expand(data);
                 for (const d of dataExpanded[0]['http://www.w3.org/2002/07/owl#imports']) {
                     const i = await this.$axios.$get(d['@id']);
-                    console.log(await jsonldParser.expand(i));
+                    await extractJson(i);
                 }
                 this.imp = false;
             },
