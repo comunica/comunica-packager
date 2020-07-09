@@ -74,10 +74,9 @@ export default async ({$axios, store}: Context) => {
                 if (p.hasOwnProperty('default'))
                     p.value = p.default;
 
-            for (const p of parameters) {
-                console.log(await getExpandedIRI(mediatorJson['@context'], p['@id']));
+            for (const p of parameters)
+                p['@id'] = await getExpandedIRI(mediatorJson['@context'], p['@id']);
 
-            }
 
             mediatorsList.push({
                 context: mediatorJson['@context'],

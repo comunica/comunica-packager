@@ -3,16 +3,15 @@ import Vue from 'vue';
 import {pascalCaseToKebabCase} from "~/utils/alpha";
 import JSZip from "jszip";
 import { saveAs } from 'file-saver';
-import {jsonldToState, stateToJsonld} from "~/utils/json";
+import {getExpandedIRI, jsonldToState, stateToJsonld} from "~/utils/json";
 import _ from 'lodash';
 import * as jsonldParser from 'jsonld';
 
 
-const bUrl = 'https://linkedsoftwaredependencies.org/bundles/npm/@comunica/'
-const bContext = `${bUrl}runner/^1.0.0/components/context.jsonld`
+const baseUrl = 'https://linkedsoftwaredependencies.org/bundles/npm/@comunica/';
+const baseContext = [`${baseUrl}runner/^1.0.0/components/context.jsonld`, `${baseUrl}core/^1.0.0/components/context.jsonld`];
 
 function getParentComponentUrl(extend: string): any {
-
     let urlParts = extend.split('/');
     urlParts.splice(7, 0, '^1.0.0', 'components');
     return urlParts.join('/') + '.jsonld';
@@ -38,6 +37,8 @@ function handleDefault(range: any, defaultValue: any) {
 function mergeDuplicateKeys(o: any, key: string) {
     let i = 0;
 
+    console.log(o);
+
     while (o[i]['@id'] !== key)
         i++;
 
@@ -60,7 +61,7 @@ function getDefaultState() {
         createdMediators: [],
         loggers: [],
         buses: [],
-        context: new Set([bContext])
+        context: new Set(baseContext)
     }
 }
 
@@ -159,7 +160,7 @@ export const mutations = {
     },
 
     resetState(state: any) {
-        state.context = new Set([bContext]);
+        state.context = new Set(baseContext);
         state.createdMediators = [];
         Object.keys(state.createdActors).forEach(key => {
             state.createdActors[key] = [];
@@ -176,17 +177,21 @@ export const actions = {
     async addActor(context: any, payload: any) {
 
         const actorName = pascalCaseToKebabCase(payload.actorName);
-        const componentsConfig = await (this as any).$axios.$get(`${bUrl}${actorName}/^1.0.0/components/components.jsonld`);
+        const componentsConfig = await (this as any).$axios.$get(`${baseUrl}${actorName}/^1.0.0/components/components.jsonld`);
         const componentsConfigExpanded : any = await jsonldParser.expand(componentsConfig);
         const actorConfig = await (this as any).$axios.$get(componentsConfigExpanded[0]['http://www.w3.org/2002/07/owl#imports'][0]['@id'])
 
         let componentContent = actorConfig.components[0];
         let parameters = [];
-
-        if (componentContent.parameters)
-            parameters.push(...componentContent.parameters);
-
         let atContext = actorConfig['@context'];
+
+        context.commit('addToContext', atContext);
+        if (componentContent.parameters) {
+            for (const p of componentContent.parameters) {
+                p['@id'] = await getExpandedIRI(atContext, p['@id']);
+            }
+            parameters.push(...componentContent.parameters);
+        }
 
         while (componentContent.extends) {
             const parentComponents = Array.isArray(componentContent.extends) ? componentContent.extends : [componentContent.extends];
@@ -198,13 +203,19 @@ export const actions = {
                 const componentURL = getParentComponentUrl(p['@id']);
                 let componentContentRaw = (await (this as any).$axios.$get(componentURL));
                 atContext = componentContentRaw['@context'];
-                componentContent = componentContentRaw.components[0]
-                if (componentContent.parameters)
+                componentContent = componentContentRaw.components[0];
+                context.commit('addToContext', atContext);
+                if (componentContent.parameters) {
+                    for (const p of componentContent.parameters) {
+                        p['@id'] = await getExpandedIRI(atContext, p['@id']);
+                    }
                     parameters.push(...componentContent.parameters);
+                }
             }
         }
 
-        parameters = mergeDuplicateKeys(parameters, 'cc:Actor/bus');
+        // TODO: check if only one parse for all parameters is faster/more efficient than individual parses.
+        parameters = mergeDuplicateKeys(parameters, 'https://linkedsoftwaredependencies.org/bundles/npm/@comunica/core/Actor/bus');
 
         if (payload.parameters) {
             for (let p of parameters) {
@@ -225,7 +236,6 @@ export const actions = {
                     parameters[i].value = handleDefault(p.range, p.defaultScoped.defaultScopedValue);
             }
         }
-
 
         const actor = {
             actorName: payload.actorName,
