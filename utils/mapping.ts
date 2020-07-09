@@ -5,6 +5,9 @@ export async function extractJson(json: any) {
     let mediators: any[] = [];
     let context = json['@context'];
 
+    console.log('-----');
+    console.log(json);
+
     if (json.hasOwnProperty('@graph')) {
         // Graph based jsonld's where the mediators are defined explicitly.
         let actorPart = json['@graph'][0];
@@ -13,7 +16,7 @@ export async function extractJson(json: any) {
         }
         if (json['@graph'].length > 1) {
             for (let i = 1; i < json['@graph'].length; i++) {
-                mediators.push(json['@graph'][i]);
+                await handleMediator(context, json['@graph'][i], mediators);
             }
         }
     } else {
@@ -23,7 +26,7 @@ export async function extractJson(json: any) {
         }
     }
 
-    console.log('-----');
+
     console.log(actors);
     console.log(mediators);
     console.log('-----');
@@ -35,7 +38,7 @@ export async function handleActor(context: any, actor: any, actors: any[], media
         if (key.includes('mediator')) {
             if (Object.keys(actor[key]).length > 1) {
                 // Handle implicitly defined mediators
-                mediators.push(actor[key]);
+                await handleMediator(context, actor[key], mediators);
             }
         }
         const x = await getExpandedIRI(context, key);
@@ -44,4 +47,15 @@ export async function handleActor(context: any, actor: any, actors: any[], media
     }
 
     actors.push(actorExtracted);
-} 
+}
+
+export async function handleMediator(context: any, mediator: any, mediators: any[]) {
+    let mediatorExtracted: any = {};
+    for (const key of Object.keys(mediator)) {
+        const x = await getExpandedIRI(context, key);
+        let iri = x ? x : key;
+        mediatorExtracted[iri] = mediator[key];
+    }
+
+    mediators.push(mediatorExtracted);
+}
