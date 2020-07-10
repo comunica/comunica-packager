@@ -1,6 +1,6 @@
 import {BusGroup} from "~/assets/interfaces";
 import Vue from 'vue';
-import {extractLabel, pascalCaseToKebabCase} from "~/utils/alpha";
+import {pascalCaseToKebabCase} from "~/utils/alpha";
 import JSZip from "jszip";
 import {saveAs} from 'file-saver';
 import {getExpandedIRI, jsonldToState, stateToJsonld} from "~/utils/json";
@@ -184,6 +184,28 @@ export const actions = {
         });
     },
 
+    mapMediatorToState({state, commit, dispatch}: any, p: any) {
+        dispatch('addMediator', {
+            mediator: p['@type'],
+            id: p['@id']
+        });
+
+        for (const parameter of Object.keys(p)) {
+            if (parameter !== '@id' && parameter !== '@type') {
+                commit('changeParameterValueOfMediator', {
+                    '@id': p['@id'],
+                    parameterName: parameter,
+                    value: parameter === 'https://linkedsoftwaredependencies.org/bundles/npm/@comunica/core/Mediator/bus' ?
+                        p[parameter]['@id'] : p[parameter]
+                });
+            }
+        }
+    },
+
+    async mapActorToState({state, commit, dispatch}: any, payload: any) {
+
+    },
+
     async addActor(context: any, payload: any) {
 
         const actorName = pascalCaseToKebabCase(payload.actorName);
@@ -257,6 +279,8 @@ export const actions = {
     },
 
     async uploadZip(context: any, file: any) {
+
+        // TODO: update
         let zip = new JSZip();
         zip.loadAsync(file).then(function(z) {
             zip.file('config.json').async('text').then(function(json) {
@@ -320,26 +344,14 @@ export const actions = {
             });
         });
 
-        console.log(mediatorsAll);
-        console.log(actorsAll);
-
-        mediatorsAll.forEach(p => {
-            dispatch('addMediator', {
-                mediator: p['@type'],
-                id: p['@id']
-            });
-
-            for (const parameter of Object.keys(p)) {
-                if (parameter !== '@id' && parameter !== '@type') {
-                    commit('changeParameterValueOfMediator', {
-                        '@id': p['@id'],
-                        parameterName: parameter,
-                        value: parameter === 'https://linkedsoftwaredependencies.org/bundles/npm/@comunica/core/Mediator/bus' ?
-                            p[parameter]['@id'] : p[parameter]
-                    });
-                }
-            }
+        mediatorsAll.forEach(m => {
+            dispatch('mapMediatorToState', m);
         });
+
+        actorsAll.forEach(a => {
+            dispatch('mapActorToState', a);
+        })
+
         console.log(performance.now() - t);
     }
 
