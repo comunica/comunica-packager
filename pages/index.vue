@@ -54,8 +54,7 @@
     import LogoComponent from "../components/LogoComponent";
     import DropdownComponent from "../components/DropdownComponent";
     import * as jsonldParser from "jsonld";
-    import {extractJson} from "../utils/mapping";
-    import {getExpandedIRI} from "../utils/json";
+    import {extractJson} from "../utils/jsonld";
 
     export default {
         components: {
@@ -85,15 +84,8 @@
                 this.$store.dispatch('uploadZip', file);
             },
             async onImport() {
-                console.log(await getExpandedIRI('https://linkedsoftwaredependencies.org/bundles/npm/%40comunica%2Fcore/1.13.0/components/context.jsonld', 'beforeActor'))
-                // First reset everything
-                this.$store.commit('resetState');
-                const data = await this.$axios.$get(this.actorLink);
-                const dataExpanded = await jsonldParser.expand(data);
-                for (const d of dataExpanded[0]['http://www.w3.org/2002/07/owl#imports']) {
-                    const i = await this.$axios.$get(d['@id']);
-                    await extractJson(i);
-                }
+                await this.$store.dispatch('importPreset', this.actorLink);
+
                 this.imp = false;
             },
             onExport() {

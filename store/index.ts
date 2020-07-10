@@ -1,11 +1,12 @@
 import {BusGroup} from "~/assets/interfaces";
 import Vue from 'vue';
-import {pascalCaseToKebabCase} from "~/utils/alpha";
+import {extractLabel, pascalCaseToKebabCase} from "~/utils/alpha";
 import JSZip from "jszip";
-import { saveAs } from 'file-saver';
+import {saveAs} from 'file-saver';
 import {getExpandedIRI, jsonldToState, stateToJsonld} from "~/utils/json";
 import _ from 'lodash';
 import * as jsonldParser from 'jsonld';
+import {extractJson} from "~/utils/jsonld";
 
 
 const baseUrl = 'https://linkedsoftwaredependencies.org/bundles/npm/@comunica/';
@@ -172,6 +173,18 @@ export const mutations = {
 
 export const actions = {
 
+    addMediator({state, commit}: any, mediator: any) {
+        const selectedMediatorType =  _.cloneDeep(state.mediators.find((m: any) => m.name === mediator));
+        commit('addToContext', selectedMediatorType.context);
+        commit('createNewMediator', {
+            type: mediator,
+            '@id': `${mediator}#${state.createdMediators.length}`,
+            parameters: selectedMediatorType.parameters,
+            name: extractLabel(mediator)
+        });
+
+    },
+
     async addActor(context: any, payload: any) {
 
         const actorName = pascalCaseToKebabCase(payload.actorName);
@@ -191,9 +204,8 @@ export const actions = {
         while (componentContent.extends) {
             const parentComponents = Array.isArray(componentContent.extends) ? componentContent.extends : [componentContent.extends];
             for (const p of parentComponents) {
-                //@ts-ignore
                 const componentURL = getParentComponentUrl(await getExpandedIRI(atContext, p));
-                let componentContentRaw = (await (this as any).$axios.$get(componentURL));
+                let componentContentRaw = await (this as any).$axios.$get(componentURL);
                 componentContent = componentContentRaw.components[0];
                 if (componentContent.parameters) {
                     parameters.push(...componentContent.parameters);
@@ -266,6 +278,7 @@ export const actions = {
                                 param.value = mediator[param['@id']];
                         }
                     }
+                    // TODO: fix
                     context.commit('createNewMediator', {
                         type: mediator['@type'],
                         '@id': mediator['@id'],
@@ -283,6 +296,28 @@ export const actions = {
                 });
             });
         }, function() {alert('Invalid zip.')});
+    },
+
+    async importPreset(context: any, presetLink: any) {
+        // First reset everything
+        const t = performance.now();
+        const data = await (this as any).$axios.$get(presetLink);
+        const dataExpanded: any = await jsonldParser.expand(data);
+
+        let mediatorsAll = [];
+        let actorsAll = [];
+        for (const d of dataExpanded[0]['http://www.w3.org/2002/07/owl#imports']) {
+            const i = await (this as any).$axios.$get(d['@id']);
+            const {atContext, actors, mediators} = await extractJson(i);
+            context.commit('addToContext', atContext);
+            actorsAll.push(...actors);
+            mediatorsAll.push(...mediators);
+        }
+
+        mediatorsAll.forEach(p => {
+            context.commit('')
+        })
+        console.log(performance.now() - t);
     }
 
 }

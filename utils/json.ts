@@ -1,6 +1,5 @@
 import {trimIdentifier} from "~/utils/alpha";
-import * as jsonldParser from 'jsonld';
-import {ContextParser, FetchDocumentLoader} from "jsonld-context-parser";
+import {ContextParser} from "jsonld-context-parser";
 
 export function stateToJsonld(state: any) {
     let addedActors: any = [];
@@ -122,5 +121,7 @@ export function jsonldToState(jsonld: any) {
 export async function getExpandedIRI(context: any, compactIRI: string) {
     const parser = new ContextParser();
     const myContext = await parser.parse(context);
-    return myContext.expandTerm(compactIRI, true);
+    const iri = myContext.expandTerm(compactIRI, true);
+
+    return iri ? iri : compactIRI;
 }
