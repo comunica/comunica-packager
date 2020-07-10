@@ -1,4 +1,4 @@
-import {kebabCaseToPascalCase} from "~/utils/alpha";
+import {extractLabel, kebabCaseToPascalCase} from "~/utils/alpha";
 import * as jsonldParser from 'jsonld';
 import {getExpandedIRI} from "~/utils/json";
 import {ContextParser, FetchDocumentLoader} from "jsonld-context-parser";
@@ -83,7 +83,7 @@ export default async ({$axios, store}: Context) => {
 
             mediatorsList.push({
                 context: mediatorJson['@context'],
-                name: mediatorComponent['@id'],
+                name: extractLabel(mediatorComponent['@id']) ,
                 parameters: parameters,
             });
         }

@@ -33,11 +33,15 @@ export async function extractJson(json: any): Promise<any> {
 export async function handleActor(context: any, actor: any, actors: any[], mediators: any[]) {
     let actorExtracted: any = {};
     for (const key of Object.keys(actor)) {
-        if (key.includes('mediator')) {
-            if (Object.keys(actor[key]).length > 1) {
-                // Handle implicitly defined mediators
-                await handleMediator(context, actor[key], mediators);
+        if (key.includes('mediator') && Object.keys(actor[key]).length > 1) {
+            if (!Object.keys(actor[key]).includes('@id')) {
+                actor[key]['@id'] = `${actor['@id']}#${key}`;
             }
+            // Handle implicitly defined mediators
+            await handleMediator(context, actor[key], mediators);
+            actor[key] = {
+                '@id': actor[key]['@id']
+            };
         }
         const iri = await getExpandedIRI(context, key);
         actorExtracted[iri] = actor[key];

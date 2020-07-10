@@ -173,16 +173,15 @@ export const mutations = {
 
 export const actions = {
 
-    addMediator({state, commit}: any, mediator: any) {
-        const selectedMediatorType =  _.cloneDeep(state.mediators.find((m: any) => m.name === mediator));
+    addMediator({state, commit}: any, payload: any) {
+        const selectedMediatorType =  _.cloneDeep(state.mediators.find((m: any) => m.name === payload.mediator));
         commit('addToContext', selectedMediatorType.context);
         commit('createNewMediator', {
-            type: mediator,
-            '@id': `${mediator}#${state.createdMediators.length}`,
+            type: payload.mediator,
+            '@id': payload.id ? payload.id : `${payload.mediator}#${state.createdMediators.length}`,
             parameters: selectedMediatorType.parameters,
-            name: extractLabel(mediator)
+            name: payload.mediator
         });
-
     },
 
     async addActor(context: any, payload: any) {
@@ -215,9 +214,7 @@ export const actions = {
 
         parameters = mergeDuplicateKeys(parameters, 'cc:Actor/bus');
         for (const p of parameters) {
-            console.log(p);
             p['@id'] = await getExpandedIRI(atContext, p['@id']);
-            console.log(p);
         }
 
         if (payload.parameters) {
@@ -298,25 +295,46 @@ export const actions = {
         }, function() {alert('Invalid zip.')});
     },
 
-    async importPreset(context: any, presetLink: any) {
+    async importPreset({commit, dispatch}: any, presetLink: any) {
         // First reset everything
+        commit('resetState');
+
         const t = performance.now();
         const data = await (this as any).$axios.$get(presetLink);
         const dataExpanded: any = await jsonldParser.expand(data);
 
         let mediatorsAll = [];
         let actorsAll = [];
+
         for (const d of dataExpanded[0]['http://www.w3.org/2002/07/owl#imports']) {
             const i = await (this as any).$axios.$get(d['@id']);
+            console.log(i);
             const {atContext, actors, mediators} = await extractJson(i);
-            context.commit('addToContext', atContext);
+            commit('addToContext', atContext);
             actorsAll.push(...actors);
             mediatorsAll.push(...mediators);
         }
 
+        console.log(mediatorsAll);
+        console.log(actorsAll);
+
         mediatorsAll.forEach(p => {
-            context.commit('')
-        })
+            dispatch('addMediator', {
+                mediator: p['@type'],
+                id: p['@id']
+            });
+
+            for (const parameter of Object.keys(p)) {
+                if (parameter !== '@id' && parameter !== '@type') {
+                    commit('changeParameterValueOfMediator', {
+                        '@id': p['@id'],
+                        parameterName: parameter,
+                        value: parameter === 'https://linkedsoftwaredependencies.org/bundles/npm/@comunica/core/Mediator/bus' ?
+                            p[parameter]['@id'] : p[parameter]
+                    });
+                }
+            }
+        });
         console.log(performance.now() - t);
     }
 
