@@ -12,12 +12,21 @@ import {extractJson} from "~/utils/jsonld";
 const baseUrl = 'https://linkedsoftwaredependencies.org/bundles/npm/@comunica/';
 const baseContext = [`${baseUrl}runner/^1.0.0/components/context.jsonld`];
 
+/**
+ * The extend part of an actor isn't fully correct which is handled here
+ * @param extend: The wrong URL of a parent actor
+ */
 function getParentComponentUrl(extend: string): any {
     let urlParts = extend.split('/');
     urlParts.splice(7, 0, '^1.0.0', 'components');
     return urlParts.join('/') + '.jsonld';
 }
 
+/**
+ * Handles the default value of a parameter
+ * @param range: The range of the parameter
+ * @param defaultValue: The default value of the parameter
+ */
 function handleDefault(range: any, defaultValue: any) {
     switch (range) {
         case 'cc:Logger': {
@@ -35,6 +44,11 @@ function handleDefault(range: any, defaultValue: any) {
     }
 }
 
+/**
+ * Merges the value part of duplicate keys
+ * @param o: An object
+ * @param key: The key that is duplicated
+ */
 function mergeDuplicateKeys(o: any, key: string) {
     let i = 0;
 
@@ -51,6 +65,9 @@ function mergeDuplicateKeys(o: any, key: string) {
     return o;
 }
 
+/**
+ * Returns the default state without any actors or mediators
+ */
 function getDefaultState() {
     return {
         id: 'urn:comunica:my',
@@ -64,6 +81,11 @@ function getDefaultState() {
     }
 }
 
+/**
+ * Retrieve the bus group of a given actor
+ * @param busGroups: The available bus groups
+ * @param actor: The actor to retrieve the bus group from
+ */
 function getBusGroupOfActor(busGroups: any, actor: string) {
     let b = '';
 
@@ -74,6 +96,30 @@ function getBusGroupOfActor(busGroups: any, actor: string) {
     });
 
     return b;
+}
+
+/**
+ * Special cases where the base pascalToKebabCase fails because dashes are not needed
+ * For example ActorRdfParseJsonLd -> actor-rdf-parse-jsonld instead of actor-rdf-parse-json-ld
+ * Defaults to the given actor type
+ * @param actor: The possibly wrong actor type in pascal case.
+ */
+function normalizeActorName(actor: string) {
+    switch(actor) {
+        case 'ActorRdfJoinSymmetricHash':
+            return 'ActorRdfJoinSymmetrichash';
+        case 'ActorRdfParseJsonLd':
+            return 'ActorRdfParseJsonld';
+        case 'ActorRdfParseRdfXml':
+            return 'ActorRdfParseRdfxml';
+        case 'ActorRdfSerializeJsonLd':
+            return 'ActorRdfSerializeJsonld';
+        case 'ActorRdfResolveQuadPatternRdfJsSource':
+            return 'ActorRdfResolveQuadPatternRdfjsSource';
+        default: {
+            return actor;
+        }
+    }
 }
 
 export const state = getDefaultState();
@@ -184,26 +230,32 @@ export const actions = {
         });
     },
 
-    mapMediatorToState({state, commit, dispatch}: any, p: any) {
+    mapMediatorToState({state, commit, dispatch}: any, payload: any) {
         dispatch('addMediator', {
-            mediator: p['@type'],
-            id: p['@id']
+            mediator: payload['@type'],
+            id: payload['@id']
         });
 
-        for (const parameter of Object.keys(p)) {
+        for (const parameter of Object.keys(payload)) {
             if (parameter !== '@id' && parameter !== '@type') {
                 commit('changeParameterValueOfMediator', {
-                    '@id': p['@id'],
+                    '@id': payload['@id'],
                     parameterName: parameter,
                     value: parameter === 'https://linkedsoftwaredependencies.org/bundles/npm/@comunica/core/Mediator/bus' ?
-                        p[parameter]['@id'] : p[parameter]
+                        payload[parameter]['@id'] : payload[parameter]
                 });
             }
         }
     },
 
     async mapActorToState({state, commit, dispatch}: any, payload: any) {
-
+        console.log(payload);
+        dispatch('addActor', {
+            actorName: payload['@type'],
+            '@id': payload['@id'],
+            busGroup: getBusGroupOfActor(state.busGroups, payload['@type']),
+            parameters: payload
+        });
     },
 
     async addActor(context: any, payload: any) {
@@ -239,6 +291,13 @@ export const actions = {
             p['@id'] = await getExpandedIRI(atContext, p['@id']);
         }
 
+        for (const [i, p] of parameters.entries()) {
+            if (p.hasOwnProperty('default'))
+                parameters[i].value = handleDefault(p.range, p.default);
+            if (p.hasOwnProperty('defaultScoped'))
+                parameters[i].value = handleDefault(p.range, p.defaultScoped.defaultScopedValue);
+        }
+
         if (payload.parameters) {
             for (let p of parameters) {
                 if (payload.parameters.hasOwnProperty(p['@id'])) {
@@ -249,13 +308,6 @@ export const actions = {
                     else
                         p.value = JSON.stringify(payload.parameters['@id']);
                 }
-            }
-        } else {
-            for (const [i, p] of parameters.entries()) {
-                if (p.hasOwnProperty('default'))
-                    parameters[i].value = handleDefault(p.range, p.default);
-                if (p.hasOwnProperty('defaultScoped'))
-                    parameters[i].value = handleDefault(p.range, p.defaultScoped.defaultScopedValue);
             }
         }
 
