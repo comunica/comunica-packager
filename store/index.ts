@@ -303,17 +303,22 @@ export const actions = {
         const data = await (this as any).$axios.$get(presetLink);
         const dataExpanded: any = await jsonldParser.expand(data);
 
-        let mediatorsAll = [];
-        let actorsAll = [];
+        let mediatorsAll: any[] = [];
+        let actorsAll: any[] = [];
 
-        for (const d of dataExpanded[0]['http://www.w3.org/2002/07/owl#imports']) {
-            const i = await (this as any).$axios.$get(d['@id']);
-            console.log(i);
-            const {atContext, actors, mediators} = await extractJson(i);
-            commit('addToContext', atContext);
-            actorsAll.push(...actors);
-            mediatorsAll.push(...mediators);
-        }
+        let imports = dataExpanded[0]['http://www.w3.org/2002/07/owl#imports'].map((d: any) => {
+            return (this as any).$axios.$get(d['@id']);
+        });
+
+        await Promise.all(imports).then(async (fetchedImports: any) => {
+            await Promise.all(fetchedImports.map((fi: any) => extractJson(fi))).then((eps: any) => {
+                eps.forEach(({atContext, actors, mediators}: any) => {
+                    commit('addToContext', atContext);
+                    actorsAll.push(...actors);
+                    mediatorsAll.push(...mediators);
+                });
+            });
+        });
 
         console.log(mediatorsAll);
         console.log(actorsAll);
