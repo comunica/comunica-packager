@@ -323,12 +323,12 @@ export const actions = {
 
     async downloadZip(context: any) {
         let zip = new JSZip();
-        zip.file('config.json', stateToJsonld(context.state));
+        zip.file('config.json', await stateToJsonld(context.state));
         zip.generateAsync({type: 'blob'}).then(
             content => {
                 saveAs(content, 'engine.zip');
             }
-        )
+        );
     },
 
     async uploadZip(context: any, file: any) {

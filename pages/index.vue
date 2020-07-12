@@ -88,8 +88,8 @@
 
                 this.imp = false;
             },
-            onExport() {
-                this.$store.dispatch('downloadZip');
+            async onExport() {
+                await this.$store.dispatch('downloadZip');
             },
             onReset() {
                 this.$store.commit('resetState');
