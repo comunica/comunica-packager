@@ -22,11 +22,9 @@ export default async ({$axios, store}: Context) => {
     // Retrieve the list of all Comunica related packages
     const packages = await $axios.$get('https://api.github.com/repos/comunica/comunica/contents/packages?ref=master');
     const packageNames = packages.map((p: Package) => p.name);
-    let buses = packageNames.filter((p: string) => p.substring(0, 3) === 'bus').map((p: string) => p.substring(4));
+    const buses = packageNames.filter((p: string) => p.substring(0, 3) === 'bus').map((p: string) => p.substring(4));
     const mediatorPackages = packageNames.filter((p: string) => p.startsWith('mediator-'));
     const loggerPackages = packageNames.filter((p: string) => p.startsWith('logger-'));
-
-    buses = buses.filter((bus: string) => bus !== 'init');
 
     // TODO: optimizations
     // Every mediator has a bus parameter

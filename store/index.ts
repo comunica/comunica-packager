@@ -249,7 +249,7 @@ export const actions = {
     },
 
     async mapActorToState({state, commit, dispatch}: any, payload: any) {
-        console.log(payload);
+
         dispatch('addActor', {
             actorName: payload['@type'],
             '@id': payload['@id'],
@@ -264,8 +264,6 @@ export const actions = {
         const componentsConfig = await (this as any).$axios.$get(`${baseUrl}${actorName}/^1.0.0/components/components.jsonld`);
         const componentsConfigExpanded : any = await jsonldParser.expand(componentsConfig);
         const actorConfig = await (this as any).$axios.$get(componentsConfigExpanded[0]['http://www.w3.org/2002/07/owl#imports'][0]['@id'])
-
-        console.log(payload);
 
         let componentContent = actorConfig.components[0];
         let type = componentContent['requireElement'];
