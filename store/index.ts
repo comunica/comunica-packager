@@ -265,7 +265,10 @@ export const actions = {
         const componentsConfigExpanded : any = await jsonldParser.expand(componentsConfig);
         const actorConfig = await (this as any).$axios.$get(componentsConfigExpanded[0]['http://www.w3.org/2002/07/owl#imports'][0]['@id'])
 
+        console.log(payload);
+
         let componentContent = actorConfig.components[0];
+        let type = componentContent['requireElement'];
         let parameters = [];
         let atContext = actorConfig['@context'];
 
@@ -312,7 +315,7 @@ export const actions = {
         }
 
         const actor = {
-            actorName: payload.actorName,
+            actorName: type,
             '@id': payload['@id'],
             parameters: parameters
         };
@@ -382,9 +385,9 @@ export const actions = {
         let mediatorsAll: any[] = [];
         let actorsAll: any[] = [];
 
-        let imports = dataExpanded[0]['http://www.w3.org/2002/07/owl#imports'].map((d: any) => {
-            return (this as any).$axios.$get(d['@id']);
-        });
+        let imports = dataExpanded[0]['http://www.w3.org/2002/07/owl#imports'].map(
+            (d: any) => (this as any).$axios.$get(d['@id'])
+        );
 
         await Promise.all(imports).then(async (fetchedImports: any) => {
             await Promise.all(fetchedImports.map((fi: any) => extractJson(fi))).then((eps: any) => {

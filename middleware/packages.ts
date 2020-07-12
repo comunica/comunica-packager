@@ -1,7 +1,6 @@
 import {extractLabel, kebabCaseToPascalCase} from "~/utils/alpha";
 import * as jsonldParser from 'jsonld';
 import {getExpandedIRI} from "~/utils/json";
-import {ContextParser, FetchDocumentLoader} from "jsonld-context-parser";
 
 interface Context {
     $axios: any,
@@ -18,12 +17,16 @@ const baseURL = 'https://linkedsoftwaredependencies.org/bundles/npm/@comunica/'
 
 export default async ({$axios, store}: Context) => {
 
+    const t = performance.now();
+
     // Retrieve the list of all Comunica related packages
     const packages = await $axios.$get('https://api.github.com/repos/comunica/comunica/contents/packages?ref=master');
     const packageNames = packages.map((p: Package) => p.name);
-    const buses = packageNames.filter((p: string) => p.substring(0, 3) === 'bus').map((p: string) => p.substring(4));
+    let buses = packageNames.filter((p: string) => p.substring(0, 3) === 'bus').map((p: string) => p.substring(4));
     const mediatorPackages = packageNames.filter((p: string) => p.startsWith('mediator-'));
     const loggerPackages = packageNames.filter((p: string) => p.startsWith('logger-'));
+
+    buses = buses.filter((bus: string) => bus !== 'init');
 
     // TODO: optimizations
     // Every mediator has a bus parameter
@@ -89,12 +92,23 @@ export default async ({$axios, store}: Context) => {
         }
     }
 
-    store.commit('addBusGroups', buses.map((bus: string) => {
-        return {
-            busGroupName: kebabCaseToPascalCase(bus),
-            actors: packageNames.filter((p: string) => p.startsWith(`actor-${bus}`)).map(kebabCaseToPascalCase)
+    let busGroups: any = [];
+
+    for (const b of buses) {
+        let busGroup: any = {
+            busGroupName: kebabCaseToPascalCase(b)
         };
-    }));
+
+        busGroup.actors = await Promise.all(
+            packageNames
+                .filter((p: string) => p.startsWith(`actor-${b}`))
+                .map(kebabCaseToPascalCase)
+        );
+
+        busGroups.push(busGroup);
+    }
+
+    store.commit('addBusGroups', busGroups);
 
     store.commit('addMediators', mediatorsList);
 
@@ -104,4 +118,6 @@ export default async ({$axios, store}: Context) => {
         let prefix = 'cb' + bus.split('-').map(x => x[0]).join('');
         return `${prefix}:Bus/${kebabCaseToPascalCase(bus)}`
     }));
+
+    console.log(`Time for loading: ${performance.now() - t}`);
 }

@@ -3,7 +3,6 @@ export function kebabCaseToPascalCase(s: string): string {
 }
 
 export function pascalCaseToKebabCase(s: string): string {
-    console.log(s);
     return s.replace(/([a-z0-9]|(?=[A-Z]))([A-Z])/g, '$1-$2').toLowerCase().substring(1);
 }
 
