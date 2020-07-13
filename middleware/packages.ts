@@ -60,15 +60,17 @@ export default async ({$axios, store}: Context) => {
         }
     ];
 
-    const mediatorsList = [];
+    const mediatorsList: any = [];
 
 
     for (const m of mediatorPackages) {
-        const mediatorComponents : any = await $axios.$get(`${baseURL}/${m}/^1.0.0/components/components.jsonld`);
-        const mediatorComponentsExpanded : any = await jsonldParser.expand(mediatorComponents);
-        for (const mediatorURL of mediatorComponentsExpanded[0]['http://www.w3.org/2002/07/owl#imports']) {
+        const mediatorComponents: any = await $axios.$get(`${baseURL}/${m}/^1.0.0/components/components.jsonld`);
+        const mediatorPackageContext = await parseContext(mediatorComponents['@context']);
+        const mediatorComponentsExpanded: any = mediatorComponents['import']
+            .map((i: string) => getExpandedIRI(mediatorPackageContext, i));
+        for (const mediatorURL of mediatorComponentsExpanded) {
 
-            const mediatorJson = await $axios.$get(mediatorURL['@id']);
+            const mediatorJson = await $axios.$get(mediatorURL);
             const mediatorComponent = mediatorJson.components[0];
             const normalizedContext = await parseContext(mediatorJson['@context']);
             const parameters: any = {}
