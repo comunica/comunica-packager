@@ -117,15 +117,25 @@ export function jsonldToState(jsonld: any) {
     }
 }
 
-export async function getExpandedIRI(context: any, compactTerm: string) {
+export async function parseContext(context: any) {
     const parser = new ContextParser();
-    const myContext = await parser.parse(context);
-    const iri = myContext.expandTerm(compactTerm, true);
+    return await parser.parse(context);
+}
 
+export function getExpandedIRI(normalizedContext: any, compactTerm: string) {
+
+    if (compactTerm[0] === '@')
+        return compactTerm;
+
+    const iri = normalizedContext.expandTerm(compactTerm, true);
     return iri ? iri : compactTerm;
 }
 
 export async function getCompactedIRI(context: any, expandedIRI: string) {
+
+    if (expandedIRI[0] === '@')
+        return expandedIRI;
+
     const parser = new ContextParser();
     const myContext = await parser.parse(context);
     const iri = myContext.compactIri(expandedIRI, true);

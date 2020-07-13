@@ -1,4 +1,4 @@
-import {getExpandedIRI} from "~/utils/json";
+import {getExpandedIRI, parseContext} from "~/utils/json";
 
 export async function extractJson(json: any): Promise<any> {
     let actors: any[] = [];
@@ -32,6 +32,7 @@ export async function extractJson(json: any): Promise<any> {
 
 export async function handleActor(context: any, actor: any, actors: any[], mediators: any[]) {
     let actorExtracted: any = {};
+    const normalizedContext = await parseContext(context);
     for (const key of Object.keys(actor)) {
         if (key.includes('mediator') && Object.keys(actor[key]).length > 1) {
             if (!Object.keys(actor[key]).includes('@id')) {
@@ -43,7 +44,7 @@ export async function handleActor(context: any, actor: any, actors: any[], media
                 '@id': actor[key]['@id']
             };
         }
-        const iri = await getExpandedIRI(context, key);
+        const iri = getExpandedIRI(normalizedContext, key);
         actorExtracted[iri] = actor[key];
     }
 
@@ -52,8 +53,9 @@ export async function handleActor(context: any, actor: any, actors: any[], media
 
 export async function handleMediator(context: any, mediator: any, mediators: any[]) {
     let mediatorExtracted: any = {};
+    const normalizedContext = await parseContext(context);
     for (const key of Object.keys(mediator)) {
-        const iri = await getExpandedIRI(context, key);
+        const iri = getExpandedIRI(normalizedContext, key);
         mediatorExtracted[iri] = mediator[key];
     }
 

@@ -3,7 +3,7 @@ import Vue from 'vue';
 import {pascalCaseToKebabCase} from "~/utils/alpha";
 import JSZip from "jszip";
 import {saveAs} from 'file-saver';
-import {getExpandedIRI, jsonldToState, stateToJsonld} from "~/utils/json";
+import {getExpandedIRI, jsonldToState, parseContext, stateToJsonld} from "~/utils/json";
 import _ from 'lodash';
 import * as jsonldParser from 'jsonld';
 import {extractJson} from "~/utils/jsonld";
@@ -96,30 +96,6 @@ function getBusGroupOfActor(busGroups: any, actor: string) {
     });
 
     return b;
-}
-
-/**
- * Special cases where the base pascalToKebabCase fails because dashes are not needed
- * For example ActorRdfParseJsonLd -> actor-rdf-parse-jsonld instead of actor-rdf-parse-json-ld
- * Defaults to the given actor type
- * @param actor: The possibly wrong actor type in pascal case.
- */
-function normalizeActorName(actor: string) {
-    switch(actor) {
-        case 'ActorRdfJoinSymmetricHash':
-            return 'ActorRdfJoinSymmetrichash';
-        case 'ActorRdfParseJsonLd':
-            return 'ActorRdfParseJsonld';
-        case 'ActorRdfParseRdfXml':
-            return 'ActorRdfParseRdfxml';
-        case 'ActorRdfSerializeJsonLd':
-            return 'ActorRdfSerializeJsonld';
-        case 'ActorRdfResolveQuadPatternRdfJsSource':
-            return 'ActorRdfResolveQuadPatternRdfjsSource';
-        default: {
-            return actor;
-        }
-    }
 }
 
 export const state = getDefaultState();
@@ -261,9 +237,10 @@ export const actions = {
     async addActor(context: any, payload: any) {
 
         const actorName = pascalCaseToKebabCase(payload.actorName);
-        const componentsConfig = await (this as any).$axios.$get(`${baseUrl}${actorName}/^1.0.0/components/components.jsonld`);
-        const componentsConfigExpanded : any = await jsonldParser.expand(componentsConfig);
-        const actorConfig = await (this as any).$axios.$get(componentsConfigExpanded[0]['http://www.w3.org/2002/07/owl#imports'][0]['@id'])
+        const actorPart = payload.actorName.slice(`Actor${payload.busGroup}`.length)
+        const actorConfig = await (this as any).$axios.$get(
+            `${baseUrl}${actorName}/^1.0.0/components/Actor/${payload.busGroup}/${actorPart}.jsonld`
+        );
 
         let componentContent = actorConfig.components[0];
         let type = componentContent['requireElement'];
@@ -275,10 +252,12 @@ export const actions = {
             parameters.push(...componentContent.parameters);
         }
 
+        const normalizedContext = await parseContext(atContext);
+
         while (componentContent.extends) {
             const parentComponents = Array.isArray(componentContent.extends) ? componentContent.extends : [componentContent.extends];
             for (const p of parentComponents) {
-                const componentURL = getParentComponentUrl(await getExpandedIRI(atContext, p));
+                const componentURL = getParentComponentUrl(getExpandedIRI(normalizedContext, p));
                 let componentContentRaw = await (this as any).$axios.$get(componentURL);
                 componentContent = componentContentRaw.components[0];
                 if (componentContent.parameters) {
@@ -289,7 +268,7 @@ export const actions = {
 
         parameters = mergeDuplicateKeys(parameters, 'cc:Actor/bus');
         for (const p of parameters) {
-            p['@id'] = await getExpandedIRI(atContext, p['@id']);
+            p['@id'] = getExpandedIRI(normalizedContext, p['@id']);
         }
 
         for (const [i, p] of parameters.entries()) {
@@ -405,7 +384,7 @@ export const actions = {
             dispatch('mapActorToState', a);
         })
 
-        console.log(performance.now() - t);
+        console.log(`Time for loading preset: ${performance.now() - t}`);
     }
 
 }
