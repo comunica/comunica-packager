@@ -124,7 +124,7 @@ export async function parseContext(context: any) {
 
 export function getExpandedIRI(normalizedContext: any, compactTerm: string) {
 
-    if (compactTerm[0] === '@')
+    if (compactTerm[0] === '@' || compactTerm.startsWith('https'))
         return compactTerm;
 
     const iri = normalizedContext.expandTerm(compactTerm, true);

@@ -15,6 +15,12 @@ interface Package {
 
 const baseURL = 'https://linkedsoftwaredependencies.org/bundles/npm/@comunica/'
 
+function handleParameters(normalizedContext: any, parametersAll: any, parameters: any) {
+    for (const p of parameters) {
+        parametersAll[getExpandedIRI(normalizedContext, p['@id'])] = p
+    }
+}
+
 export default async ({$axios, store}: Context) => {
 
     const t = performance.now();
@@ -29,7 +35,7 @@ export default async ({$axios, store}: Context) => {
     // TODO: optimizations
     // Every mediator has a bus parameter
     const mediatorSuperParameter = {
-        "@id": "cc:Mediator/bus",
+        "@id": "https://linkedsoftwaredependencies.org/bundles/npm/@comunica/core/Mediator/bus",
         "comment": "The bus this mediator will mediate over.",
         "range": "cc:Bus",
         "unique": true,
@@ -39,14 +45,14 @@ export default async ({$axios, store}: Context) => {
     // Every number mediator has these parameters
     const numberSuperParameters = [
         {
-            "@id": "cmn:Mediator/Number/field",
+            "@id": "https://linkedsoftwaredependencies.org/bundles/npm/@comunica/mediator-number/Mediator/Number/field",
             "comment": "The field name to mediate over",
             "range": "xsd:string",
             "unique": true,
             "required": true
         },
         {
-            "@id": "cmn:Mediator/Number/ignoreErrors",
+            "@id": "https://linkedsoftwaredependencies.org/bundles/npm/@comunica/mediator-number/Mediator/Number/ignoreErrors",
             "comment": "If actors that throw test errors should be ignored",
             "range": "xsd:boolean",
             "unique": true,
@@ -65,24 +71,21 @@ export default async ({$axios, store}: Context) => {
 
             const mediatorJson = await $axios.$get(mediatorURL['@id']);
             const mediatorComponent = mediatorJson.components[0];
-            const parameters: any[] = [mediatorSuperParameter];
+            const normalizedContext = await parseContext(mediatorJson['@context']);
+            const parameters: any = {}
+
+            handleParameters(normalizedContext, parameters, [mediatorSuperParameter]) ;
 
             if (mediatorComponent.parameters)
-                parameters.push(...mediatorComponent.parameters);
+                handleParameters(normalizedContext, parameters, mediatorComponent.parameters);
             if (mediatorComponent.extends && mediatorComponent.extends !== 'cc:Mediator') {
-                parameters.splice(1, 1);
-                parameters.push(...numberSuperParameters);
+                // parameters.splice(1, 1);
+                handleParameters(normalizedContext, parameters, numberSuperParameters);
             }
 
-            for (let p of parameters)
-                if (p.hasOwnProperty('default'))
-                    p.value = p.default;
-
-            const normalizedContext = await parseContext(mediatorJson['@context']);
-
-            for (const p of parameters)
-                p['@id'] = getExpandedIRI(normalizedContext, p['@id']);
-
+            for (let p of Object.keys(parameters))
+                if (parameters[p].hasOwnProperty('default'))
+                    parameters[p].value = parameters[p].default;
 
             mediatorsList.push({
                 context: mediatorJson['@context'],
