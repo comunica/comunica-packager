@@ -37,10 +37,7 @@
                 return this.$store.state.mediators;
             },
             mediatorTypes() {
-                return this.mediators.map(p => ({
-                    fullName: p.name,
-                    name: extractLabel(p.name)
-                }));
+                return this.mediators.map(p => p.name);
             },
             createdMediators() {
                 return this.$store.state.createdMediators;
@@ -49,14 +46,9 @@
         methods: {
             onCreate() {
                 // Create new object of mediator type
-                const selectedMediatorType =  _.cloneDeep(this.mediators.find(m => m.name === this.selectedMediator));
-                this.$store.commit('createNewMediator', {
-                    type: this.selectedMediator,
-                    '@id': `${this.selectedMediator}#${this.createdMediators.length}`,
-                    parameters: selectedMediatorType.parameters,
-                    name: extractLabel(this.selectedMediator)
+                this.$store.dispatch('addMediator', {
+                    mediator: this.selectedMediator
                 });
-                this.$store.commit('addToContext', selectedMediatorType.context);
             },
             onDelete(mediator) {
                 this.$store.commit('deleteMediator', mediator);

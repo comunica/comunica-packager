@@ -1,6 +1,6 @@
-import {trimIdentifier} from "~/utils/alpha";
+import {ContextParser} from "jsonld-context-parser";
 
-export function stateToJsonld(state: any) {
+export async function stateToJsonld(state: any) {
     let addedActors: any = [];
     const createdActors: any[] = state.createdActors;
 
@@ -26,16 +26,16 @@ export function stateToJsonld(state: any) {
                                     break;
                                 }
                                 case 'cc:Bus': {
-                                    actorToAdd[parameter['@id']] = {
+                                    actorToAdd['cc:Actors/bus'] = {
                                         '@id': parameter.value
                                     };
                                     break;
                                 }
                                 default: {
                                     try {
-                                        actorToAdd[trimIdentifier(parameter['@id'])] = JSON.parse(parameter.value);
+                                        actorToAdd[await getCompactedIRI([...state.context], parameter['@id'])] = JSON.parse(parameter.value);
                                     } catch (err) {
-                                        actorToAdd[trimIdentifier(parameter['@id'])] = parameter.value;
+                                        actorToAdd[await getCompactedIRI([...state.context], parameter['@id'])] = parameter.value;
                                     }
                                 }
                             }
@@ -64,14 +64,14 @@ export function stateToJsonld(state: any) {
         }
         for (let parameter of mediator.parameters) {
             if (parameter.range == 'cc:Bus') {
-                mediatorToAdd[parameter['@id']] = {
+                mediatorToAdd['cc:Mediator/bus'] = {
                     '@id': parameter.value
                 }
             } else {
                 try {
-                    mediatorToAdd[parameter['@id']] = JSON.parse(parameter.value);
+                    mediatorToAdd[await getCompactedIRI([...state.context], parameter['@id'])] = JSON.parse(parameter.value);
                 } catch (err) {
-                    mediatorToAdd[parameter['@id']] = parameter.value;
+                    mediatorToAdd[await getCompactedIRI([...state.context], parameter['@id'])] = parameter.value;
                 }
             }
         }
@@ -115,4 +115,30 @@ export function jsonldToState(jsonld: any) {
         mediators: mediators,
         context: jsonld['@context']
     }
+}
+
+export async function parseContext(context: any) {
+    const parser = new ContextParser();
+    return await parser.parse(context);
+}
+
+export function getExpandedIRI(normalizedContext: any, compactTerm: string) {
+
+    if (compactTerm[0] === '@')
+        return compactTerm;
+
+    const iri = normalizedContext.expandTerm(compactTerm, true);
+    return iri ? iri : compactTerm;
+}
+
+export async function getCompactedIRI(context: any, expandedIRI: string) {
+
+    if (expandedIRI[0] === '@')
+        return expandedIRI;
+
+    const parser = new ContextParser();
+    const myContext = await parser.parse(context);
+    const iri = myContext.compactIri(expandedIRI, true);
+
+    return iri ? iri: expandedIRI;
 }

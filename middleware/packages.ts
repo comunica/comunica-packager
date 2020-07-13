@@ -1,5 +1,6 @@
-import {kebabCaseToPascalCase} from "~/utils/alpha";
+import {extractLabel, kebabCaseToPascalCase} from "~/utils/alpha";
 import * as jsonldParser from 'jsonld';
+import {getExpandedIRI, parseContext} from "~/utils/json";
 
 interface Context {
     $axios: any,
@@ -12,9 +13,11 @@ interface Package {
     url: string,
 }
 
-const bUrl = 'https://linkedsoftwaredependencies.org/bundles/npm/@comunica/'
+const baseURL = 'https://linkedsoftwaredependencies.org/bundles/npm/@comunica/'
 
 export default async ({$axios, store}: Context) => {
+
+    const t = performance.now();
 
     // Retrieve the list of all Comunica related packages
     const packages = await $axios.$get('https://api.github.com/repos/comunica/comunica/contents/packages?ref=master');
@@ -23,6 +26,7 @@ export default async ({$axios, store}: Context) => {
     const mediatorPackages = packageNames.filter((p: string) => p.startsWith('mediator-'));
     const loggerPackages = packageNames.filter((p: string) => p.startsWith('logger-'));
 
+    // TODO: optimizations
     // Every mediator has a bus parameter
     const mediatorSuperParameter = {
         "@id": "cc:Mediator/bus",
@@ -53,8 +57,9 @@ export default async ({$axios, store}: Context) => {
 
     const mediatorsList = [];
 
+
     for (const m of mediatorPackages) {
-        const mediatorComponents : any = await $axios.$get(`${bUrl}/${m}/^1.0.0/components/components.jsonld`);
+        const mediatorComponents : any = await $axios.$get(`${baseURL}/${m}/^1.0.0/components/components.jsonld`);
         const mediatorComponentsExpanded : any = await jsonldParser.expand(mediatorComponents);
         for (const mediatorURL of mediatorComponentsExpanded[0]['http://www.w3.org/2002/07/owl#imports']) {
 
@@ -73,20 +78,37 @@ export default async ({$axios, store}: Context) => {
                 if (p.hasOwnProperty('default'))
                     p.value = p.default;
 
+            const normalizedContext = await parseContext(mediatorJson['@context']);
+
+            for (const p of parameters)
+                p['@id'] = getExpandedIRI(normalizedContext, p['@id']);
+
+
             mediatorsList.push({
                 context: mediatorJson['@context'],
-                name: mediatorComponent['@id'],
+                name: extractLabel(mediatorComponent['@id']) ,
                 parameters: parameters,
             });
         }
     }
 
-    store.commit('addBusGroups', buses.map((bus: string) => {
-        return {
-            busGroupName: kebabCaseToPascalCase(bus),
-            actors: packageNames.filter((p: string) => p.startsWith(`actor-${bus}`)).map(kebabCaseToPascalCase)
+    let busGroups: any = [];
+
+    for (const b of buses) {
+        let busGroup: any = {
+            busGroupName: kebabCaseToPascalCase(b)
         };
-    }));
+
+        busGroup.actors = await Promise.all(
+            packageNames
+                .filter((p: string) => p.startsWith(`actor-${b}`))
+                .map(kebabCaseToPascalCase)
+        );
+
+        busGroups.push(busGroup);
+    }
+
+    store.commit('addBusGroups', busGroups);
 
     store.commit('addMediators', mediatorsList);
 
@@ -96,4 +118,6 @@ export default async ({$axios, store}: Context) => {
         let prefix = 'cb' + bus.split('-').map(x => x[0]).join('');
         return `${prefix}:Bus/${kebabCaseToPascalCase(bus)}`
     }));
+
+    console.log(`Time for loading: ${performance.now() - t}`);
 }

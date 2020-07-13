@@ -2,10 +2,21 @@
     <div id="container">
         <div id="header">
             <LogoComponent/>
-            <div id="buttons">
-                <FileInputComponent text="Import" @click="onNew"/>
-                <ButtonComponent text="Export" @click="onGenerateEngine"/>
-                <ButtonComponent text="Reset" @click="onResetEngine"/>
+            <div id="input">
+                <div id="buttons">
+                    <ButtonComponent text="Import" @click="imp = true"/>
+                    <ButtonComponent text="Export" @click="onExport"/>
+                    <FileInputComponent text="Upload" @click="onUpload"/>
+                    <ButtonComponent text="Reset" @click="onReset"/>
+                </div>
+                <div v-if="imp" id="preset-selector" class="dropdown-layout">
+                    <DropdownComponent
+                            v-model="actorLink"
+                            :options="presets"
+                            placeholder="Choose preset"
+                    />
+                    <ButtonComponent :disabled="!actorLink" :is-small="true" text="Import" @click="onImport"/>
+                </div>
             </div>
         </div>
         <div id="content">
@@ -41,9 +52,13 @@
     import ActorsComponent from "../components/ActorsComponent";
     import FileInputComponent from "../components/FileInputComponent";
     import LogoComponent from "../components/LogoComponent";
+    import DropdownComponent from "../components/DropdownComponent";
+    import * as jsonldParser from "jsonld";
+    import {extractJson} from "../utils/jsonld";
 
     export default {
         components: {
+            DropdownComponent,
             LogoComponent,
             FileInputComponent,
             ActorsComponent,
@@ -53,23 +68,43 @@
         },
         middleware: ['packages'],
         data () {
-            return {}
+            return {
+                actorLink: undefined,
+                imp: false,
+                presets: [],
+            }
         },
         computed: {
             busGroups() {
                 return this.$store.state.busGroups;
-            },
+            }
         },
         methods: {
-            onNew(file) {
+            onUpload(file) {
                 this.$store.dispatch('uploadZip', file);
             },
-            onGenerateEngine() {
-                this.$store.dispatch('downloadZip');
+            async onImport() {
+                await this.$store.dispatch('importPreset', this.actorLink);
+
+                this.imp = false;
             },
-            onResetEngine() {
+            async onExport() {
+                await this.$store.dispatch('downloadZip');
+            },
+            onReset() {
                 this.$store.commit('resetState');
             }
+        },
+        async asyncData(context) {
+            const rawPresets = await context.$axios.$get('/comunica-packager/presets.json');
+            return {
+                presets: Object.keys(rawPresets).map(a => {
+                    return {
+                        name: a,
+                        fullName: rawPresets[a]
+                    };
+                })
+            };
         }
     }
 </script>
@@ -90,7 +125,7 @@
 
     #buttons {
         display: grid;
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(4, 1fr);
         place-items: center;
         grid-gap: 10px;
     }

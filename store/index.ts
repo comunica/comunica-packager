@@ -2,22 +2,31 @@ import {BusGroup} from "~/assets/interfaces";
 import Vue from 'vue';
 import {pascalCaseToKebabCase} from "~/utils/alpha";
 import JSZip from "jszip";
-import { saveAs } from 'file-saver';
-import {jsonldToState, stateToJsonld} from "~/utils/json";
+import {saveAs} from 'file-saver';
+import {getExpandedIRI, jsonldToState, parseContext, stateToJsonld} from "~/utils/json";
 import _ from 'lodash';
 import * as jsonldParser from 'jsonld';
+import {extractJson} from "~/utils/jsonld";
 
 
-const bUrl = 'https://linkedsoftwaredependencies.org/bundles/npm/@comunica/'
-const bContext = `${bUrl}runner/^1.0.0/components/context.jsonld`
+const baseUrl = 'https://linkedsoftwaredependencies.org/bundles/npm/@comunica/';
+const baseContext = [`${baseUrl}runner/^1.0.0/components/context.jsonld`];
 
+/**
+ * The extend part of an actor isn't fully correct which is handled here
+ * @param extend: The wrong URL of a parent actor
+ */
 function getParentComponentUrl(extend: string): any {
-
     let urlParts = extend.split('/');
     urlParts.splice(7, 0, '^1.0.0', 'components');
     return urlParts.join('/') + '.jsonld';
 }
 
+/**
+ * Handles the default value of a parameter
+ * @param range: The range of the parameter
+ * @param defaultValue: The default value of the parameter
+ */
 function handleDefault(range: any, defaultValue: any) {
     switch (range) {
         case 'cc:Logger': {
@@ -35,6 +44,11 @@ function handleDefault(range: any, defaultValue: any) {
     }
 }
 
+/**
+ * Merges the value part of duplicate keys
+ * @param o: An object
+ * @param key: The key that is duplicated
+ */
 function mergeDuplicateKeys(o: any, key: string) {
     let i = 0;
 
@@ -51,6 +65,9 @@ function mergeDuplicateKeys(o: any, key: string) {
     return o;
 }
 
+/**
+ * Returns the default state without any actors or mediators
+ */
 function getDefaultState() {
     return {
         id: 'urn:comunica:my',
@@ -60,10 +77,15 @@ function getDefaultState() {
         createdMediators: [],
         loggers: [],
         buses: [],
-        context: new Set([bContext])
+        context: new Set(baseContext)
     }
 }
 
+/**
+ * Retrieve the bus group of a given actor
+ * @param busGroups: The available bus groups
+ * @param actor: The actor to retrieve the bus group from
+ */
 function getBusGroupOfActor(busGroups: any, actor: string) {
     let b = '';
 
@@ -159,7 +181,7 @@ export const mutations = {
     },
 
     resetState(state: any) {
-        state.context = new Set([bContext]);
+        state.context = new Set(baseContext);
         state.createdMediators = [];
         Object.keys(state.createdActors).forEach(key => {
             state.createdActors[key] = [];
@@ -173,38 +195,88 @@ export const mutations = {
 
 export const actions = {
 
+    addMediator({state, commit}: any, payload: any) {
+        const selectedMediatorType =  _.cloneDeep(state.mediators.find((m: any) => m.name === payload.mediator));
+        commit('addToContext', selectedMediatorType.context);
+        commit('createNewMediator', {
+            type: payload.mediator,
+            '@id': payload.id ? payload.id : `${payload.mediator}#${state.createdMediators.length}`,
+            parameters: selectedMediatorType.parameters,
+            name: payload.mediator
+        });
+    },
+
+    mapMediatorToState({state, commit, dispatch}: any, payload: any) {
+        dispatch('addMediator', {
+            mediator: payload['@type'],
+            id: payload['@id']
+        });
+
+        for (const parameter of Object.keys(payload)) {
+            if (parameter !== '@id' && parameter !== '@type') {
+                commit('changeParameterValueOfMediator', {
+                    '@id': payload['@id'],
+                    parameterName: parameter,
+                    value: parameter === 'https://linkedsoftwaredependencies.org/bundles/npm/@comunica/core/Mediator/bus' ?
+                        payload[parameter]['@id'] : payload[parameter]
+                });
+            }
+        }
+    },
+
+    async mapActorToState({state, commit, dispatch}: any, payload: any) {
+
+        dispatch('addActor', {
+            actorName: payload['@type'],
+            '@id': payload['@id'],
+            busGroup: getBusGroupOfActor(state.busGroups, payload['@type']),
+            parameters: payload
+        });
+    },
+
     async addActor(context: any, payload: any) {
 
         const actorName = pascalCaseToKebabCase(payload.actorName);
-        const componentsConfig = await (this as any).$axios.$get(`${bUrl}${actorName}/^1.0.0/components/components.jsonld`);
-        const componentsConfigExpanded : any = await jsonldParser.expand(componentsConfig);
-        const actorConfig = await (this as any).$axios.$get(componentsConfigExpanded[0]['http://www.w3.org/2002/07/owl#imports'][0]['@id'])
+        const actorPart = payload.actorName.slice(`Actor${payload.busGroup}`.length)
+        const actorConfig = await (this as any).$axios.$get(
+            `${baseUrl}${actorName}/^1.0.0/components/Actor/${payload.busGroup}/${actorPart}.jsonld`
+        );
 
         let componentContent = actorConfig.components[0];
+        let type = componentContent['requireElement'];
         let parameters = [];
-
-        if (componentContent.parameters)
-            parameters.push(...componentContent.parameters);
-
         let atContext = actorConfig['@context'];
+
+        context.commit('addToContext', atContext);
+        if (componentContent.parameters) {
+            parameters.push(...componentContent.parameters);
+        }
+
+        const normalizedContext = await parseContext(atContext);
 
         while (componentContent.extends) {
             const parentComponents = Array.isArray(componentContent.extends) ? componentContent.extends : [componentContent.extends];
-            const expansion : any = await jsonldParser.expand({
-                '@context': atContext,
-                'extends': parentComponents,
-            });
-            for (const p of expansion[0]['http://www.w3.org/2000/01/rdf-schema#subClassOf']) {
-                const componentURL = getParentComponentUrl(p['@id']);
-                let componentContentRaw = (await (this as any).$axios.$get(componentURL));
-                atContext = componentContentRaw['@context'];
-                componentContent = componentContentRaw.components[0]
-                if (componentContent.parameters)
+            for (const p of parentComponents) {
+                const componentURL = getParentComponentUrl(getExpandedIRI(normalizedContext, p));
+                let componentContentRaw = await (this as any).$axios.$get(componentURL);
+                componentContent = componentContentRaw.components[0];
+                if (componentContent.parameters) {
                     parameters.push(...componentContent.parameters);
+                }
             }
         }
 
         parameters = mergeDuplicateKeys(parameters, 'cc:Actor/bus');
+        for (const p of parameters) {
+            p['@id'] = getExpandedIRI(normalizedContext, p['@id']);
+        }
+
+        for (const [i, p] of parameters.entries()) {
+            if (p.hasOwnProperty('default'))
+                parameters[i].value = handleDefault(p.range, p.default);
+            if (p.hasOwnProperty('defaultScoped'))
+                parameters[i].value = handleDefault(p.range, p.defaultScoped.defaultScopedValue);
+        }
 
         if (payload.parameters) {
             for (let p of parameters) {
@@ -217,18 +289,10 @@ export const actions = {
                         p.value = JSON.stringify(payload.parameters['@id']);
                 }
             }
-        } else {
-            for (const [i, p] of parameters.entries()) {
-                if (p.hasOwnProperty('default'))
-                    parameters[i].value = handleDefault(p.range, p.default);
-                if (p.hasOwnProperty('defaultScoped'))
-                    parameters[i].value = handleDefault(p.range, p.defaultScoped.defaultScopedValue);
-            }
         }
 
-
         const actor = {
-            actorName: payload.actorName,
+            actorName: type,
             '@id': payload['@id'],
             parameters: parameters
         };
@@ -238,15 +302,17 @@ export const actions = {
 
     async downloadZip(context: any) {
         let zip = new JSZip();
-        zip.file('config.json', stateToJsonld(context.state));
+        zip.file('config.json', await stateToJsonld(context.state));
         zip.generateAsync({type: 'blob'}).then(
             content => {
                 saveAs(content, 'engine.zip');
             }
-        )
+        );
     },
 
     async uploadZip(context: any, file: any) {
+
+        // TODO: update
         let zip = new JSZip();
         zip.loadAsync(file).then(function(z) {
             zip.file('config.json').async('text').then(function(json) {
@@ -265,6 +331,7 @@ export const actions = {
                                 param.value = mediator[param['@id']];
                         }
                     }
+                    // TODO: fix
                     context.commit('createNewMediator', {
                         type: mediator['@type'],
                         '@id': mediator['@id'],
@@ -282,6 +349,42 @@ export const actions = {
                 });
             });
         }, function() {alert('Invalid zip.')});
+    },
+
+    async importPreset({commit, dispatch}: any, presetLink: any) {
+        // First reset everything
+        commit('resetState');
+
+        const t = performance.now();
+        const data = await (this as any).$axios.$get(presetLink);
+        const dataExpanded: any = await jsonldParser.expand(data);
+
+        let mediatorsAll: any[] = [];
+        let actorsAll: any[] = [];
+
+        let imports = dataExpanded[0]['http://www.w3.org/2002/07/owl#imports'].map(
+            (d: any) => (this as any).$axios.$get(d['@id'])
+        );
+
+        await Promise.all(imports).then(async (fetchedImports: any) => {
+            await Promise.all(fetchedImports.map((fi: any) => extractJson(fi))).then((eps: any) => {
+                eps.forEach(({atContext, actors, mediators}: any) => {
+                    commit('addToContext', atContext);
+                    actorsAll.push(...actors);
+                    mediatorsAll.push(...mediators);
+                });
+            });
+        });
+
+        mediatorsAll.forEach(m => {
+            dispatch('mapMediatorToState', m);
+        });
+
+        actorsAll.forEach(a => {
+            dispatch('mapActorToState', a);
+        })
+
+        console.log(`Time for loading preset: ${performance.now() - t}`);
     }
 
 }
