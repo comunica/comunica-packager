@@ -7,6 +7,7 @@ import {getExpandedIRI, jsonldToState, parseContext, stateToJsonld} from "~/util
 import _ from 'lodash';
 import * as jsonldParser from 'jsonld';
 import {extractJson} from "~/utils/jsonld";
+import {handleParameters} from "~/middleware/packages";
 
 
 const baseUrl = 'https://linkedsoftwaredependencies.org/bundles/npm/@comunica/';
@@ -45,33 +46,13 @@ function handleDefault(range: any, defaultValue: any) {
 }
 
 /**
- * Merges the value part of duplicate keys
- * @param o: An object
- * @param key: The key that is duplicated
- */
-function mergeDuplicateKeys(o: any, key: string) {
-    let i = 0;
-
-    while (o[i]['@id'] !== key)
-        i++;
-
-    o[i] = {
-        ...o[i],
-        ...o[i+1]
-    };
-
-    o.splice(i+1, 1);
-
-    return o;
-}
-
-/**
  * Returns the default state without any actors or mediators
  */
 function getDefaultState() {
     return {
         id: 'urn:comunica:my',
         busGroups: [],
+        actors: {},
         mediators: [],
         createdActors: {},
         createdMediators: [],
@@ -201,6 +182,42 @@ export const actions = {
         });
     },
 
+    async fetchArgumentsOfActor({state, commit}: any, payload: any) {
+        const actorName = pascalCaseToKebabCase(payload.actorName);
+        const actorPart = payload.actorName.slice(`Actor${payload.busGroup}`.length)
+        const actorConfig = await (this as any).$axios.$get(
+            `${baseUrl}${actorName}/^1.0.0/components/Actor/${payload.busGroup}/${actorPart}.jsonld`
+        );
+
+        let componentContent = actorConfig.components[0];
+        let atContext = actorConfig['@context'];
+        const normalizedContext = await parseContext(atContext);
+
+        let parameters: any = {};
+
+        commit('addToContext', atContext);
+
+        while (componentContent.extends) {
+            const parentComponents = Array.isArray(componentContent.extends) ? componentContent.extends : [componentContent.extends];
+            for (const p of parentComponents) {
+                const componentURL = getParentComponentUrl(getExpandedIRI(normalizedContext, p));
+                let componentContentRaw = await (this as any).$axios.$get(componentURL);
+                componentContent = componentContentRaw.components[0];
+                if (componentContent.parameters) {
+                    parameters.push(...componentContent.parameters);
+                }
+            }
+        }
+
+        // for (const [i, p] of parameters.entries()) {
+        //     if (p.hasOwnProperty('default'))
+        //         parameters[i].value = handleDefault(p.range, p.default);
+        //     if (p.hasOwnProperty('defaultScoped'))
+        //         parameters[i].value = handleDefault(p.range, p.defaultScoped.defaultScopedValue);
+        // }
+    },
+
+
     mapMediatorToState({state, commit, dispatch}: any, payload: any) {
         dispatch('addMediator', {
             mediator: payload['@type'],
@@ -229,65 +246,32 @@ export const actions = {
         });
     },
 
-    async addActor(context: any, payload: any) {
+    addActor(context: any, payload: any) {
 
-        const actorName = pascalCaseToKebabCase(payload.actorName);
-        const actorPart = payload.actorName.slice(`Actor${payload.busGroup}`.length)
-        const actorConfig = await (this as any).$axios.$get(
-            `${baseUrl}${actorName}/^1.0.0/components/Actor/${payload.busGroup}/${actorPart}.jsonld`
-        );
+        let parameters: any = {};
 
-        let componentContent = actorConfig.components[0];
-        let type = componentContent['requireElement'];
-        let parameters = [];
-        let atContext = actorConfig['@context'];
 
-        context.commit('addToContext', atContext);
-        if (componentContent.parameters) {
-            parameters.push(...componentContent.parameters);
-        }
-
-        const normalizedContext = await parseContext(atContext);
-
-        while (componentContent.extends) {
-            const parentComponents = Array.isArray(componentContent.extends) ? componentContent.extends : [componentContent.extends];
-            for (const p of parentComponents) {
-                const componentURL = getParentComponentUrl(getExpandedIRI(normalizedContext, p));
-                let componentContentRaw = await (this as any).$axios.$get(componentURL);
-                componentContent = componentContentRaw.components[0];
-                if (componentContent.parameters) {
-                    parameters.push(...componentContent.parameters);
-                }
-            }
-        }
-
-        parameters = mergeDuplicateKeys(parameters, 'cc:Actor/bus');
-        for (const p of parameters) {
-            p['@id'] = getExpandedIRI(normalizedContext, p['@id']);
-        }
-
-        for (const [i, p] of parameters.entries()) {
-            if (p.hasOwnProperty('default'))
-                parameters[i].value = handleDefault(p.range, p.default);
-            if (p.hasOwnProperty('defaultScoped'))
-                parameters[i].value = handleDefault(p.range, p.defaultScoped.defaultScopedValue);
-        }
 
         if (payload.parameters) {
-            for (let p of parameters) {
-                if (payload.parameters.hasOwnProperty(p['@id'])) {
+            for (let key of Object.keys(payload.parameters)) {
+                if (key[0] !== '@') {
+                    let p = payload.parameters[key];
+                    let v = undefined;
+
                     if (p.range === 'cc:Logger')
-                        p.value = payload.parameters[p['@id']]['@type'];
+                        v = payload.parameters[p['@id']]['@type'];
                     else if (p.range === 'cc:Bus' || p['@id'].includes('mediator'))
-                        p.value = payload.parameters[p['@id']]['@id'];
+                        v = payload.parameters[p['@id']]['@id'];
                     else
-                        p.value = JSON.stringify(payload.parameters['@id']);
+                        v = JSON.stringify(payload.parameters['@id']);
+
+                    parameters[p] = {value: v}
                 }
             }
         }
 
         const actor = {
-            actorName: type,
+            actorName: payload.actorName,
             '@id': payload['@id'],
             parameters: parameters
         };

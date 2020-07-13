@@ -1,5 +1,4 @@
 import {extractLabel, kebabCaseToPascalCase} from "~/utils/alpha";
-import * as jsonldParser from 'jsonld';
 import {getExpandedIRI, parseContext} from "~/utils/json";
 
 interface Context {
@@ -15,7 +14,7 @@ interface Package {
 
 const baseURL = 'https://linkedsoftwaredependencies.org/bundles/npm/@comunica/'
 
-function handleParameters(normalizedContext: any, parametersAll: any, parameters: any) {
+export function handleParameters(normalizedContext: any, parametersAll: any, parameters: any) {
     for (const p of parameters) {
         parametersAll[getExpandedIRI(normalizedContext, p['@id'])] = p
     }
