@@ -96,18 +96,18 @@ export default async ({$axios, store}: Context) => {
     }
 
     let busGroups: any = [];
+    let usedActors = new Set();
 
     for (const b of buses) {
         let busGroup: any = {
             busGroupName: kebabCaseToPascalCase(b)
         };
-
-        busGroup.actors = await Promise.all(
-            packageNames
+        let actors = packageNames
                 .filter((p: string) => p.startsWith(`actor-${b}`))
                 .map(kebabCaseToPascalCase)
-        );
-
+                .filter((a: any) => !usedActors.has(a));
+        actors.forEach((a: any) => usedActors.add(a));
+        busGroup.actors = actors;
         busGroups.push(busGroup);
     }
 
