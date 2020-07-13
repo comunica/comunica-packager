@@ -32,7 +32,6 @@ export default async ({$axios, store}: Context) => {
     const mediatorPackages = packageNames.filter((p: string) => p.startsWith('mediator-'));
     const loggerPackages = packageNames.filter((p: string) => p.startsWith('logger-'));
 
-    // TODO: optimizations
     // Every mediator has a bus parameter
     const mediatorSuperParameter = {
         "@id": "https://linkedsoftwaredependencies.org/bundles/npm/@comunica/core/Mediator/bus",
@@ -76,11 +75,12 @@ export default async ({$axios, store}: Context) => {
 
             handleParameters(normalizedContext, parameters, [mediatorSuperParameter]) ;
 
-            if (mediatorComponent.parameters)
-                handleParameters(normalizedContext, parameters, mediatorComponent.parameters);
             if (mediatorComponent.extends && mediatorComponent.extends !== 'cc:Mediator') {
                 // parameters.splice(1, 1);
                 handleParameters(normalizedContext, parameters, numberSuperParameters);
+            } else {
+                if (mediatorComponent.parameters)
+                    handleParameters(normalizedContext, parameters, mediatorComponent.parameters);
             }
 
             for (let p of Object.keys(parameters))

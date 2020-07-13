@@ -24,34 +24,34 @@
                 >
             </div>
             <div id="parameters">
-                <div v-for="parameter in parameters" :key="parameter['@id']" class="parameter">
-                    <p class="parameter-text text-small" v-if="parameter.required"><b>{{trimIdentifier(parameter['@id'])}}</b></p>
-                    <p class="parameter-text text-small" v-else><i>{{trimIdentifier(parameter['@id'])}}</i></p>
+                <div v-for="p in Object.keys(parameters)" :key="p" class="parameter">
+                    <p class="parameter-text text-small" v-if="parameters[p].required"><b>{{trimIdentifier(p)}}</b></p>
+                    <p class="parameter-text text-small" v-else><i>{{trimIdentifier(p)}}</i></p>
                     <DropdownComponent
-                            v-if="trimIdentifier(parameter['@id']).startsWith('mediator')"
-                            :value="parameter.value"
-                            @input="x => $emit('param', x, id, parameter['@id'])"
+                            v-if="trimIdentifier(p).startsWith('mediator')"
+                            :value="parameters[p].value"
+                            @input="x => $emit('param', x, id, p)"
                             placeholder="Choose mediator"
                             :options="mediators"
                     />
                     <DropdownComponent
-                            v-else-if="parameter.range === 'cc:Bus'"
-                            :value="parameter.value"
-                            @input="x => $emit('param', x, id, parameter['@id'])"
+                            v-else-if="parameters[p].range === 'cc:Bus'"
+                            :value="parameters[p].value"
+                            @input="x => $emit('param', x, id, p)"
                             placeholder="Choose bus"
                             :options="buses"
                     />
                     <DropdownComponent
-                            v-else-if="parameter.range === 'cc:Logger'"
-                            :value="parameter.value"
-                            @input="x => $emit('param', x, id, parameter['@id'])"
+                            v-else-if="parameters[p].range === 'cc:Logger'"
+                            :value="parameters[p].value"
+                            @input="x => $emit('param', x, id, p)"
                             placeholder="Choose logger"
                             :options="loggers"
                     />
                     <input
                             v-else
-                            :value="parameter.value"
-                            @change="$emit('param', $event.target.value, id, parameter['@id'])"
+                            :value="parameters[p].value"
+                            @change="$emit('param', $event.target.value, id, p)"
                             class="input parameter-input"
                             type="text"
                     >
@@ -75,8 +75,8 @@
                 default: 'Placeholder object name'
             },
             parameters: {
-                type: Array,
-                default: () => []
+                type: Object,
+                default: () => {}
             },
             id: {
                 type: String,

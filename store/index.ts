@@ -152,13 +152,8 @@ export const mutations = {
     },
 
     changeParameterValueOfMediator(state: any, payload: any) {
-
         const indexMediator = state.createdMediators.findIndex((x: any) => x['@id'] === payload['@id']);
-        const indexParameter = state.createdMediators[indexMediator].parameters.findIndex(
-            (x: any) => x['@id'] === payload.parameterName
-        );
-
-        state.createdMediators[indexMediator].parameters[indexParameter].value = payload.value;
+        state.createdMediators[indexMediator].parameters[payload.parameterName].value = payload.value;
 
     },
 

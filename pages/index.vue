@@ -53,8 +53,6 @@
     import FileInputComponent from "../components/FileInputComponent";
     import LogoComponent from "../components/LogoComponent";
     import DropdownComponent from "../components/DropdownComponent";
-    import * as jsonldParser from "jsonld";
-    import {extractJson} from "../utils/jsonld";
 
     export default {
         components: {
