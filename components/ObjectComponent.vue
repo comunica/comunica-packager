@@ -24,33 +24,33 @@
                 >
             </div>
             <div id="parameters">
-                <div v-for="p in Object.keys(parameters)" :key="p" class="parameter">
-                    <p class="parameter-text text-small" v-if="parameters[p].required"><b>{{trimIdentifier(p)}}</b></p>
+                <div v-for="p in Object.keys(objectParameters)" :key="p" class="parameter">
+                    <p class="parameter-text text-small" v-if="objectParameters[p].required"><b>{{trimIdentifier(p)}}</b></p>
                     <p class="parameter-text text-small" v-else><i>{{trimIdentifier(p)}}</i></p>
                     <DropdownComponent
                             v-if="trimIdentifier(p).startsWith('mediator')"
-                            :value="parameters[p].value"
+                            :value="objectParameters[p].value"
                             @input="x => $emit('param', x, id, p)"
                             placeholder="Choose mediator"
                             :options="mediators"
                     />
                     <DropdownComponent
-                            v-else-if="parameters[p].range === 'cc:Bus'"
-                            :value="parameters[p].value"
+                            v-else-if="objectParameters[p].range === 'cc:Bus'"
+                            :value="objectParameters[p].value"
                             @input="x => $emit('param', x, id, p)"
                             placeholder="Choose bus"
                             :options="buses"
                     />
                     <DropdownComponent
-                            v-else-if="parameters[p].range === 'cc:Logger'"
-                            :value="parameters[p].value"
+                            v-else-if="objectParameters[p].range === 'cc:Logger'"
+                            :value="objectParameters[p].value"
                             @input="x => $emit('param', x, id, p)"
                             placeholder="Choose logger"
                             :options="loggers"
                     />
                     <input
                             v-else
-                            :value="parameters[p].value"
+                            :value="objectParameters[p].value"
                             @change="$emit('param', $event.target.value, id, p)"
                             class="input parameter-input"
                             type="text"
@@ -63,9 +63,10 @@
 
 <script>
     import DeleteButtonComponent from "./IconButtonComponent";
+    import IconButtonComponent from "./IconButtonComponent";
     import DropdownComponent from "./DropdownComponent";
     import {extractLabel, trimIdentifier} from "../utils/alpha";
-    import IconButtonComponent from "./IconButtonComponent";
+
     export default {
         name: "ObjectComponent",
         components: {IconButtonComponent, DropdownComponent, DeleteButtonComponent},
@@ -76,7 +77,7 @@
             },
             parameters: {
                 type: Object,
-                default: () => {}
+                default: undefined
             },
             id: {
                 type: String,
@@ -84,13 +85,13 @@
             },
             busGroup: {
                 type: String,
-                default: ''
+                default: undefined
             }
         },
         data() {
             return {
-                objectParameters: this.parameters,
-                close: true
+                close: true,
+                objectParameters: {}
             }
         },
         methods: {
@@ -115,6 +116,16 @@
                     fullName: p,
                     name: extractLabel(p)
                 }));
+            }
+        },
+        async mounted() {
+            this.objectParameters = this.parameters;
+            if (this.busGroup) {
+                   await this.$store.dispatch('fetchArgumentsOfActor', {
+                       busGroup: this.busGroup,
+                       actorName: this.objectName,
+                       '@id': this.id
+                   });
             }
         }
     }

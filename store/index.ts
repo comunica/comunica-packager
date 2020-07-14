@@ -67,7 +67,7 @@ function getDefaultState() {
  * @param busGroups: The available bus groups
  * @param actor: The actor to retrieve the bus group from
  */
-function getBusGroupOfActor(busGroups: any, actor: string) {
+export function getBusGroupOfActor(busGroups: any, actor: string) {
     let b = '';
 
     busGroups.forEach((busGroup: any) => {
@@ -122,20 +122,24 @@ export const mutations = {
         Vue.set(state, 'createdMediators', state.createdMediators.filter((m: any) => m['@id'] !== mediator));
     },
 
+    addParametersToActor(state: any, payload: any) {
+        const currentBusGroup = state.createdActors[payload.busGroup];
+        const indexActor = currentBusGroup.findIndex((x: any) => x['@id'] === payload['@id']);
+
+        for (let k of Object.keys(payload.parameters))
+            state.createdActors[payload.busGroup][indexActor].parameters[k] = payload.parameters[k];
+    },
+
     changeParameterValueOfActor(state: any, payload: any) {
         const currentBusGroup = state.createdActors[payload.busGroup];
         const indexActor = currentBusGroup.findIndex((x: any) => x['@id'] === payload['@id']);
-        const indexParameter = currentBusGroup[indexActor].parameters.findIndex(
-            (x: any) => x['@id'] === payload.parameterName
-        );
 
-        state.createdActors[payload.busGroup][indexActor].parameters[indexParameter].value = payload.value;
+        state.createdActors[payload.busGroup][indexActor].parameters[payload.parameterName].value = payload.value;
     },
 
     changeParameterValueOfMediator(state: any, payload: any) {
         const indexMediator = state.createdMediators.findIndex((x: any) => x['@id'] === payload['@id']);
         state.createdMediators[indexMediator].parameters[payload.parameterName].value = payload.value;
-
     },
 
     changeIDOfActor(state: any, payload: any) {
@@ -192,10 +196,12 @@ export const actions = {
         let componentContent = actorConfig.components[0];
         let atContext = actorConfig['@context'];
         const normalizedContext = await parseContext(atContext);
-
         let parameters: any = {};
 
         commit('addToContext', atContext);
+
+        if (componentContent.parameters)
+            handleParameters(normalizedContext, parameters, componentContent.parameters);
 
         while (componentContent.extends) {
             const parentComponents = Array.isArray(componentContent.extends) ? componentContent.extends : [componentContent.extends];
@@ -203,11 +209,17 @@ export const actions = {
                 const componentURL = getParentComponentUrl(getExpandedIRI(normalizedContext, p));
                 let componentContentRaw = await (this as any).$axios.$get(componentURL);
                 componentContent = componentContentRaw.components[0];
-                if (componentContent.parameters) {
-                    parameters.push(...componentContent.parameters);
-                }
+                if (componentContent.parameters)
+                    handleParameters(normalizedContext, parameters, componentContent.parameters);
             }
         }
+
+        commit('addParametersToActor', {
+            busGroup: payload.busGroup,
+            actorName: payload.actorName,
+            parameters: parameters,
+            '@id': payload['@id']
+        });
 
         // for (const [i, p] of parameters.entries()) {
         //     if (p.hasOwnProperty('default'))
@@ -249,8 +261,6 @@ export const actions = {
     addActor(context: any, payload: any) {
 
         let parameters: any = {};
-
-
 
         if (payload.parameters) {
             for (let key of Object.keys(payload.parameters)) {
