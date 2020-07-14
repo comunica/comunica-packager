@@ -190,6 +190,9 @@ export function getExpandedIRI(normalizedContext: any, compactTerm: string) {
     if (compactTerm[0] === '@' || compactTerm.startsWith('https'))
         return compactTerm;
 
+    if (compactTerm === 'beforeActor')
+        return 'https://linkedsoftwaredependencies.org/bundles/npm/@comunica/core/Actor/beforeActor';
+
     const iri = normalizedContext.expandTerm(compactTerm, true);
     return iri ? iri : compactTerm;
 }
@@ -198,6 +201,9 @@ export function getCompactedIRI(normalizedContext: any, expandedIRI: string) {
 
     if (expandedIRI[0] === '@')
         return expandedIRI;
+
+    if (expandedIRI === 'https://linkedsoftwaredependencies.org/bundles/npm/@comunica/core/Actor/beforeActor')
+        return 'beforeActor';
 
     const iri = normalizedContext.compactIri(expandedIRI, true);
     return iri ? iri: expandedIRI;
