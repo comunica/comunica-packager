@@ -1,5 +1,11 @@
 <template>
-    <p>Loading...</p>
+    <div id="loading">
+        <v-progress-circular
+                indeterminate
+                color="primary"
+        ></v-progress-circular>
+    </div>
+
 </template>
 
 <script>
@@ -9,5 +15,9 @@
 </script>
 
 <style scoped>
-
+    #loading {
+        display: grid;
+        place-items: center;
+        justify-content: center;
+    }
 </style>

@@ -222,6 +222,9 @@
 
     .column {
         margin: 0 10px;
+        display: flex;
+        flex-direction: column;
+        flex: 1;
     }
 
     @media screen and (max-width: 900px) {

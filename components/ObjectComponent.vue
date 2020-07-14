@@ -23,7 +23,7 @@
                         type="text"
                 >
             </div>
-            <div id="parameters">
+            <div v-if="areParametersFetched" id="parameters">
                 <div v-for="p in Object.keys(objectParameters)" :key="p" class="parameter">
                     <p class="parameter-text text-small" v-if="objectParameters[p].required"><b>{{trimIdentifier(p)}}</b></p>
                     <p class="parameter-text text-small" v-else><i>{{trimIdentifier(p)}}</i></p>
@@ -57,6 +57,7 @@
                     >
                 </div>
             </div>
+            <LoadingComponent v-else/>
         </div>
     </div>
 </template>
@@ -66,10 +67,11 @@
     import IconButtonComponent from "./IconButtonComponent";
     import DropdownComponent from "./DropdownComponent";
     import {extractLabel, trimIdentifier} from "../utils/alpha";
+    import LoadingComponent from "./LoadingComponent";
 
     export default {
         name: "ObjectComponent",
-        components: {IconButtonComponent, DropdownComponent, DeleteButtonComponent},
+        components: {LoadingComponent, IconButtonComponent, DropdownComponent, DeleteButtonComponent},
         props: {
             objectName: {
                 type: String,
@@ -91,6 +93,7 @@
         data() {
             return {
                 close: true,
+                areParametersFetched: false,
                 objectParameters: {}
             }
         },
@@ -126,6 +129,9 @@
                        actorName: this.objectName,
                        '@id': this.id
                    });
+                   this.areParametersFetched = true;
+            } else {
+                this.areParametersFetched = true;
             }
         }
     }
