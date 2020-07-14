@@ -1,5 +1,60 @@
 import {ContextParser} from "jsonld-context-parser";
 
+function handleParameter(obj: any, parameterNameFull: string, parameter: any) {
+
+    let parameterNameShort = parameterNameFull.split('/').pop();
+    parameterNameShort = parameterNameShort ? parameterNameShort : parameterNameFull;
+    if (parameterNameShort[0] === '@') {
+        obj[parameterNameFull] = parameter
+    } else {
+        let value = parameter;
+        if (parameterNameShort.includes('mediator') || parameterNameShort === 'bus')
+            value = parameter['@id'];
+        else if (parameterNameShort === 'logger')
+            value = parameter['@type'];
+        else if (typeof value !== 'string')
+            value = JSON.stringify(value);
+
+        obj.parameters[parameterNameFull] = {
+            value: value,
+        };
+    }
+}
+
+export function handleActor(normalizedContext: any, actor: any, actors: any[], mediators: any[]) {
+    let actorExtracted: any = {
+        parameters: {}
+    };
+    for (const key of Object.keys(actor)) {
+        if (key.includes('mediator') && Object.keys(actor[key]).length > 1) {
+            if (!Object.keys(actor[key]).includes('@id')) {
+                actor[key]['@id'] = `${actor['@id']}#${key}`;
+            }
+            // Handle implicitly defined mediators
+            handleMediator(normalizedContext, actor[key], mediators);
+            actor[key] = {
+                '@id': actor[key]['@id']
+            };
+        }
+        const iri = getExpandedIRI(normalizedContext, key);
+        handleParameter(actorExtracted, iri, actor[key]);
+    }
+
+    actors.push(actorExtracted);
+}
+
+export function handleMediator(normalizedContext: any, mediator: any, mediators: any[]) {
+    let mediatorExtracted: any = {
+        parameters: {}
+    };
+    for (const key of Object.keys(mediator)) {
+        const iri = getExpandedIRI(normalizedContext, key);
+        handleParameter(mediatorExtracted, iri, mediator[key]);
+    }
+
+    mediators.push(mediatorExtracted);
+}
+
 export async function stateToJsonld(state: any) {
     let addedActors: any = [];
     const createdActors: any[] = state.createdActors;
@@ -89,27 +144,32 @@ export async function stateToJsonld(state: any) {
     return JSON.stringify(output, null, '  ');
 }
 
-export function jsonldToState(jsonld: any) {
+export async function jsonldToState(jsonld: any) {
     let id = '';
+    let context = jsonld['@context'];
     let actors: any[] = [];
     let mediators: any[] = [];
 
-    // Handle graph based jsonlds
+    const normalizedContext = await parseContext(context);
+
     if (jsonld.hasOwnProperty('@graph')) {
-        let runner = jsonld['@graph'][0];
-        id = runner['@id'];
-        runner.actors.forEach((a: any) => {
-            actors.push(a);
-        });
+        let actorPart = jsonld['@graph'][0];
+        // TODO: auto-generated id if not present (for importing)
+        id = actorPart['@id'] ? actorPart['@id'] : ''
+
+        for (const a of actorPart.actors) {
+            handleActor(normalizedContext, a, actors, mediators);
+        }
         if (jsonld['@graph'].length > 1) {
             for (let i = 1; i < jsonld['@graph'].length; i++) {
-                mediators.push(jsonld['@graph'][i]);
+                handleMediator(normalizedContext, jsonld['@graph'][i], mediators);
             }
         }
-    // Handle single object jsonlds
     } else {
-        // TODO: version without graph and mediators in actors
-        alert('Version without graph not yet supported!');
+        id = jsonld['@id'] ? jsonld['@id'] : ''
+        for (const a of jsonld.actors) {
+            handleActor(context, a, actors, mediators);
+        }
     }
 
     return {
