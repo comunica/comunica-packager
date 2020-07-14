@@ -52,6 +52,7 @@ function getDefaultState() {
     return {
         id: 'urn:comunica:my',
         busGroups: [],
+        mediatorPackages: [],
         actors: {},
         mediators: [],
         createdActors: {},
@@ -87,6 +88,10 @@ export const mutations = {
         busGroups.forEach((bs) => {
             state.createdActors[bs.busGroupName] = []
         });
+    },
+
+    addMediatorPackages(state: any, packages: string[]) {
+        state.mediatorPackages = packages;
     },
 
     addMediators(state: any, mediators: string[]) {

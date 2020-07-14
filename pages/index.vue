@@ -21,13 +21,14 @@
         </div>
         <div id="content">
             <div class="column" style="margin-right: 10px;" v-if="busGroups">
-                <p class="text-large">Actor</p>
+                <p class="text-large">Actors</p>
                 <ActorsComponent style="margin-top: 20px;"/>
             </div>
             <hr style="height:2px;border-width:0;color:gray;background-color:white;border-radius:2px">
             <div class="column" style="margin-left: 10px;">
                 <p class="text-large">Mediators</p>
-                <MediatorComponent style="margin-top: 20px;"/>
+                <MediatorComponent v-if="areMediatorsFetched" style="margin-top: 20px;"/>
+                <LoadingComponent v-else/>
             </div>
         </div>
         <div id="footer">
@@ -53,9 +54,14 @@
     import FileInputComponent from "../components/FileInputComponent";
     import LogoComponent from "../components/LogoComponent";
     import DropdownComponent from "../components/DropdownComponent";
+    import {getExpandedIRI, parseContext} from "../utils/json";
+    import {handleParameters} from "../middleware/packages";
+    import {extractLabel} from "../utils/alpha";
+    import LoadingComponent from "../components/LoadingComponent";
 
     export default {
         components: {
+            LoadingComponent,
             DropdownComponent,
             LogoComponent,
             FileInputComponent,
@@ -70,6 +76,7 @@
                 actorLink: undefined,
                 imp: false,
                 presets: [],
+                areMediatorsFetched: false
             }
         },
         computed: {
@@ -92,6 +99,76 @@
             onReset() {
                 this.$store.commit('resetState');
             }
+        },
+        async mounted () {
+
+            // Every mediator has a bus parameter
+            const mediatorSuperParameter = {
+                "@id": "https://linkedsoftwaredependencies.org/bundles/npm/@comunica/core/Mediator/bus",
+                "comment": "The bus this mediator will mediate over.",
+                "range": "cc:Bus",
+                "unique": true,
+                "required": true
+            };
+
+            // Every number mediator has these parameters
+            const numberSuperParameters = [
+                {
+                    "@id": "https://linkedsoftwaredependencies.org/bundles/npm/@comunica/mediator-number/Mediator/Number/field",
+                    "comment": "The field name to mediate over",
+                    "range": "xsd:string",
+                    "unique": true,
+                    "required": true
+                },
+                {
+                    "@id": "https://linkedsoftwaredependencies.org/bundles/npm/@comunica/mediator-number/Mediator/Number/ignoreErrors",
+                    "comment": "If actors that throw test errors should be ignored",
+                    "range": "xsd:boolean",
+                    "unique": true,
+                    "required": true,
+                    "default": false
+                }
+            ];
+
+            const mediatorPackages = this.$store.state.mediatorPackages;
+            const mediatorsList = [];
+
+            for (const m of mediatorPackages) {
+                const mediatorComponents = await this.$axios.$get(`https://linkedsoftwaredependencies.org/bundles/npm/@comunica/${m}/^1.0.0/components/components.jsonld`);
+                const mediatorPackageContext = await parseContext(mediatorComponents['@context']);
+                const mediatorComponentsExpanded = mediatorComponents['import']
+                    .map(i => getExpandedIRI(mediatorPackageContext, i));
+                for (const mediatorURL of mediatorComponentsExpanded) {
+
+                    const mediatorJson = await this.$axios.$get(mediatorURL);
+                    const mediatorComponent = mediatorJson.components[0];
+                    const normalizedContext = await parseContext(mediatorJson['@context']);
+                    const parameters = {}
+
+                    handleParameters(normalizedContext, parameters, [mediatorSuperParameter]) ;
+
+                    if (mediatorComponent.extends && mediatorComponent.extends !== 'cc:Mediator') {
+                        handleParameters(normalizedContext, parameters, numberSuperParameters);
+                    } else {
+                        if (mediatorComponent.parameters)
+                            handleParameters(normalizedContext, parameters, mediatorComponent.parameters);
+                    }
+
+                    for (let p of Object.keys(parameters))
+                        if (parameters[p].hasOwnProperty('default'))
+                            parameters[p].value = parameters[p].default;
+
+                    mediatorsList.push({
+                        context: mediatorJson['@context'],
+                        name: extractLabel(mediatorComponent['@id']) ,
+                        parameters: parameters,
+                    });
+                }
+            }
+
+            this.$store.commit('addMediators', mediatorsList);
+            this.areMediatorsFetched = true;
+
         },
         async asyncData(context) {
             const rawPresets = await context.$axios.$get('/comunica-packager/presets.json');
@@ -121,11 +198,16 @@
         border-radius: 0 0 15px 15px;
     }
 
+    #input {
+        max-width: 600px;
+    }
+
     #buttons {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
         place-items: center;
         grid-gap: 10px;
+        margin-bottom: 10px;
     }
 
     #logo {
