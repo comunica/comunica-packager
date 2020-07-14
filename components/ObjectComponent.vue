@@ -23,60 +23,63 @@
                         type="text"
                 >
             </div>
-            <div id="parameters">
-                <div v-for="parameter in parameters" :key="parameter['@id']" class="parameter">
-                    <p class="parameter-text text-small" v-if="parameter.required"><b>{{trimIdentifier(parameter['@id'])}}</b></p>
-                    <p class="parameter-text text-small" v-else><i>{{trimIdentifier(parameter['@id'])}}</i></p>
+            <div v-if="areParametersFetched" id="parameters">
+                <div v-for="p in Object.keys(objectParameters)" :key="p" class="parameter">
+                    <p class="parameter-text text-small" v-if="objectParameters[p].required"><b>{{trimIdentifier(p)}}</b></p>
+                    <p class="parameter-text text-small" v-else><i>{{trimIdentifier(p)}}</i></p>
                     <DropdownComponent
-                            v-if="trimIdentifier(parameter['@id']).startsWith('mediator')"
-                            :value="parameter.value"
-                            @input="x => $emit('param', x, id, parameter['@id'])"
+                            v-if="trimIdentifier(p).startsWith('mediator')"
+                            :value="objectParameters[p].value"
+                            @input="x => $emit('param', x, id, p)"
                             placeholder="Choose mediator"
                             :options="mediators"
                     />
                     <DropdownComponent
-                            v-else-if="parameter.range === 'cc:Bus'"
-                            :value="parameter.value"
-                            @input="x => $emit('param', x, id, parameter['@id'])"
+                            v-else-if="objectParameters[p].range === 'cc:Bus'"
+                            :value="objectParameters[p].value"
+                            @input="x => $emit('param', x, id, p)"
                             placeholder="Choose bus"
                             :options="buses"
                     />
                     <DropdownComponent
-                            v-else-if="parameter.range === 'cc:Logger'"
-                            :value="parameter.value"
-                            @input="x => $emit('param', x, id, parameter['@id'])"
+                            v-else-if="objectParameters[p].range === 'cc:Logger'"
+                            :value="objectParameters[p].value"
+                            @input="x => $emit('param', x, id, p)"
                             placeholder="Choose logger"
                             :options="loggers"
                     />
                     <input
                             v-else
-                            :value="parameter.value"
-                            @change="$emit('param', $event.target.value, id, parameter['@id'])"
+                            :value="objectParameters[p].value"
+                            @change="$emit('param', $event.target.value, id, p)"
                             class="input parameter-input"
                             type="text"
                     >
                 </div>
             </div>
+            <LoadingComponent v-else/>
         </div>
     </div>
 </template>
 
 <script>
     import DeleteButtonComponent from "./IconButtonComponent";
+    import IconButtonComponent from "./IconButtonComponent";
     import DropdownComponent from "./DropdownComponent";
     import {extractLabel, trimIdentifier} from "../utils/alpha";
-    import IconButtonComponent from "./IconButtonComponent";
+    import LoadingComponent from "./LoadingComponent";
+
     export default {
         name: "ObjectComponent",
-        components: {IconButtonComponent, DropdownComponent, DeleteButtonComponent},
+        components: {LoadingComponent, IconButtonComponent, DropdownComponent, DeleteButtonComponent},
         props: {
             objectName: {
                 type: String,
                 default: 'Placeholder object name'
             },
             parameters: {
-                type: Array,
-                default: () => []
+                type: Object,
+                default: undefined
             },
             id: {
                 type: String,
@@ -84,13 +87,14 @@
             },
             busGroup: {
                 type: String,
-                default: ''
+                default: undefined
             }
         },
         data() {
             return {
-                objectParameters: this.parameters,
-                close: true
+                close: true,
+                areParametersFetched: false,
+                objectParameters: {}
             }
         },
         methods: {
@@ -115,6 +119,19 @@
                     fullName: p,
                     name: extractLabel(p)
                 }));
+            }
+        },
+        async mounted() {
+            this.objectParameters = this.parameters;
+            if (this.busGroup) {
+                   await this.$store.dispatch('fetchArgumentsOfActor', {
+                       busGroup: this.busGroup,
+                       actorName: this.objectName,
+                       '@id': this.id
+                   });
+                   this.areParametersFetched = true;
+            } else {
+                this.areParametersFetched = true;
             }
         }
     }

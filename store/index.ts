@@ -6,7 +6,7 @@ import {saveAs} from 'file-saver';
 import {getExpandedIRI, jsonldToState, parseContext, stateToJsonld} from "~/utils/json";
 import _ from 'lodash';
 import * as jsonldParser from 'jsonld';
-import {extractJson} from "~/utils/jsonld";
+import {handleParameters} from "~/middleware/packages";
 
 
 const baseUrl = 'https://linkedsoftwaredependencies.org/bundles/npm/@comunica/';
@@ -45,33 +45,14 @@ function handleDefault(range: any, defaultValue: any) {
 }
 
 /**
- * Merges the value part of duplicate keys
- * @param o: An object
- * @param key: The key that is duplicated
- */
-function mergeDuplicateKeys(o: any, key: string) {
-    let i = 0;
-
-    while (o[i]['@id'] !== key)
-        i++;
-
-    o[i] = {
-        ...o[i],
-        ...o[i+1]
-    };
-
-    o.splice(i+1, 1);
-
-    return o;
-}
-
-/**
  * Returns the default state without any actors or mediators
  */
 function getDefaultState() {
     return {
         id: 'urn:comunica:my',
         busGroups: [],
+        mediatorPackages: [],
+        actors: {},
         mediators: [],
         createdActors: {},
         createdMediators: [],
@@ -86,7 +67,7 @@ function getDefaultState() {
  * @param busGroups: The available bus groups
  * @param actor: The actor to retrieve the bus group from
  */
-function getBusGroupOfActor(busGroups: any, actor: string) {
+export function getBusGroupOfActor(busGroups: any, actor: string) {
     let b = '';
 
     busGroups.forEach((busGroup: any) => {
@@ -106,6 +87,10 @@ export const mutations = {
         busGroups.forEach((bs) => {
             state.createdActors[bs.busGroupName] = []
         });
+    },
+
+    addMediatorPackages(state: any, packages: string[]) {
+        state.mediatorPackages = packages;
     },
 
     addMediators(state: any, mediators: string[]) {
@@ -141,25 +126,32 @@ export const mutations = {
         Vue.set(state, 'createdMediators', state.createdMediators.filter((m: any) => m['@id'] !== mediator));
     },
 
+    addParametersToActor(state: any, payload: any) {
+        const currentBusGroup = state.createdActors[payload.busGroup];
+        const indexActor = currentBusGroup.findIndex((x: any) => x['@id'] === payload['@id']);
+
+        for (let k of Object.keys(payload.parameters)) {
+            if (state.createdActors[payload.busGroup][indexActor].parameters.hasOwnProperty(k)) {
+                let value = _.cloneDeep(state.createdActors[payload.busGroup][indexActor].parameters[k].value);
+                state.createdActors[payload.busGroup][indexActor].parameters[k] = payload.parameters[k];
+                state.createdActors[payload.busGroup][indexActor].parameters[k].value = value;
+            } else {
+                state.createdActors[payload.busGroup][indexActor].parameters[k] = payload.parameters[k];
+            }
+        }
+
+    },
+
     changeParameterValueOfActor(state: any, payload: any) {
         const currentBusGroup = state.createdActors[payload.busGroup];
         const indexActor = currentBusGroup.findIndex((x: any) => x['@id'] === payload['@id']);
-        const indexParameter = currentBusGroup[indexActor].parameters.findIndex(
-            (x: any) => x['@id'] === payload.parameterName
-        );
 
-        state.createdActors[payload.busGroup][indexActor].parameters[indexParameter].value = payload.value;
+        state.createdActors[payload.busGroup][indexActor].parameters[payload.parameterName].value = payload.value;
     },
 
     changeParameterValueOfMediator(state: any, payload: any) {
-
         const indexMediator = state.createdMediators.findIndex((x: any) => x['@id'] === payload['@id']);
-        const indexParameter = state.createdMediators[indexMediator].parameters.findIndex(
-            (x: any) => x['@id'] === payload.parameterName
-        );
-
-        state.createdMediators[indexMediator].parameters[indexParameter].value = payload.value;
-
+        state.createdMediators[indexMediator].parameters[payload.parameterName].value = payload.value;
     },
 
     changeIDOfActor(state: any, payload: any) {
@@ -206,53 +198,25 @@ export const actions = {
         });
     },
 
-    mapMediatorToState({state, commit, dispatch}: any, payload: any) {
-        dispatch('addMediator', {
-            mediator: payload['@type'],
-            id: payload['@id']
-        });
-
-        for (const parameter of Object.keys(payload)) {
-            if (parameter !== '@id' && parameter !== '@type') {
-                commit('changeParameterValueOfMediator', {
-                    '@id': payload['@id'],
-                    parameterName: parameter,
-                    value: parameter === 'https://linkedsoftwaredependencies.org/bundles/npm/@comunica/core/Mediator/bus' ?
-                        payload[parameter]['@id'] : payload[parameter]
-                });
-            }
-        }
-    },
-
-    async mapActorToState({state, commit, dispatch}: any, payload: any) {
-
-        dispatch('addActor', {
-            actorName: payload['@type'],
-            '@id': payload['@id'],
-            busGroup: getBusGroupOfActor(state.busGroups, payload['@type']),
-            parameters: payload
-        });
-    },
-
-    async addActor(context: any, payload: any) {
-
+    async fetchArgumentsOfActor({state, commit}: any, payload: any) {
         const actorName = pascalCaseToKebabCase(payload.actorName);
-        const actorPart = payload.actorName.slice(`Actor${payload.busGroup}`.length)
+        let busGroup = payload.busGroup;
+        if (payload.actorName === 'ActorRdfParseHtml' || payload.actorName === 'ActorRdfParseHtmlScript')
+            busGroup = 'RdfParse';
+        const actorPart = payload.actorName.slice(`Actor${busGroup}`.length)
         const actorConfig = await (this as any).$axios.$get(
-            `${baseUrl}${actorName}/^1.0.0/components/Actor/${payload.busGroup}/${actorPart}.jsonld`
+            `${baseUrl}${actorName}/^1.0.0/components/Actor/${busGroup}/${actorPart}.jsonld`
         );
 
         let componentContent = actorConfig.components[0];
-        let type = componentContent['requireElement'];
-        let parameters = [];
         let atContext = actorConfig['@context'];
-
-        context.commit('addToContext', atContext);
-        if (componentContent.parameters) {
-            parameters.push(...componentContent.parameters);
-        }
-
         const normalizedContext = await parseContext(atContext);
+        let parameters: any = {};
+
+        commit('addToContext', atContext);
+
+        if (componentContent.parameters)
+            handleParameters(normalizedContext, parameters, componentContent.parameters);
 
         while (componentContent.extends) {
             const parentComponents = Array.isArray(componentContent.extends) ? componentContent.extends : [componentContent.extends];
@@ -260,39 +224,58 @@ export const actions = {
                 const componentURL = getParentComponentUrl(getExpandedIRI(normalizedContext, p));
                 let componentContentRaw = await (this as any).$axios.$get(componentURL);
                 componentContent = componentContentRaw.components[0];
-                if (componentContent.parameters) {
-                    parameters.push(...componentContent.parameters);
-                }
+                if (componentContent.parameters)
+                    handleParameters(normalizedContext, parameters, componentContent.parameters);
             }
         }
 
-        parameters = mergeDuplicateKeys(parameters, 'cc:Actor/bus');
-        for (const p of parameters) {
-            p['@id'] = getExpandedIRI(normalizedContext, p['@id']);
-        }
+        commit('addParametersToActor', {
+            busGroup: payload.busGroup,
+            actorName: payload.actorName,
+            parameters: parameters,
+            '@id': payload['@id']
+        });
 
-        for (const [i, p] of parameters.entries()) {
-            if (p.hasOwnProperty('default'))
-                parameters[i].value = handleDefault(p.range, p.default);
-            if (p.hasOwnProperty('defaultScoped'))
-                parameters[i].value = handleDefault(p.range, p.defaultScoped.defaultScopedValue);
-        }
+        // for (const [i, p] of parameters.entries()) {
+        //     if (p.hasOwnProperty('default'))
+        //         parameters[i].value = handleDefault(p.range, p.default);
+        //     if (p.hasOwnProperty('defaultScoped'))
+        //         parameters[i].value = handleDefault(p.range, p.defaultScoped.defaultScopedValue);
+        // }
+    },
 
-        if (payload.parameters) {
-            for (let p of parameters) {
-                if (payload.parameters.hasOwnProperty(p['@id'])) {
-                    if (p.range === 'cc:Logger')
-                        p.value = payload.parameters[p['@id']]['@type'];
-                    else if (p.range === 'cc:Bus' || p['@id'].includes('mediator'))
-                        p.value = payload.parameters[p['@id']]['@id'];
-                    else
-                        p.value = JSON.stringify(payload.parameters['@id']);
-                }
-            }
+
+    mapMediatorToState({state, commit, dispatch}: any, payload: any) {
+        dispatch('addMediator', {
+            mediator: payload['@type'],
+            id: payload['@id']
+        });
+
+        for (const parameter of Object.keys(payload.parameters)) {
+            commit('changeParameterValueOfMediator', {
+                '@id': payload['@id'],
+                parameterName: parameter,
+                value: payload.parameters[parameter].value
+            });
+
         }
+    },
+
+    mapActorToState({state, commit, dispatch}: any, payload: any) {
+        dispatch('addActor', {
+            actorName: payload['@type'],
+            '@id': payload['@id'],
+            busGroup: getBusGroupOfActor(state.busGroups, payload['@type']),
+            parameters: payload.parameters
+        });
+    },
+
+    addActor(context: any, payload: any) {
+
+        let parameters = payload.parameters ? payload.parameters : {};
 
         const actor = {
-            actorName: type,
+            actorName: payload.actorName,
             '@id': payload['@id'],
             parameters: parameters
         };
@@ -310,43 +293,23 @@ export const actions = {
         );
     },
 
-    async uploadZip(context: any, file: any) {
+    async uploadZip({commit, dispatch}: any, file: any) {
 
-        // TODO: update
         let zip = new JSZip();
         zip.loadAsync(file).then(function(z) {
-            zip.file('config.json').async('text').then(function(json) {
-                context.commit('resetState');
-                const s = jsonldToState(JSON.parse(json));
-                context.commit('changeID', s.id);
-                context.commit('addToContext', s.context);
+            zip.file('config.json').async('text').then(async function(json) {
+                commit('resetState');
+                const s = await jsonldToState(JSON.parse(json));
+                commit('changeID', s.id);
+                commit('addToContext', s.context);
                 // Handle mediators
-                s.mediators.forEach((mediator: any) => {
-                    const mediatorType = _.cloneDeep(context.state.mediators.find((m: any) => m.name === mediator['@type']));
-                    for (let param of mediatorType.parameters) {
-                        if (mediator.hasOwnProperty(param['@id'])) {
-                            if (param.range === 'cc:Bus')
-                                param.value = mediator[param['@id']]['@id'];
-                            else
-                                param.value = mediator[param['@id']];
-                        }
-                    }
-                    // TODO: fix
-                    context.commit('createNewMediator', {
-                        type: mediator['@type'],
-                        '@id': mediator['@id'],
-                        parameters: mediatorType.parameters
-                    });
-                });
+                for (const mediator of s.mediators) {
+                    dispatch('mapMediatorToState', mediator);
+                }
                 // Handle actors
-                s.actors.forEach((actor: any) => {
-                    context.dispatch('addActor', {
-                        actorName: actor['@type'],
-                        '@id': actor['@id'],
-                        busGroup: getBusGroupOfActor(context.state.busGroups, actor['@type']),
-                        parameters: actor
-                    });
-                });
+                for (const actor of s.actors) {
+                    dispatch('mapActorToState', actor);
+                }
             });
         }, function() {alert('Invalid zip.')});
     },
@@ -355,7 +318,6 @@ export const actions = {
         // First reset everything
         commit('resetState');
 
-        const t = performance.now();
         const data = await (this as any).$axios.$get(presetLink);
         const dataExpanded: any = await jsonldParser.expand(data);
 
@@ -367,24 +329,23 @@ export const actions = {
         );
 
         await Promise.all(imports).then(async (fetchedImports: any) => {
-            await Promise.all(fetchedImports.map((fi: any) => extractJson(fi))).then((eps: any) => {
-                eps.forEach(({atContext, actors, mediators}: any) => {
-                    commit('addToContext', atContext);
-                    actorsAll.push(...actors);
-                    mediatorsAll.push(...mediators);
+            await Promise.all(fetchedImports.map((fi: any) => jsonldToState(fi))).then((eps: any) => {
+                eps.forEach((p: any) => {
+                    commit('addToContext', p.context);
+                    mediatorsAll.push(...p.mediators);
+                    actorsAll.push(...p.actors);
+
                 });
             });
         });
 
-        mediatorsAll.forEach(m => {
-            dispatch('mapMediatorToState', m);
-        });
+        // Handle mediators
+        for (const mediator of mediatorsAll)
+            dispatch('mapMediatorToState', mediator);
 
-        actorsAll.forEach(a => {
-            dispatch('mapActorToState', a);
-        })
-
-        console.log(`Time for loading preset: ${performance.now() - t}`);
+        // Handle actors
+        for (const actor of actorsAll)
+            dispatch('mapActorToState', actor);
     }
 
 }

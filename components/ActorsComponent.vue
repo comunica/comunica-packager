@@ -39,7 +39,7 @@
 
                 const busGroup = selectedActor[0];
                 const actorName = selectedActor[1];
-                const id = `mytest:${actorName}`
+                const id = `${busGroup}#${actorName}`
 
                 await this.$store.dispatch('addActor', {
                     busGroup: busGroup,

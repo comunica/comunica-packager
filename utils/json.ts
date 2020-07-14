@@ -1,8 +1,64 @@
 import {ContextParser} from "jsonld-context-parser";
 
+function handleParameter(obj: any, parameterNameFull: string, parameter: any) {
+
+    let parameterNameShort = parameterNameFull.split('/').pop();
+    parameterNameShort = parameterNameShort ? parameterNameShort : parameterNameFull;
+    if (parameterNameShort[0] === '@') {
+        obj[parameterNameFull] = parameter
+    } else {
+        let value = parameter;
+        if (parameterNameShort.includes('mediator') || parameterNameShort === 'bus')
+            value = parameter['@id'];
+        else if (parameterNameShort === 'logger')
+            value = parameter['@type'];
+        else if (typeof value !== 'string')
+            value = JSON.stringify(value);
+
+        obj.parameters[parameterNameFull] = {
+            value: value,
+        };
+    }
+}
+
+export function handleActor(normalizedContext: any, actor: any, actors: any[], mediators: any[]) {
+    let actorExtracted: any = {
+        parameters: {}
+    };
+    for (const key of Object.keys(actor)) {
+        if (key.includes('mediator') && Object.keys(actor[key]).length > 1) {
+            if (!Object.keys(actor[key]).includes('@id')) {
+                actor[key]['@id'] = `${actor['@id']}#${key}`;
+            }
+            // Handle implicitly defined mediators
+            handleMediator(normalizedContext, actor[key], mediators);
+            actor[key] = {
+                '@id': actor[key]['@id']
+            };
+        }
+        const iri = getExpandedIRI(normalizedContext, key);
+        handleParameter(actorExtracted, iri, actor[key]);
+    }
+
+    actors.push(actorExtracted);
+}
+
+export function handleMediator(normalizedContext: any, mediator: any, mediators: any[]) {
+    let mediatorExtracted: any = {
+        parameters: {}
+    };
+    for (const key of Object.keys(mediator)) {
+        const iri = getExpandedIRI(normalizedContext, key);
+        handleParameter(mediatorExtracted, iri, mediator[key]);
+    }
+
+    mediators.push(mediatorExtracted);
+}
+
 export async function stateToJsonld(state: any) {
     let addedActors: any = [];
     const createdActors: any[] = state.createdActors;
+    let normalizedContext = await parseContext([...state.context]);
 
     for (let [busGroup, actors] of  Object.entries(createdActors)) {
         if (actors.length) {
@@ -11,7 +67,8 @@ export async function stateToJsonld(state: any) {
                     '@id': actor['@id'],
                     '@type': actor.actorName
                 };
-                for (let parameter of actor.parameters) {
+                for (let key of Object.keys(actor.parameters)) {
+                    let parameter = actor.parameters[key];
                     if (parameter.value) {
                         if (parameter['@id'].includes('mediator')) {
                             actorToAdd[parameter['@id']] = {
@@ -33,9 +90,9 @@ export async function stateToJsonld(state: any) {
                                 }
                                 default: {
                                     try {
-                                        actorToAdd[await getCompactedIRI([...state.context], parameter['@id'])] = JSON.parse(parameter.value);
+                                        actorToAdd[getCompactedIRI(normalizedContext, key)] = JSON.parse(parameter.value);
                                     } catch (err) {
-                                        actorToAdd[await getCompactedIRI([...state.context], parameter['@id'])] = parameter.value;
+                                        actorToAdd[getCompactedIRI(normalizedContext, key)] = parameter.value;
                                     }
                                 }
                             }
@@ -62,16 +119,17 @@ export async function stateToJsonld(state: any) {
             '@id': mediator['@id'],
             '@type': mediator.type,
         }
-        for (let parameter of mediator.parameters) {
+        for (let key of Object.keys(mediator.parameters)) {
+            let parameter = mediator.parameters[key];
             if (parameter.range == 'cc:Bus') {
                 mediatorToAdd['cc:Mediator/bus'] = {
                     '@id': parameter.value
                 }
             } else {
                 try {
-                    mediatorToAdd[await getCompactedIRI([...state.context], parameter['@id'])] = JSON.parse(parameter.value);
+                    mediatorToAdd[getCompactedIRI(normalizedContext, key)] = JSON.parse(parameter.value);
                 } catch (err) {
-                    mediatorToAdd[await getCompactedIRI([...state.context], parameter['@id'])] = parameter.value;
+                    mediatorToAdd[getCompactedIRI(normalizedContext, key)] = parameter.value;
                 }
             }
         }
@@ -86,27 +144,32 @@ export async function stateToJsonld(state: any) {
     return JSON.stringify(output, null, '  ');
 }
 
-export function jsonldToState(jsonld: any) {
+export async function jsonldToState(jsonld: any) {
     let id = '';
+    let context = jsonld['@context'];
     let actors: any[] = [];
     let mediators: any[] = [];
 
-    // Handle graph based jsonlds
+    let normalizedContext = await parseContext(context);
+
     if (jsonld.hasOwnProperty('@graph')) {
-        let runner = jsonld['@graph'][0];
-        id = runner['@id'];
-        runner.actors.forEach((a: any) => {
-            actors.push(a);
-        });
+        let actorPart = jsonld['@graph'][0];
+        // TODO: auto-generated id if not present (for importing)
+        id = actorPart['@id'] ? actorPart['@id'] : ''
+
+        for (const a of actorPart.actors) {
+            handleActor(normalizedContext, a, actors, mediators);
+        }
         if (jsonld['@graph'].length > 1) {
             for (let i = 1; i < jsonld['@graph'].length; i++) {
-                mediators.push(jsonld['@graph'][i]);
+                handleMediator(normalizedContext, jsonld['@graph'][i], mediators);
             }
         }
-    // Handle single object jsonlds
     } else {
-        // TODO: version without graph and mediators in actors
-        alert('Version without graph not yet supported!');
+        id = jsonld['@id'] ? jsonld['@id'] : ''
+        for (const a of jsonld.actors) {
+            handleActor(normalizedContext, a, actors, mediators);
+        }
     }
 
     return {
@@ -124,21 +187,24 @@ export async function parseContext(context: any) {
 
 export function getExpandedIRI(normalizedContext: any, compactTerm: string) {
 
-    if (compactTerm[0] === '@')
+    if (compactTerm[0] === '@' || compactTerm.startsWith('https'))
         return compactTerm;
+
+    if (compactTerm === 'beforeActor')
+        return 'https://linkedsoftwaredependencies.org/bundles/npm/@comunica/core/Actor/beforeActor';
 
     const iri = normalizedContext.expandTerm(compactTerm, true);
     return iri ? iri : compactTerm;
 }
 
-export async function getCompactedIRI(context: any, expandedIRI: string) {
+export function getCompactedIRI(normalizedContext: any, expandedIRI: string) {
 
     if (expandedIRI[0] === '@')
         return expandedIRI;
 
-    const parser = new ContextParser();
-    const myContext = await parser.parse(context);
-    const iri = myContext.compactIri(expandedIRI, true);
+    if (expandedIRI === 'https://linkedsoftwaredependencies.org/bundles/npm/@comunica/core/Actor/beforeActor')
+        return 'beforeActor';
 
+    const iri = normalizedContext.compactIri(expandedIRI, true);
     return iri ? iri: expandedIRI;
 }
