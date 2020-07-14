@@ -150,7 +150,7 @@ export async function jsonldToState(jsonld: any) {
     let actors: any[] = [];
     let mediators: any[] = [];
 
-    const normalizedContext = await parseContext(context);
+    let normalizedContext = await parseContext(context);
 
     if (jsonld.hasOwnProperty('@graph')) {
         let actorPart = jsonld['@graph'][0];
@@ -168,7 +168,7 @@ export async function jsonldToState(jsonld: any) {
     } else {
         id = jsonld['@id'] ? jsonld['@id'] : ''
         for (const a of jsonld.actors) {
-            handleActor(context, a, actors, mediators);
+            handleActor(normalizedContext, a, actors, mediators);
         }
     }
 

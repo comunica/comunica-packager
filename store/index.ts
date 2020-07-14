@@ -6,7 +6,6 @@ import {saveAs} from 'file-saver';
 import {getExpandedIRI, jsonldToState, parseContext, stateToJsonld} from "~/utils/json";
 import _ from 'lodash';
 import * as jsonldParser from 'jsonld';
-import {extractJson} from "~/utils/jsonld";
 import {handleParameters} from "~/middleware/packages";
 
 
@@ -201,9 +200,12 @@ export const actions = {
 
     async fetchArgumentsOfActor({state, commit}: any, payload: any) {
         const actorName = pascalCaseToKebabCase(payload.actorName);
-        const actorPart = payload.actorName.slice(`Actor${payload.busGroup}`.length)
+        let busGroup = payload.busGroup;
+        if (payload.actorName === 'ActorRdfParseHtml' || payload.actorName === 'ActorRdfParseHtmlScript')
+            busGroup = 'RdfParse';
+        const actorPart = payload.actorName.slice(`Actor${busGroup}`.length)
         const actorConfig = await (this as any).$axios.$get(
-            `${baseUrl}${actorName}/^1.0.0/components/Actor/${payload.busGroup}/${actorPart}.jsonld`
+            `${baseUrl}${actorName}/^1.0.0/components/Actor/${busGroup}/${actorPart}.jsonld`
         );
 
         let componentContent = actorConfig.components[0];
@@ -300,7 +302,6 @@ export const actions = {
                 const s = await jsonldToState(JSON.parse(json));
                 commit('changeID', s.id);
                 commit('addToContext', s.context);
-                console.log(s);
                 // Handle mediators
                 for (const mediator of s.mediators) {
                     dispatch('mapMediatorToState', mediator);
@@ -316,35 +317,35 @@ export const actions = {
     async importPreset({commit, dispatch}: any, presetLink: any) {
         // First reset everything
         commit('resetState');
-        //
-        // const t = performance.now();
-        // const data = await (this as any).$axios.$get(presetLink);
-        // const dataExpanded: any = await jsonldParser.expand(data);
-        //
-        // let mediatorsAll: any[] = [];
-        // let actorsAll: any[] = [];
-        //
-        // let imports = dataExpanded[0]['http://www.w3.org/2002/07/owl#imports'].map(
-        //     (d: any) => (this as any).$axios.$get(d['@id'])
-        // );
-        //
-        // await Promise.all(imports).then(async (fetchedImports: any) => {
-        //     await Promise.all(fetchedImports.map((fi: any) => extractJson(fi))).then((eps: any) => {
-        //         eps.forEach(({atContext, actors, mediators}: any) => {
-        //             commit('addToContext', atContext);
-        //             actorsAll.push(...actors);
-        //             mediatorsAll.push(...mediators);
-        //         });
-        //     });
-        // });
-        //
-        // mediatorsAll.forEach(m => {
-        //     dispatch('mapMediatorToState', m);
-        // });
-        //
-        // actorsAll.forEach(a => {
-        //     dispatch('mapActorToState', a);
-        // });>
+
+        const data = await (this as any).$axios.$get(presetLink);
+        const dataExpanded: any = await jsonldParser.expand(data);
+
+        let mediatorsAll: any[] = [];
+        let actorsAll: any[] = [];
+
+        let imports = dataExpanded[0]['http://www.w3.org/2002/07/owl#imports'].map(
+            (d: any) => (this as any).$axios.$get(d['@id'])
+        );
+
+        await Promise.all(imports).then(async (fetchedImports: any) => {
+            await Promise.all(fetchedImports.map((fi: any) => jsonldToState(fi))).then((eps: any) => {
+                eps.forEach((p: any) => {
+                    commit('addToContext', p.context);
+                    mediatorsAll.push(...p.mediators);
+                    actorsAll.push(...p.actors);
+
+                });
+            });
+        });
+
+        // Handle mediators
+        for (const mediator of mediatorsAll)
+            dispatch('mapMediatorToState', mediator);
+
+        // Handle actors
+        for (const actor of actorsAll)
+            dispatch('mapActorToState', actor);
     }
 
 }
