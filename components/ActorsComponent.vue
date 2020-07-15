@@ -12,10 +12,10 @@
             </div>
         </div>
         <BusGroupComponent
-            v-for="(value, key) in busGroups"
-            v-if="value.length"
-            :key="key"
-            :bus-group="key"
+            v-for="bg in busGroups"
+            v-if="bg.actors.length"
+            :key="bg.busGroup"
+            :bus-group="bg.busGroup"
         />
     </div>
 
@@ -57,12 +57,15 @@
                 }));
             },
             busGroups() {
-                return this.$store.state.createdActors;
+                let busGroups = Object.keys(this.$store.state.createdActors).sort();
+                return busGroups.map(bg => ({
+                    busGroup: bg,
+                    actors: this.$store.state.createdActors[bg]
+                }));
             }
         }
     }
 </script>
 
-<style scoped>
 
 </style>
