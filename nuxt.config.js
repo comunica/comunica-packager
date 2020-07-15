@@ -1,5 +1,7 @@
 import webpack from 'webpack';
 
+let dev = process.env.NODE_ENV !== 'production'
+
 export default {
     router: {
       base: '/comunica-packager/'
@@ -54,11 +56,7 @@ export default {
     ** See https://axios.nuxtjs.org/options
     */
     axios: {
-        headers: {
-            common: {
-                // 'Authorization': 'Basic Og==',
-            }
-        }
+        baseURL: dev ? 'http://localhost:3000/' : 'https://comunica.github.io/'
     },
     /*
     ** vuetify module configuration
