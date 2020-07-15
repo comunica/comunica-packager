@@ -5,7 +5,6 @@
                 <DropdownComponent
                         v-model="selectedActor"
                         :options="actors"
-                        :groups="true"
                         placeholder="Choose actor"
                 />
                 <ButtonComponent :disabled="!selectedActor" :is-small="true" text="Create" @click="onCreate"/>
@@ -51,10 +50,7 @@
         },
         computed: {
             actors() {
-                return this.$store.state.busGroups.map(x => ({
-                    groupName: x.busGroupName,
-                    options: x.actors
-                }));
+                return this.$store.state.busGroups.flatMap(x => [...x.actors]);
             },
             busGroups() {
                 let busGroups = Object.keys(this.$store.state.createdActors).sort();

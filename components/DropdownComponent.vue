@@ -1,31 +1,37 @@
 <template>
-    <select v-if="groups"
-            :value="value"
-            @change="$emit('input', $event.target.value)"
-            class="select">
-        <option :value="null" disabled selected hidden>{{placeholder}}</option>
-        <optgroup v-if="group.options.length"
-                  v-for="group in options"
-                  :label="group.groupName">
-            <option v-for="option in group.options"
-                    :key="option"
-                    :value="`${group.groupName}|${option}`">
-                {{option}}
-            </option>
-        </optgroup>
-    </select>
+<!--    <select v-if="groups"-->
+<!--            :value="value"-->
+<!--            @change="$emit('input', $event.target.value)"-->
+<!--            class="select">-->
+<!--        <option :value="null" disabled selected hidden>{{placeholder}}</option>-->
+<!--        <optgroup v-if="group.options.length"-->
+<!--                  v-for="group in options"-->
+<!--                  :label="group.groupName">-->
+<!--            <option v-for="option in group.options"-->
+<!--                    :key="option"-->
+<!--                    :value="`${group.groupName}|${option}`">-->
+<!--                {{option}}-->
+<!--            </option>-->
+<!--        </optgroup>-->
+<!--    </select>-->
 
-    <select v-else
-            :value="value"
-            @change="$emit('input', $event.target.value)"
-            class="select">
-        <option value="" disabled selected hidden>{{placeholder}}</option>
-        <option v-for="option in options"
-                :key="option.fullName ? option.fullName : option"
-                :value="option.fullName ? option.fullName : option">
-            {{option.name ? option.name : option}}
-        </option>
-    </select>
+<!--    <select v-else-->
+<!--            :value="value"-->
+<!--            @change="$emit('input', $event.target.value)"-->
+<!--            class="select">-->
+<!--        <option value="" disabled selected hidden>{{placeholder}}</option>-->
+<!--        <option v-for="option in options"-->
+<!--                :key="option.fullName ? option.fullName : option"-->
+<!--                :value="option.fullName ? option.fullName : option">-->
+<!--            {{option.name ? option.name : option}}-->
+<!--        </option>-->
+<!--    </select>-->
+    <v-select
+        :value="value"
+        @input="$emit('input', $event)"
+        :placeholder="placeholder"
+        :options="options"
+    />
 </template>
 
 <script>
@@ -43,17 +49,12 @@
             value: {
                 type: String,
                 default: ''
-            },
-            name: {
-                type: String,
-                default: null
-            },
-            groups: {
-                type: Boolean,
-                default: false
             }
         },
         methods: {
+            test(e) {
+                console.log(e);
+            }
         }
     }
 </script>
