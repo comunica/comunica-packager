@@ -8,11 +8,6 @@
             />
             <ButtonComponent :disabled="selectedMediator === ''" :is-small="true" text="Create" @click="onCreate"/>
         </div>
-        <v-select
-                v-model="selectedMediator"
-                :options="mediatorTypes"
-                placeholder="Choose mediator type"
-        />
         <ObjectComponent
             v-for="mediator in createdMediators"
             :object-name="mediator.name"
