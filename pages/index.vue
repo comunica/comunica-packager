@@ -250,6 +250,7 @@
         place-items: center;
         grid-gap: 20px;
         padding: 0 25%;
+        z-index: 100;
     }
 
     a {
