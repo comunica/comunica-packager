@@ -7,7 +7,9 @@
         :options="options"
         :label="label"
         :reduce="reduce ? x => x[reduce]: x => x"
-    />
+    >
+        <span slot="no-options">No mediators defined.</span>
+    </v-select>
 </template>
 
 <script>
