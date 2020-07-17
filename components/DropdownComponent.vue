@@ -5,6 +5,8 @@
         @input="$emit('input', $event)"
         :placeholder="placeholder"
         :options="options"
+        :label="label"
+        :reduce="reduce ? x => x[reduce]: x => x"
     />
 </template>
 
@@ -23,6 +25,12 @@
             value: {
                 type: String,
                 default: ''
+            },
+            label: {
+                type: String
+            },
+            reduce: {
+                type: String
             }
         }
     }
