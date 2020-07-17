@@ -33,12 +33,13 @@
                             @input="x => changeParameterValue(p, x)"
                             placeholder="Choose mediator"
                             :options="mediators"
+                            no-items="No mediators defined."
                     />
                     <DropdownComponent
                             v-else-if="objectParameters[p].range === 'cc:Bus'"
                             :value="objectParameters[p].value"
                             @input="x => changeParameterValue(p, x)"
-                            placeholder="Choose bus"
+                            :placeholder="showDefaultAsPlaceholder(objectParameters[p])"
                             :options="buses"
                             label="name"
                             reduce="fullName"
@@ -47,8 +48,16 @@
                             v-else-if="objectParameters[p].range === 'cc:Logger'"
                             :value="objectParameters[p].value"
                             @input="x => changeParameterValue(p, x)"
-                            placeholder="Choose logger"
+                            :placeholder="showDefaultAsPlaceholder(objectParameters[p])"
                             :options="loggers"
+                    />
+                    <DropdownComponent
+                            v-else-if="objectParameters[p].range === 'cc:Actor'"
+                            :value="objectParameters[p].value"
+                            @input="x => changeParameterValue(p, x)"
+                            placeholder="Choose an actor"
+                            :options="actors"
+                            no-items="No other actors defined."
                     />
                     <input
                             v-else
@@ -56,6 +65,7 @@
                             @change="$emit('param', $event.target.value, id, p)"
                             class="input parameter-input"
                             type="text"
+                            :placeholder="showDefaultAsPlaceholder(objectParameters[p])"
                     >
                 </div>
             </div>
@@ -70,7 +80,6 @@
     import DropdownComponent from "./DropdownComponent";
     import {extractLabel, trimIdentifier} from "../utils/alpha";
     import LoadingComponent from "./LoadingComponent";
-    import Vue from 'vue';
 
     export default {
         name: "ObjectComponent",
@@ -111,9 +120,37 @@
             changeParameterValue(key, value) {
                 this.$emit('param', value, this.id, key);
                 this.$forceUpdate();
+            },
+            showDefaultAsPlaceholder(obj) {
+                if (obj.value)
+                    return '';
+                switch (obj.range) {
+                    case 'cc:Bus': {
+                        return obj.defaultScoped ? extractLabel(obj.defaultScoped.defaultScopedValue['@id']) : '';
+                    }
+                    case 'cc:Logger': return obj.default['@type'];
+                    default: {
+                        let defaultValue = undefined;
+                        if (obj.hasOwnProperty('default'))
+                            defaultValue = obj.default
+                        else if (obj.hasOwnProperty('defaultScoped'))
+                            defaultValue = obj.defaultScoped.defaultScopedValue;
+
+                        if (typeof defaultValue === 'string')
+                            return defaultValue;
+                        else
+                            return defaultValue ? JSON.stringify(defaultValue) : '' ;
+                    }
+                }
             }
         },
         computed: {
+            actors() {
+                const createdActors = this.$store.state.createdActors;
+                return Object.keys(createdActors)
+                    .flatMap(bg => createdActors[bg].map(ca => ca['@id']))
+                    .filter(a => a !== this.id);
+            },
             mediators() {
                 const mediators = this.$store.state.createdMediators;
                 return mediators.map(x => x['@id']);
@@ -200,6 +237,10 @@
     .parameter-input {
         border: 1px solid $comunica-red;
         background-color: $comunica-red;
+    }
+
+    .parameter-input::placeholder {
+        color: white;
     }
 
 </style>

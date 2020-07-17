@@ -321,31 +321,21 @@ export const actions = {
         const data = await (this as any).$axios.$get(presetLink);
         const dataExpanded: any = await jsonldParser.expand(data);
 
-        let mediatorsAll: any[] = [];
-        let actorsAll: any[] = [];
+        let imports = dataExpanded[0]['http://www.w3.org/2002/07/owl#imports'];
 
-        let imports = dataExpanded[0]['http://www.w3.org/2002/07/owl#imports'].map(
-            (d: any) => (this as any).$axios.$get(d['@id'])
-        );
+        // Use entries() to get index for potential progress bar when fetching
+        for (const [index, imp] of imports.entries()) {
 
-        await Promise.all(imports).then(async (fetchedImports: any) => {
-            await Promise.all(fetchedImports.map((fi: any) => jsonldToState(fi))).then((eps: any) => {
-                eps.forEach((p: any) => {
-                    commit('addToContext', p.context);
-                    mediatorsAll.push(...p.mediators);
-                    actorsAll.push(...p.actors);
+            const fetchedImp = await (this as any).$axios.$get(imp['@id']);
+            const s = await jsonldToState(fetchedImp);
+            commit('addToContext', s.context);
+            // Handle mediators
+            for (const mediator of s.mediators)
+                dispatch('mapMediatorToState', mediator);
 
-                });
-            });
-        });
-
-        // Handle mediators
-        for (const mediator of mediatorsAll)
-            dispatch('mapMediatorToState', mediator);
-
-        // Handle actors
-        for (const actor of actorsAll)
-            dispatch('mapActorToState', actor);
+            // Handle actors
+            for (const actor of s.actors)
+                dispatch('mapActorToState', actor);
+        }
     }
-
 }

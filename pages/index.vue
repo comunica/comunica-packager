@@ -5,7 +5,8 @@
             <div id="input">
                 <div id="buttons">
                     <ButtonComponent text="Import" @click="imp = true"/>
-                    <ButtonComponent text="Export" @click="onExport"/>
+                    <LoadingComponent v-if="isExporting"/>
+                    <ButtonComponent v-else text="Export" @click="onExport"/>
                     <FileInputComponent text="Upload" @click="onUpload"/>
                     <ButtonComponent text="Reset" @click="onReset"/>
                 </div>
@@ -14,8 +15,11 @@
                             v-model="actorLink"
                             :options="presets"
                             placeholder="Choose preset"
+                            label="name"
+                            reduce="url"
                     />
-                    <ButtonComponent :disabled="!actorLink" :is-small="true" text="Import" @click="onImport"/>
+                    <ButtonComponent v-if="!isPresetLoading" :disabled="!actorLink" :is-small="true" text="Import" @click="onImport"/>
+                    <LoadingComponent v-else/>
                 </div>
             </div>
         </div>
@@ -76,7 +80,9 @@
                 actorLink: undefined,
                 imp: false,
                 presets: [],
-                areMediatorsFetched: false
+                areMediatorsFetched: false,
+                isPresetLoading: false,
+                isExporting: false,
             }
         },
         computed: {
@@ -89,12 +95,15 @@
                 this.$store.dispatch('uploadZip', file);
             },
             async onImport() {
+                this.isPresetLoading = true;
                 await this.$store.dispatch('importPreset', this.actorLink);
-
+                this.isPresetLoading = false;
                 this.imp = false;
             },
             async onExport() {
+                this.isExporting = true;
                 await this.$store.dispatch('downloadZip');
+                this.isExporting = false;
             },
             onReset() {
                 this.$store.commit('resetState');
@@ -176,7 +185,7 @@
                 presets: Object.keys(rawPresets).map(a => {
                     return {
                         name: a,
-                        fullName: rawPresets[a]
+                        url: rawPresets[a]
                     };
                 })
             };
@@ -244,7 +253,7 @@
         width: 100%;
         text-align: center;
         background-color: $comunica-dark-red;
-        height: 5vh;
+        height: max(5vh, 40px);
         display: grid;
         grid-template-columns: 1fr 1fr;
         place-items: center;
