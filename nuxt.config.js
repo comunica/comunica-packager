@@ -36,7 +36,7 @@ export default {
     /*
     ** Plugins to load before mounting the App
     */
-    plugins: [],
+    plugins: ['@/plugins/select.js'],
     /*
     ** Nuxt.js dev-modules
     */
@@ -49,8 +49,7 @@ export default {
     */
     modules: [
         // Doc: https://axios.nuxtjs.org/usage
-        '@nuxtjs/axios',
-        'nuxt-vue-select'
+        '@nuxtjs/axios'
     ],
     /*
     ** Axios module configuration

@@ -1,5 +1,5 @@
 <template>
-    <v-select
+    <vv-select
         class="style-chooser"
         :value="value"
         @input="$emit('input', $event)"
@@ -9,7 +9,7 @@
         :reduce="reduce ? x => x[reduce]: x => x"
     >
         <span slot="no-options">{{noItems}}</span>
-    </v-select>
+    </vv-select>
 </template>
 
 <script>
