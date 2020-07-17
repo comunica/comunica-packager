@@ -14,6 +14,8 @@
                             v-model="actorLink"
                             :options="presets"
                             placeholder="Choose preset"
+                            label="name"
+                            reduce="url"
                     />
                     <ButtonComponent :disabled="!actorLink" :is-small="true" text="Import" @click="onImport"/>
                 </div>
@@ -176,7 +178,7 @@
                 presets: Object.keys(rawPresets).map(a => {
                     return {
                         name: a,
-                        fullName: rawPresets[a]
+                        url: rawPresets[a]
                     };
                 })
             };
@@ -244,7 +246,7 @@
         width: 100%;
         text-align: center;
         background-color: $comunica-dark-red;
-        height: 5vh;
+        height: max(5vh, 40px);
         display: grid;
         grid-template-columns: 1fr 1fr;
         place-items: center;

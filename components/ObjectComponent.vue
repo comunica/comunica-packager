@@ -33,12 +33,13 @@
                             @input="x => changeParameterValue(p, x)"
                             placeholder="Choose mediator"
                             :options="mediators"
+                            no-items="No mediators defined."
                     />
                     <DropdownComponent
                             v-else-if="objectParameters[p].range === 'cc:Bus'"
                             :value="objectParameters[p].value"
                             @input="x => changeParameterValue(p, x)"
-                            placeholder="Choose bus"
+                            placeholder="Choose a bus"
                             :options="buses"
                             label="name"
                             reduce="fullName"
@@ -47,8 +48,16 @@
                             v-else-if="objectParameters[p].range === 'cc:Logger'"
                             :value="objectParameters[p].value"
                             @input="x => changeParameterValue(p, x)"
-                            placeholder="Choose logger"
+                            placeholder="Choose a logger"
                             :options="loggers"
+                    />
+                    <DropdownComponent
+                            v-else-if="objectParameters[p].range === 'cc:Actor'"
+                            :value="objectParameters[p].value"
+                            @input="x => changeParameterValue(p, x)"
+                            placeholder="Choose an actor"
+                            :options="actors"
+                            no-items="No other actors defined."
                     />
                     <input
                             v-else
@@ -70,7 +79,6 @@
     import DropdownComponent from "./DropdownComponent";
     import {extractLabel, trimIdentifier} from "../utils/alpha";
     import LoadingComponent from "./LoadingComponent";
-    import Vue from 'vue';
 
     export default {
         name: "ObjectComponent",
@@ -114,6 +122,12 @@
             }
         },
         computed: {
+            actors() {
+                const createdActors = this.$store.state.createdActors;
+                return Object.keys(createdActors)
+                    .flatMap(bg => createdActors[bg].map(ca => ca['@id']))
+                    .filter(a => a !== this.id);
+            },
             mediators() {
                 const mediators = this.$store.state.createdMediators;
                 return mediators.map(x => x['@id']);

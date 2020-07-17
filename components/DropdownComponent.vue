@@ -8,7 +8,7 @@
         :label="label"
         :reduce="reduce ? x => x[reduce]: x => x"
     >
-        <span slot="no-options">No mediators defined.</span>
+        <span slot="no-options">{{noItems}}</span>
     </v-select>
 </template>
 
@@ -33,6 +33,10 @@
             },
             reduce: {
                 type: String
+            },
+            noItems: {
+                type: String,
+                default: 'No items to be found.'
             }
         }
     }
