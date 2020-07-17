@@ -5,7 +5,8 @@
             <div id="input">
                 <div id="buttons">
                     <ButtonComponent text="Import" @click="imp = true"/>
-                    <ButtonComponent text="Export" @click="onExport"/>
+                    <LoadingComponent v-if="isExporting"/>
+                    <ButtonComponent v-else text="Export" @click="onExport"/>
                     <FileInputComponent text="Upload" @click="onUpload"/>
                     <ButtonComponent text="Reset" @click="onReset"/>
                 </div>
@@ -81,6 +82,7 @@
                 presets: [],
                 areMediatorsFetched: false,
                 isPresetLoading: false,
+                isExporting: false,
             }
         },
         computed: {
@@ -99,7 +101,9 @@
                 this.imp = false;
             },
             async onExport() {
+                this.isExporting = true;
                 await this.$store.dispatch('downloadZip');
+                this.isExporting = false;
             },
             onReset() {
                 this.$store.commit('resetState');
