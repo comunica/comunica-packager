@@ -46,6 +46,7 @@
     .style-chooser .vs__dropdown-menu {
         background: $comunica-red;
         color: white;
+        border-radius: 7px;
     }
 
     .style-chooser .vs__dropdown-menu li {
