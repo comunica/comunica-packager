@@ -30,21 +30,23 @@
                     <DropdownComponent
                             v-if="trimIdentifier(p).startsWith('mediator')"
                             :value="objectParameters[p].value"
-                            @input="x => $emit('param', x, id, p)"
+                            @input="x => changeParameterValue(p, x)"
                             placeholder="Choose mediator"
                             :options="mediators"
                     />
                     <DropdownComponent
                             v-else-if="objectParameters[p].range === 'cc:Bus'"
                             :value="objectParameters[p].value"
-                            @input="x => $emit('param', x, id, p)"
+                            @input="x => changeParameterValue(p, x)"
                             placeholder="Choose bus"
                             :options="buses"
+                            label="name"
+                            reduce="fullName"
                     />
                     <DropdownComponent
                             v-else-if="objectParameters[p].range === 'cc:Logger'"
                             :value="objectParameters[p].value"
-                            @input="x => $emit('param', x, id, p)"
+                            @input="x => changeParameterValue(p, x)"
                             placeholder="Choose logger"
                             :options="loggers"
                     />
@@ -68,6 +70,7 @@
     import DropdownComponent from "./DropdownComponent";
     import {extractLabel, trimIdentifier} from "../utils/alpha";
     import LoadingComponent from "./LoadingComponent";
+    import Vue from 'vue';
 
     export default {
         name: "ObjectComponent",
@@ -104,6 +107,10 @@
             },
             trimIdentifier(s) {
                 return trimIdentifier(s);
+            },
+            changeParameterValue(key, value) {
+                this.$emit('param', value, this.id, key);
+                this.$forceUpdate();
             }
         },
         computed: {

@@ -5,17 +5,16 @@
                 <DropdownComponent
                         v-model="selectedActor"
                         :options="actors"
-                        :groups="true"
                         placeholder="Choose actor"
                 />
                 <ButtonComponent :disabled="!selectedActor" :is-small="true" text="Create" @click="onCreate"/>
             </div>
         </div>
         <BusGroupComponent
-            v-for="(value, key) in busGroups"
-            v-if="value.length"
-            :key="key"
-            :bus-group="key"
+            v-for="bg in busGroups"
+            v-if="bg.actors.length"
+            :key="bg.busGroup"
+            :bus-group="bg.busGroup"
         />
     </div>
 
@@ -25,6 +24,7 @@
     import DropdownComponent from "./DropdownComponent";
     import ButtonComponent from "./ButtonComponent";
     import BusGroupComponent from "./BusGroupComponent";
+    import {getBusGroupOfActor} from "../store";
 
     export default {
         name: "ActorsComponent",
@@ -34,35 +34,34 @@
         }),
         methods: {
             async onCreate() {
-                const selectedActor = this.selectedActor.split('|');
-                this.selectedActor = null;
 
-                const busGroup = selectedActor[0];
-                const actorName = selectedActor[1];
-                const id = `${busGroup}#${actorName}`
+                const busGroup = getBusGroupOfActor(this.$store.state.busGroups, this.selectedActor);
+                const id = `${busGroup}#${this.selectedActor}`
 
                 await this.$store.dispatch('addActor', {
                     busGroup: busGroup,
                     '@id': id,
-                    actorName: actorName
+                    actorName: this.selectedActor
                 });
+
+                this.selectedActor = null;
 
             }
         },
         computed: {
             actors() {
-                return this.$store.state.busGroups.map(x => ({
-                    groupName: x.busGroupName,
-                    options: x.actors
-                }));
+                return this.$store.state.busGroups.flatMap(x => [...x.actors]);
             },
             busGroups() {
-                return this.$store.state.createdActors;
+                let busGroups = Object.keys(this.$store.state.createdActors).sort();
+                return busGroups.map(bg => ({
+                    busGroup: bg,
+                    actors: this.$store.state.createdActors[bg]
+                }));
             }
         }
     }
 </script>
 
-<style scoped>
 
 </style>
