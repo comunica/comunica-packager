@@ -39,7 +39,7 @@
                             v-else-if="objectParameters[p].range === 'cc:Bus'"
                             :value="objectParameters[p].value"
                             @input="x => changeParameterValue(p, x)"
-                            placeholder="Choose a bus"
+                            :placeholder="showDefaultAsPlaceholder(objectParameters[p])"
                             :options="buses"
                             label="name"
                             reduce="fullName"
@@ -48,7 +48,7 @@
                             v-else-if="objectParameters[p].range === 'cc:Logger'"
                             :value="objectParameters[p].value"
                             @input="x => changeParameterValue(p, x)"
-                            placeholder="Choose a logger"
+                            :placeholder="showDefaultAsPlaceholder(objectParameters[p])"
                             :options="loggers"
                     />
                     <DropdownComponent
@@ -65,6 +65,7 @@
                             @change="$emit('param', $event.target.value, id, p)"
                             class="input parameter-input"
                             type="text"
+                            :placeholder="showDefaultAsPlaceholder(objectParameters[p])"
                     >
                 </div>
             </div>
@@ -119,6 +120,28 @@
             changeParameterValue(key, value) {
                 this.$emit('param', value, this.id, key);
                 this.$forceUpdate();
+            },
+            showDefaultAsPlaceholder(obj) {
+                if (obj.value)
+                    return '';
+                switch (obj.range) {
+                    case 'cc:Bus': {
+                        return obj.defaultScoped ? extractLabel(obj.defaultScoped.defaultScopedValue['@id']) : '';
+                    }
+                    case 'cc:Logger': return obj.default['@type'];
+                    default: {
+                        let defaultValue = undefined;
+                        if (obj.hasOwnProperty('default'))
+                            defaultValue = obj.default
+                        else if (obj.hasOwnProperty('defaultScoped'))
+                            defaultValue = obj.defaultScoped.defaultScopedValue;
+
+                        if (typeof defaultValue === 'string')
+                            return defaultValue;
+                        else
+                            return defaultValue ? JSON.stringify(defaultValue) : '' ;
+                    }
+                }
             }
         },
         computed: {
@@ -214,6 +237,10 @@
     .parameter-input {
         border: 1px solid $comunica-red;
         background-color: $comunica-red;
+    }
+
+    .parameter-input::placeholder {
+        color: white;
     }
 
 </style>

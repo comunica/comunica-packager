@@ -14,7 +14,13 @@ interface Package {
 
 export function handleParameters(normalizedContext: any, parametersAll: any, parameters: any) {
     for (const p of parameters) {
-        parametersAll[getExpandedIRI(normalizedContext, p['@id'])] = p
+        const iri = getExpandedIRI(normalizedContext, p['@id'])
+        if (parametersAll.hasOwnProperty(iri))
+            parametersAll[iri] = {
+                ...parametersAll[iri],
+                ...p
+            }
+        else parametersAll[iri] = p;
     }
 }
 
