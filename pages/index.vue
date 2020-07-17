@@ -17,7 +17,8 @@
                             label="name"
                             reduce="url"
                     />
-                    <ButtonComponent :disabled="!actorLink" :is-small="true" text="Import" @click="onImport"/>
+                    <ButtonComponent v-if="!isPresetLoading" :disabled="!actorLink" :is-small="true" text="Import" @click="onImport"/>
+                    <LoadingComponent v-else/>
                 </div>
             </div>
         </div>
@@ -78,7 +79,8 @@
                 actorLink: undefined,
                 imp: false,
                 presets: [],
-                areMediatorsFetched: false
+                areMediatorsFetched: false,
+                isPresetLoading: false,
             }
         },
         computed: {
@@ -91,8 +93,9 @@
                 this.$store.dispatch('uploadZip', file);
             },
             async onImport() {
+                this.isPresetLoading = true;
                 await this.$store.dispatch('importPreset', this.actorLink);
-
+                this.isPresetLoading = false;
                 this.imp = false;
             },
             async onExport() {
