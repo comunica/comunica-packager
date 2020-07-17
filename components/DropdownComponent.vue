@@ -44,6 +44,11 @@
 
 <style lang="scss">
 
+    .style-chooser .vs__selected,
+    .style-chooser .vs__selected-options{
+        word-break: break-all;
+    }
+
     .style-chooser .vs__search::placeholder,
     .style-chooser .vs__dropdown-toggle,
     .style-chooser .vs__selected,

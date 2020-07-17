@@ -323,12 +323,11 @@ export const actions = {
 
         let imports = dataExpanded[0]['http://www.w3.org/2002/07/owl#imports'];
 
+        // Use entries() to get index for potential progress bar when fetching
         for (const [index, imp] of imports.entries()) {
 
             const fetchedImp = await (this as any).$axios.$get(imp['@id']);
-            console.log(fetchedImp);
             const s = await jsonldToState(fetchedImp);
-            console.log(s);
             commit('addToContext', s.context);
             // Handle mediators
             for (const mediator of s.mediators)
@@ -337,8 +336,6 @@ export const actions = {
             // Handle actors
             for (const actor of s.actors)
                 dispatch('mapActorToState', actor);
-
-            console.log(index + ' / ' + imports.length);
         }
     }
 }
