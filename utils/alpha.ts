@@ -63,6 +63,11 @@ export function pascalCaseToKebabCase(s: string): string {
     }
 }
 
+/**
+ * Removes any prefixes and subsequent type identifiers
+ * For example: test:this/is/an/example => example
+ * @param s: A prefix rich string
+ */
 export function trimIdentifier(s: string): string {
     const firstPhase = s.split('/').pop();
     if (firstPhase) {
@@ -72,6 +77,10 @@ export function trimIdentifier(s: string): string {
     return s;
 }
 
+/**
+ * Removes the prefix from an IRI and any forward slashes
+ * @param s: An IRI
+ */
 export function extractLabel(s: string): string {
     const t = s.split(':');
     t.shift();

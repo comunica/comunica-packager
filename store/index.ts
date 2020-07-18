@@ -23,28 +23,6 @@ function getParentComponentUrl(extend: string): any {
 }
 
 /**
- * Handles the default value of a parameter
- * @param range: The range of the parameter
- * @param defaultValue: The default value of the parameter
- */
-function handleDefault(range: any, defaultValue: any) {
-    switch (range) {
-        case 'cc:Logger': {
-            return defaultValue['@type'];
-        }
-        case 'cc:Bus': {
-            return defaultValue['@id'];
-        }
-        default: {
-            if (typeof defaultValue === 'string')
-                return defaultValue;
-            else
-                return JSON.stringify(defaultValue);
-        }
-    }
-}
-
-/**
  * Returns the default state without any actors or mediators
  */
 function getDefaultState() {
@@ -82,6 +60,11 @@ export function getBusGroupOfActor(busGroups: any, actor: string) {
 export const state = getDefaultState();
 
 export const mutations = {
+
+    /**
+     * Global state mutations
+     */
+
     addBusGroups(state: any, busGroups: BusGroup[]) {
         state.busGroups = busGroups;
         busGroups.forEach((bs) => {
@@ -105,11 +88,52 @@ export const mutations = {
         state.buses = buses;
     },
 
+    addToContext(state: any, payload: any) {
+        if (typeof payload === 'string')
+            state.context.add(payload);
+        else
+            payload.forEach((x: string) => state.context.add(x));
+    },
+
+    resetState(state: any) {
+        state.context = new Set(baseContext);
+        state.createdMediators = [];
+        Object.keys(state.createdActors).forEach(key => {
+            state.createdActors[key] = [];
+        });
+    },
+
+    changeID(state: any, id: string) {
+        state.id = id;
+    },
+
+    /**
+     * Mediator mutations
+     */
+
     createNewMediator(state: any, mediator: any) {
         const createdMediators = state.createdMediators;
         createdMediators.push(mediator);
         Vue.set(state, 'createdMediators', createdMediators);
     },
+
+    deleteMediator(state: any, mediator: string) {
+        Vue.set(state, 'createdMediators', state.createdMediators.filter((m: any) => m['@id'] !== mediator));
+    },
+
+    changeParameterValueOfMediator(state: any, payload: any) {
+        const indexMediator = state.createdMediators.findIndex((x: any) => x['@id'] === payload['@id']);
+        state.createdMediators[indexMediator].parameters[payload.parameterName].value = payload.value;
+    },
+
+    changeIDOfMediator(state: any, payload: any) {
+        const indexMediator = state.createdMediators.findIndex((x: any) => x['@id'] === payload.currentID);
+        state.createdMediators[indexMediator]['@id'] = payload.newID;
+    },
+
+    /**
+     * Actor mutations
+     */
 
     addActor(state: any, payload: any) {
         const updatedAddedActors = state.createdActors[payload.busGroup];
@@ -120,10 +144,6 @@ export const mutations = {
 
     deleteActor(state: any, payload: any) {
         Vue.set(state.createdActors, payload.busGroup, state.createdActors[payload.busGroup].filter((a: any) => a['@id'] !== payload['@id']));
-    },
-
-    deleteMediator(state: any, mediator: string) {
-        Vue.set(state, 'createdMediators', state.createdMediators.filter((m: any) => m['@id'] !== mediator));
     },
 
     addParametersToActor(state: any, payload: any) {
@@ -149,43 +169,27 @@ export const mutations = {
         state.createdActors[payload.busGroup][indexActor].parameters[payload.parameterName].value = payload.value;
     },
 
-    changeParameterValueOfMediator(state: any, payload: any) {
-        const indexMediator = state.createdMediators.findIndex((x: any) => x['@id'] === payload['@id']);
-        state.createdMediators[indexMediator].parameters[payload.parameterName].value = payload.value;
-    },
-
     changeIDOfActor(state: any, payload: any) {
         const currentBusGroup = state.createdActors[payload.busGroup];
         const indexActor = currentBusGroup.findIndex((x: any) => x['@id'] === payload.currentID);
         state.createdActors[payload.busGroup][indexActor]['@id'] = payload.newID;
-    },
-
-    changeIDOfMediator(state: any, payload: any) {
-        const indexMediator = state.createdMediators.findIndex((x: any) => x['@id'] === payload.currentID);
-        state.createdMediators[indexMediator]['@id'] = payload.newID;
-    },
-
-    addToContext(state: any, payload: any) {
-        if (typeof payload === 'string')
-            state.context.add(payload);
-        else
-            payload.forEach((x: string) => state.context.add(x));
-    },
-
-    resetState(state: any) {
-        state.context = new Set(baseContext);
-        state.createdMediators = [];
-        Object.keys(state.createdActors).forEach(key => {
-            state.createdActors[key] = [];
-        });
-    },
-
-    changeID(state: any, id: string) {
-        state.id = id;
     }
 }
 
 export const actions = {
+
+    addActor(context: any, payload: any) {
+
+        let parameters = payload.parameters ? payload.parameters : {};
+
+        const actor = {
+            actorName: payload.actorName,
+            '@id': payload['@id'],
+            parameters: parameters
+        };
+
+        context.commit('addActor', {busGroup: payload.busGroup, actor: actor});
+    },
 
     addMediator({state, commit}: any, payload: any) {
         const selectedMediatorType =  _.cloneDeep(state.mediators.find((m: any) => m.name === payload.mediator));
@@ -195,6 +199,31 @@ export const actions = {
             '@id': payload.id ? payload.id : `${payload.mediator}#${state.createdMediators.length}`,
             parameters: selectedMediatorType.parameters,
             name: payload.mediator
+        });
+    },
+
+    mapMediatorToState({state, commit, dispatch}: any, payload: any) {
+        dispatch('addMediator', {
+            mediator: payload['@type'],
+            id: payload['@id']
+        });
+
+        for (const parameter of Object.keys(payload.parameters)) {
+            commit('changeParameterValueOfMediator', {
+                '@id': payload['@id'],
+                parameterName: parameter,
+                value: payload.parameters[parameter].value
+            });
+
+        }
+    },
+
+    mapActorToState({state, commit, dispatch}: any, payload: any) {
+        dispatch('addActor', {
+            actorName: payload['@type'],
+            '@id': payload['@id'],
+            busGroup: getBusGroupOfActor(state.busGroups, payload['@type']),
+            parameters: payload.parameters
         });
     },
 
@@ -235,52 +264,6 @@ export const actions = {
             parameters: parameters,
             '@id': payload['@id']
         });
-
-        // for (const [i, p] of parameters.entries()) {
-        //     if (p.hasOwnProperty('default'))
-        //         parameters[i].value = handleDefault(p.range, p.default);
-        //     if (p.hasOwnProperty('defaultScoped'))
-        //         parameters[i].value = handleDefault(p.range, p.defaultScoped.defaultScopedValue);
-        // }
-    },
-
-
-    mapMediatorToState({state, commit, dispatch}: any, payload: any) {
-        dispatch('addMediator', {
-            mediator: payload['@type'],
-            id: payload['@id']
-        });
-
-        for (const parameter of Object.keys(payload.parameters)) {
-            commit('changeParameterValueOfMediator', {
-                '@id': payload['@id'],
-                parameterName: parameter,
-                value: payload.parameters[parameter].value
-            });
-
-        }
-    },
-
-    mapActorToState({state, commit, dispatch}: any, payload: any) {
-        dispatch('addActor', {
-            actorName: payload['@type'],
-            '@id': payload['@id'],
-            busGroup: getBusGroupOfActor(state.busGroups, payload['@type']),
-            parameters: payload.parameters
-        });
-    },
-
-    addActor(context: any, payload: any) {
-
-        let parameters = payload.parameters ? payload.parameters : {};
-
-        const actor = {
-            actorName: payload.actorName,
-            '@id': payload['@id'],
-            parameters: parameters
-        };
-
-        context.commit('addActor', {busGroup: payload.busGroup, actor: actor});
     },
 
     async downloadZip(context: any) {
@@ -320,19 +303,17 @@ export const actions = {
 
         const data = await (this as any).$axios.$get(presetLink);
         const dataExpanded: any = await jsonldParser.expand(data);
-
         let imports = dataExpanded[0]['http://www.w3.org/2002/07/owl#imports'];
 
         // Use entries() to get index for potential progress bar when fetching
         for (const [index, imp] of imports.entries()) {
-
             const fetchedImp = await (this as any).$axios.$get(imp['@id']);
             const s = await jsonldToState(fetchedImp);
             commit('addToContext', s.context);
+
             // Handle mediators
             for (const mediator of s.mediators)
                 dispatch('mapMediatorToState', mediator);
-
             // Handle actors
             for (const actor of s.actors)
                 dispatch('mapActorToState', actor);

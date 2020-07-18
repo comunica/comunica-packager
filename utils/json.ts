@@ -1,5 +1,11 @@
 import {ContextParser} from "jsonld-context-parser";
 
+/**
+ * Handles parameters
+ * @param obj: An object representing an actor or mediator
+ * @param parameterNameFull: The full IRI of the parameter
+ * @param parameter: The information about the given parameter
+ */
 function handleParameter(obj: any, parameterNameFull: string, parameter: any) {
 
     let parameterNameShort = parameterNameFull.split('/').pop();
@@ -21,6 +27,13 @@ function handleParameter(obj: any, parameterNameFull: string, parameter: any) {
     }
 }
 
+/**
+ * Handles actors to store them in our inner state, also looks if mediators are defined implicitly
+ * @param normalizedContext: The context of the given actor
+ * @param actor: The actor to be handled
+ * @param actors: A list of handled actors
+ * @param mediators: A list of handled mediators
+ */
 export function handleActor(normalizedContext: any, actor: any, actors: any[], mediators: any[]) {
     let actorExtracted: any = {
         parameters: {}
@@ -43,6 +56,12 @@ export function handleActor(normalizedContext: any, actor: any, actors: any[], m
     actors.push(actorExtracted);
 }
 
+/**
+ * Handles mediators to store them in our inner state
+ * @param normalizedContext: The context of the given mediator
+ * @param mediator: The mediator to be handled
+ * @param mediators: A list of handled mediators
+ */
 export function handleMediator(normalizedContext: any, mediator: any, mediators: any[]) {
     let mediatorExtracted: any = {
         parameters: {}
@@ -55,6 +74,10 @@ export function handleMediator(normalizedContext: any, mediator: any, mediators:
     mediators.push(mediatorExtracted);
 }
 
+/**
+ * Maps our inner state to a jsonld
+ * @param state: Our inner state
+ */
 export async function stateToJsonld(state: any) {
     let addedActors: any = [];
     const createdActors: any[] = state.createdActors;
@@ -144,6 +167,10 @@ export async function stateToJsonld(state: any) {
     return JSON.stringify(output, null, '  ');
 }
 
+/**
+ * Maps a jsonld to our inner state.
+ * @param jsonld: A jsonld
+ */
 export async function jsonldToState(jsonld: any) {
     let id = '';
     let context = jsonld['@context'];
@@ -180,11 +207,20 @@ export async function jsonldToState(jsonld: any) {
     }
 }
 
+/**
+ * Normalize a context by recursively looking at each context
+ * @param context: A context
+ */
 export async function parseContext(context: any) {
     const parser = new ContextParser();
     return await parser.parse(context);
 }
 
+/**
+ * Expand a term given its context
+ * @param normalizedContext: The context of the term
+ * @param compactTerm: A compact form of an IRI
+ */
 export function getExpandedIRI(normalizedContext: any, compactTerm: string) {
 
     if (compactTerm[0] === '@' || compactTerm.startsWith('https'))
@@ -197,6 +233,11 @@ export function getExpandedIRI(normalizedContext: any, compactTerm: string) {
     return iri ? iri : compactTerm;
 }
 
+/**
+ * Compact an IRI given its context
+ * @param normalizedContext: The context of the IRI
+ * @param expandedIRI: A full IRI
+ */
 export function getCompactedIRI(normalizedContext: any, expandedIRI: string) {
 
     if (expandedIRI[0] === '@')
