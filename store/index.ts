@@ -11,6 +11,26 @@ import {handleParameters} from "~/middleware/packages";
 
 const baseUrl = 'https://linkedsoftwaredependencies.org/bundles/npm/@comunica/';
 const baseContext = [`${baseUrl}runner/^1.0.0/components/context.jsonld`];
+const defaultPackage = {
+    'name': 'temp name',
+    'version': '1.0.0',
+    'description': '',
+    'main': 'index.js',
+    'scripts': {
+        "prepublishOnly": "npm run build",
+        "build:engine": "comunica-compile-config config/config-default.json > engine-default.js",
+        "build:lib": "tsc",
+        "build": "npm run build:lib && npm run build:engine",
+        "postinstall": "npm run build"
+    },
+    'dependencies': {
+        "@comunica/actor-init-sparql": "^1.17.0",
+    },
+    'devDependencies': {
+        "typescript": "^4.0.0"
+    },
+    'license': 'MIT'
+};
 
 /**
  * The extend part of an actor isn't fully correct which is handled here
@@ -36,7 +56,8 @@ function getDefaultState() {
         createdMediators: [],
         loggers: [],
         buses: [],
-        context: new Set(baseContext)
+        context: new Set(baseContext),
+        npmPackage: defaultPackage
     }
 }
 
@@ -268,7 +289,14 @@ export const actions = {
 
     async downloadZip(context: any) {
         let zip = new JSZip();
-        zip.file('config.json', await stateToJsonld(context.state));
+        let bin = zip.folder('bin');
+        for (const v of ['query.js', 'http.js', 'query-dynamic.js']) {
+            bin.file(v, await (this as any).$axios.$get(`/comunica-packager/output/bin/${v}`));
+        }
+        bin.file('query.js', await (this as any).$axios.$get('/comunica-packager/output/bin/query.js'));
+        zip.file('config/config.json', await stateToJsonld(context.state));
+        zip.file('.gitignore', await (this as any).$axios.$get('/comunica-packager/output/.gitignore'));
+        zip.file('.npmignore', await (this as any).$axios.$get('/comunica-packager/output/.npmignore'));
         zip.generateAsync({type: 'blob'}).then(
             content => {
                 saveAs(content, 'engine.zip');
