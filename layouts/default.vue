@@ -15,7 +15,6 @@ export default {
 <style lang="scss">
     #app {
         height: 100%;
-        padding: 0 10vw 3vh 10vw;
         font-family: 'Open Sans', Verdana, Arial, sans-serif;
         color: white;
     }

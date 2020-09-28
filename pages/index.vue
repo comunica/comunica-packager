@@ -1,6 +1,6 @@
 <template>
     <div id="container">
-        <div id="header">
+        <nav id="header">
             <LogoComponent/>
             <div id="input">
                 <div id="buttons">
@@ -12,29 +12,35 @@
                 </div>
                 <div v-if="imp" id="preset-selector" class="dropdown-layout">
                     <DropdownComponent
-                            v-model="actorLink"
-                            :options="presets"
-                            placeholder="Choose preset"
-                            label="name"
-                            reduce="url"
+                        v-model="actorLink"
+                        :options="presets"
+                        placeholder="Choose preset"
+                        label="name"
+                        reduce="url"
                     />
                     <ButtonComponent v-if="!isPresetLoading" :disabled="!actorLink" :is-small="true" text="Import" @click="onImport"/>
                     <LoadingComponent v-else/>
                 </div>
             </div>
-        </div>
-        <div id="content">
-            <div class="column" style="margin-right: 10px;" v-if="busGroups">
-                <p class="text-large">Actors</p>
-                <ActorsComponent style="margin-top: 20px;"/>
+        </nav>
+        <div id="body">
+            <div id="sidebar">
+                <p class="text-large">Sets</p>
             </div>
-            <hr style="height:2px;border-width:0;color:gray;background-color:white;border-radius:2px">
-            <div class="column" style="margin-left: 10px;">
-                <p class="text-large">Mediators</p>
-                <MediatorComponent v-if="areMediatorsFetched" style="margin-top: 20px;"/>
-                <LoadingComponent v-else/>
+            <div id="content">
+                <div class="column" style="margin-right: 10px;" v-if="busGroups">
+                    <p class="text-large">Actors</p>
+                    <ActorsComponent style="margin-top: 20px;"/>
+                </div>
+                <hr style="height:2px;border-width:0;color:gray;background-color:white;border-radius:2px">
+                <div class="column" style="margin-left: 10px;">
+                    <p class="text-large">Mediators</p>
+                    <MediatorComponent v-if="areMediatorsFetched" style="margin-top: 20px;"/>
+                    <LoadingComponent v-else/>
+                </div>
             </div>
         </div>
+
         <div id="footer">
             <div>
                 <v-icon dark>mdi-xml</v-icon>
@@ -51,146 +57,146 @@
 
 <script>
 
-    import ButtonComponent from "~/components/ButtonComponent.vue";
-    import BusGroupComponent from "~/components/BusGroupComponent.vue";
-    import MediatorComponent from "../components/MediatorsComponent";
-    import ActorsComponent from "../components/ActorsComponent";
-    import FileInputComponent from "../components/FileInputComponent";
-    import LogoComponent from "../components/LogoComponent";
-    import DropdownComponent from "../components/DropdownComponent";
-    import {getExpandedIRI, parseContext} from "../utils/json";
-    import {handleParameters} from "../middleware/packages";
-    import {extractLabel} from "../utils/alpha";
-    import LoadingComponent from "../components/LoadingComponent";
+import ButtonComponent from "~/components/ButtonComponent.vue";
+import BusGroupComponent from "~/components/BusGroupComponent.vue";
+import MediatorComponent from "../components/MediatorsComponent";
+import ActorsComponent from "../components/ActorsComponent";
+import FileInputComponent from "../components/FileInputComponent";
+import LogoComponent from "../components/LogoComponent";
+import DropdownComponent from "../components/DropdownComponent";
+import {getExpandedIRI, parseContext} from "@/utils/json";
+import {handleParameters} from "@/middleware/packages";
+import {extractLabel} from "@/utils/alpha";
+import LoadingComponent from "../components/LoadingComponent";
 
-    export default {
-        components: {
-            LoadingComponent,
-            DropdownComponent,
-            LogoComponent,
-            FileInputComponent,
-            ActorsComponent,
-            MediatorComponent,
-            BusGroupComponent,
-            ButtonComponent
+export default {
+    components: {
+        LoadingComponent,
+        DropdownComponent,
+        LogoComponent,
+        FileInputComponent,
+        ActorsComponent,
+        MediatorComponent,
+        BusGroupComponent,
+        ButtonComponent
+    },
+    middleware: ['packages'],
+    data () {
+        return {
+            actorLink: undefined,
+            imp: false,
+            presets: [],
+            areMediatorsFetched: false,
+            isPresetLoading: false,
+            isExporting: false,
+        }
+    },
+    computed: {
+        busGroups() {
+            return this.$store.state.busGroups;
+        }
+    },
+    methods: {
+        onUpload(file) {
+            this.$store.dispatch('uploadZip', file);
         },
-        middleware: ['packages'],
-        data () {
-            return {
-                actorLink: undefined,
-                imp: false,
-                presets: [],
-                areMediatorsFetched: false,
-                isPresetLoading: false,
-                isExporting: false,
-            }
+        async onImport() {
+            this.isPresetLoading = true;
+            await this.$store.dispatch('importPreset', this.actorLink);
+            this.isPresetLoading = false;
+            this.imp = false;
         },
-        computed: {
-            busGroups() {
-                return this.$store.state.busGroups;
-            }
+        async onExport() {
+            this.isExporting = true;
+            await this.$store.dispatch('downloadZip');
+            this.isExporting = false;
         },
-        methods: {
-            onUpload(file) {
-                this.$store.dispatch('uploadZip', file);
-            },
-            async onImport() {
-                this.isPresetLoading = true;
-                await this.$store.dispatch('importPreset', this.actorLink);
-                this.isPresetLoading = false;
-                this.imp = false;
-            },
-            async onExport() {
-                this.isExporting = true;
-                await this.$store.dispatch('downloadZip');
-                this.isExporting = false;
-            },
-            onReset() {
-                this.$store.commit('resetState');
-            }
-        },
-        async mounted () {
+        onReset() {
+            this.$store.commit('resetState');
+        }
+    },
+    async mounted () {
 
-            // Every mediator has a bus parameter
-            const mediatorSuperParameter = {
-                "@id": "https://linkedsoftwaredependencies.org/bundles/npm/@comunica/core/Mediator/bus",
-                "comment": "The bus this mediator will mediate over.",
-                "range": "cc:Bus",
+        // Every mediator has a bus parameter
+        const mediatorSuperParameter = {
+            "@id": "https://linkedsoftwaredependencies.org/bundles/npm/@comunica/core/Mediator/bus",
+            "comment": "The bus this mediator will mediate over.",
+            "range": "cc:Bus",
+            "unique": true,
+            "required": true
+        };
+
+        // Every number mediator has these parameters
+        const numberSuperParameters = [
+            {
+                "@id": "https://linkedsoftwaredependencies.org/bundles/npm/@comunica/mediator-number/Mediator/Number/field",
+                "comment": "The field name to mediate over",
+                "range": "xsd:string",
                 "unique": true,
                 "required": true
-            };
-
-            // Every number mediator has these parameters
-            const numberSuperParameters = [
-                {
-                    "@id": "https://linkedsoftwaredependencies.org/bundles/npm/@comunica/mediator-number/Mediator/Number/field",
-                    "comment": "The field name to mediate over",
-                    "range": "xsd:string",
-                    "unique": true,
-                    "required": true
-                },
-                {
-                    "@id": "https://linkedsoftwaredependencies.org/bundles/npm/@comunica/mediator-number/Mediator/Number/ignoreErrors",
-                    "comment": "If actors that throw test errors should be ignored",
-                    "range": "xsd:boolean",
-                    "unique": true,
-                    "required": true,
-                    "default": false
-                }
-            ];
-
-            const mediatorPackages = this.$store.state.mediatorPackages;
-            const mediatorsList = [];
-
-            for (const m of mediatorPackages) {
-                const mediatorComponents = await this.$axios.$get(`https://linkedsoftwaredependencies.org/bundles/npm/@comunica/${m}/^1.0.0/components/components.jsonld`);
-                const mediatorPackageContext = await parseContext(mediatorComponents['@context']);
-                const mediatorComponentsExpanded = mediatorComponents['import']
-                    .map(i => getExpandedIRI(mediatorPackageContext, i));
-                for (const mediatorURL of mediatorComponentsExpanded) {
-
-                    const mediatorJson = await this.$axios.$get(mediatorURL);
-                    const mediatorComponent = mediatorJson.components[0];
-                    const normalizedContext = await parseContext(mediatorJson['@context']);
-                    const parameters = {}
-
-                    handleParameters(normalizedContext, parameters, [mediatorSuperParameter]) ;
-
-                    if (mediatorComponent.extends && mediatorComponent.extends !== 'cc:Mediator') {
-                        handleParameters(normalizedContext, parameters, numberSuperParameters);
-                    } else {
-                        if (mediatorComponent.parameters)
-                            handleParameters(normalizedContext, parameters, mediatorComponent.parameters);
-                    }
-
-                    for (let p of Object.keys(parameters))
-                        if (parameters[p].hasOwnProperty('default'))
-                            parameters[p].value = parameters[p].default;
-
-                    mediatorsList.push({
-                        context: mediatorJson['@context'],
-                        name: extractLabel(mediatorComponent['@id']) ,
-                        parameters: parameters,
-                    });
-                }
+            },
+            {
+                "@id": "https://linkedsoftwaredependencies.org/bundles/npm/@comunica/mediator-number/Mediator/Number/ignoreErrors",
+                "comment": "If actors that throw test errors should be ignored",
+                "range": "xsd:boolean",
+                "unique": true,
+                "required": true,
+                "default": false
             }
+        ];
 
-            this.$store.commit('addMediators', mediatorsList);
-            this.areMediatorsFetched = true;
+        const mediatorPackages = this.$store.state.mediatorPackages;
+        const mediatorsList = [];
 
-        },
-        async asyncData(context) {
-            const rawPresets = await context.$axios.$get('/comunica-packager/presets.json');
-            return {
-                presets: Object.keys(rawPresets).map(a => {
-                    return {
-                        name: a,
-                        url: rawPresets[a]
-                    };
-                })
-            };
+        for (const m of mediatorPackages) {
+            const mediatorComponents = await this.$axios.$get(`https://linkedsoftwaredependencies.org/bundles/npm/@comunica/${m}/^1.0.0/components/components.jsonld`);
+            const mediatorPackageContext = await parseContext(mediatorComponents['@context']);
+            const mediatorComponentsExpanded = mediatorComponents['import']
+                .map(i => getExpandedIRI(mediatorPackageContext, i));
+            for (const mediatorURL of mediatorComponentsExpanded) {
+
+                const mediatorJson = await this.$axios.$get(mediatorURL);
+                const mediatorComponent = mediatorJson.components[0];
+                const normalizedContext = await parseContext(mediatorJson['@context']);
+                const parameters = {}
+
+                handleParameters(normalizedContext, parameters, [mediatorSuperParameter]) ;
+
+                if (mediatorComponent.extends && mediatorComponent.extends !== 'cc:Mediator') {
+                    handleParameters(normalizedContext, parameters, numberSuperParameters);
+                } else {
+                    if (mediatorComponent.parameters)
+                        handleParameters(normalizedContext, parameters, mediatorComponent.parameters);
+                }
+
+                for (let p of Object.keys(parameters))
+                    if (parameters[p].hasOwnProperty('default'))
+                        parameters[p].value = parameters[p].default;
+
+                mediatorsList.push({
+                    context: mediatorJson['@context'],
+                    name: extractLabel(mediatorComponent['@id']) ,
+                    parameters: parameters,
+                });
+            }
         }
+
+        this.$store.commit('addMediators', mediatorsList);
+        this.areMediatorsFetched = true;
+
+    },
+    async asyncData(context) {
+        const rawPresets = await context.$axios.$get('/comunica-packager/presets.json');
+        return {
+            presets: Object.keys(rawPresets).map(a => {
+                return {
+                    name: a,
+                    url: rawPresets[a]
+                };
+            })
+        };
     }
+}
 </script>
 
 <style scoped lang="scss">
@@ -200,13 +206,11 @@
     }
 
     #header {
-        background-color: $comunica-dark-red;
+        background-color: $comunica-red;
         display: flex;
         justify-content: space-between;
-        padding: 20px 20px;
-        border-radius: 0 0 15px 15px;
+        padding: 10px 20px;
     }
-
     #input {
         max-width: 600px;
     }
@@ -224,9 +228,21 @@
         max-height: 185px;
     }
 
-    #content {
+    #body {
+        color: black;
+        background-color: white;
         display: flex;
-        margin: 5% 0;
+        margin: 10px 20px 0;
+    }
+
+    #sidebar {
+        flex: 1
+    }
+
+    #content {
+        color: black;
+        display: flex;
+        flex: 5;
     }
 
     .column {
@@ -252,7 +268,7 @@
         left: 0;
         width: 100%;
         text-align: center;
-        background-color: $comunica-dark-red;
+        background-color: $comunica-red;
         height: max(5vh, 40px);
         display: grid;
         grid-template-columns: 1fr 1fr;
@@ -265,4 +281,5 @@
     a {
         color: white;
     }
+
 </style>

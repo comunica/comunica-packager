@@ -14,7 +14,13 @@
 <style scoped lang="scss">
 
     #packager {
-        font-family: bignoodletitlingregular, sans-serif;
+      font-family: bignoodletitlingregular, sans-serif;
+      font-size: 9pt;
+    }
+
+    #logo {
+      height: 3rem;
+      vertical-align: middle;
     }
 
 </style>
