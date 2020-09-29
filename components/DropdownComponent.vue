@@ -49,23 +49,27 @@
         word-break: break-all;
     }
 
+    .style-chooser .vs__dropdown-toggle {
+        border: 1px solid lightgray;
+    }
+
     .style-chooser .vs__search::placeholder,
     .style-chooser .vs__dropdown-toggle,
     .style-chooser .vs__selected,
     .style-chooser .vs__dropdown-menu {
-        background: $comunica-red;
-        color: white;
+        background: lightgray;
+        color: black;
         border-radius: 7px;
     }
 
     .style-chooser .vs__dropdown-menu li {
-        color: white;
+        color: black;
     }
 
     .style-chooser .vs__clear,
     .style-chooser .vs__open-indicator {
-        fill: white;
-        color: white;
+        fill: gray;
+        color: black;
     }
 
 </style>

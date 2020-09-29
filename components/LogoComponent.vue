@@ -1,6 +1,6 @@
 <template>
-    <div>
-        <img id="logo" src="comunica_white.svg"/>
+    <div id="logo">
+        <img id="image" src="comunica_white.svg"/>
         <p id="packager">PACKAGER</p>
     </div>
 </template>
@@ -13,12 +13,19 @@
 
 <style scoped lang="scss">
 
-    #packager {
-      font-family: bignoodletitlingregular, sans-serif;
-      font-size: 9pt;
+    #logo {
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+        place-items: center;
+        grid-gap: 10px;
     }
 
-    #logo {
+    #packager {
+      font-family: bignoodletitlingregular, sans-serif;
+      font-size: 20pt;
+    }
+
+    #image {
       height: 3rem;
       vertical-align: middle;
     }

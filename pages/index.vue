@@ -4,11 +4,11 @@
             <LogoComponent/>
             <div id="input">
                 <div id="buttons">
-                    <a href="#" @click.prevent="imp = true">Import</a>
+                    <a class="button-top" href="#" @click.prevent="imp = true">Import</a>
                     <LoadingComponent v-if="isExporting"/>
-                    <a href="#" v-else @click.prevent="onExport">Export</a>
+                    <a class="button-top" href="#" v-else @click.prevent="onExport">Export</a>
                     <FileInputComponent text="Upload" @click="onUpload"/>
-                    <a href="#" @click.prevent="onReset">Reset</a>
+                    <a class="button-top" href="#" @click.prevent="onReset">Reset</a>
                 </div>
                 <div v-if="imp" id="preset-selector" class="dropdown-layout">
                     <DropdownComponent
@@ -25,7 +25,10 @@
         </nav>
         <div id="body">
             <div id="sidebar">
-                <p class="text-large">Sets</p>
+                <p class="text-medium">Package information</p>
+                <PackageInformationComponent/>
+                <hr>
+                <p class="text-medium">Sets</p>
                 <SetsComponent/>
             </div>
             <div id="content">
@@ -41,15 +44,13 @@
                 </div>
             </div>
         </div>
-
-        <hr style="text-align: left; margin-top: 30px;">
         <div id="footer">
             <div>
-                <v-icon>mdi-xml</v-icon>
+                <v-icon dark>mdi-xml</v-icon>
                 <a href="https://github.com/comunica/comunica-packager">Source code</a>
             </div>
             <div>
-                <v-icon>mdi-bug</v-icon>
+                <v-icon dark>mdi-bug</v-icon>
                 <a href="https://github.com/comunica/comunica-packager/issues">Report a bug</a>
             </div>
 
@@ -71,9 +72,11 @@ import {handleParameters} from "@/middleware/packages";
 import {extractLabel} from "@/utils/alpha";
 import LoadingComponent from "../components/LoadingComponent";
 import SetsComponent from "@/components/SetsComponent";
+import PackageInformationComponent from "@/components/PackageInformationComponent";
 
 export default {
     components: {
+        PackageInformationComponent,
         SetsComponent,
         LoadingComponent,
         DropdownComponent,
@@ -206,17 +209,16 @@ export default {
 <style scoped lang="scss">
 
     #container {
-        height: 100%;
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
     }
 
     #header {
         background-color: $comunica-red;
-        top: 0;
-        left: 0;
         display: flex;
         justify-content: space-between;
         padding: 10px 20px;
-        position: fixed;
         width: 100%;
         z-index: 5;
     }
@@ -238,20 +240,23 @@ export default {
     }
 
     #body {
+        flex: 1;
         color: black;
         background-color: white;
         display: flex;
-        margin: 100px 20px 0;
     }
 
     #sidebar {
-        flex: 1
+        padding: 20px 20px 0;
+        flex: 1;
+        border-right: 1px solid gray;
     }
 
     #content {
+        padding: 20px 20px;
         color: black;
         display: flex;
-        flex: 5;
+        flex: 4;
     }
 
     .column {
@@ -279,8 +284,9 @@ export default {
         grid-template-columns: 1fr 1fr;
         place-items: center;
         grid-gap: 20px;
-        padding: 30px 25%;
+        padding: 0 25%;
         z-index: 100;
+        background-color: $comunica-red;
     }
 
     a {

@@ -8,8 +8,12 @@
   font-style: normal;
 }
 
+body {
+  height: 100%;
+}
+
 .box {
-  background: $comunica-dark-red;
+  border: 1px solid black;
   border-radius: 7px;
   padding: 7px;
 }
@@ -21,6 +25,8 @@
 }
 
 .input {
+  border: 1px solid lightgray;
+  background-color: lightgray;
   border-radius: 7px;
   line-height: 1.3;
   width: 100%;
@@ -38,11 +44,13 @@
 }
 
 .text-large {
-  font-size: max(3vmin, 16pt);
+  color: $comunica-red;
+  font-size: max(3vmin, 15pt);
   font-weight: bold;
 }
 
 .text-medium {
+  color: $comunica-red;
   font-size: max(2vmin, 13pt);
   font-weight: bold;
 }
