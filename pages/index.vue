@@ -215,6 +215,9 @@ export default {
     }
 
     #header {
+        position: fixed;
+        top: 0;
+        height: 75px;
         background-color: $comunica-red;
         display: flex;
         justify-content: space-between;
@@ -240,6 +243,7 @@ export default {
     }
 
     #body {
+        margin-top: 75px;
         flex: 1;
         color: black;
         background-color: white;
@@ -248,15 +252,15 @@ export default {
 
     #sidebar {
         padding: 20px 20px 0;
-        flex: 1;
-        border-right: 1px solid gray;
+        flex: 2;
+        border-right: 1px solid $comunica-border;
     }
 
     #content {
         padding: 20px 20px;
         color: black;
         display: flex;
-        flex: 4;
+        flex: 11;
     }
 
     .column {

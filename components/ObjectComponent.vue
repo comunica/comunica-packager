@@ -184,7 +184,7 @@
 <style scoped lang="scss">
 
     #object {
-        border: 1px solid black;
+        border: 1px solid $comunica-border;
         border-radius: 7px;
         padding: 7px;
         margin: 7px 0 0 0;
@@ -203,7 +203,7 @@
     }
 
     #parameters {
-        border: 1px solid black;
+        border: 1px solid $comunica-border;
         border-radius: 7px;
     }
 
