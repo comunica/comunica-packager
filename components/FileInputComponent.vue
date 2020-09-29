@@ -31,11 +31,12 @@
     label {
         color: white;
         text-align: center;
-        border-radius: 8px;
-        font-size: max(2vmin, 13pt);
-        background: $comunica-red;
-        padding: 15px 32px;
         cursor: pointer;
+        font-weight: bold;
+    }
+
+    label:hover {
+        border-bottom: 2px solid white;
     }
 
 </style>

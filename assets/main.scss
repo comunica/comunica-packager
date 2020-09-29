@@ -20,6 +20,15 @@
   grid-column-gap: 7px;
 }
 
+.input {
+  border-radius: 7px;
+  line-height: 1.3;
+  width: 100%;
+  max-width: 100%;
+  padding: .6em 1.4em .5em .6em;
+  font-size: max(1vmin, 11pt);
+}
+
 .line {
   height: 2px;
   border: 1px solid lightgray;

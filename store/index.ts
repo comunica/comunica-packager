@@ -57,7 +57,8 @@ function getDefaultState() {
         loggers: [],
         buses: [],
         context: new Set(baseContext),
-        npmPackage: defaultPackage
+        npmPackage: defaultPackage,
+        sets: ['default']
     }
 }
 

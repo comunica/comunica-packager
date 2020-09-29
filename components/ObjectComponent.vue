@@ -188,6 +188,7 @@
         border-radius: 7px;
         padding: 7px;
         margin: 7px 0 0 0;
+        color: white;
     }
 
     #object-header {

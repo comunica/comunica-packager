@@ -4,11 +4,11 @@
             <LogoComponent/>
             <div id="input">
                 <div id="buttons">
-                    <ButtonComponent text="Import" @click="imp = true"/>
+                    <a href="#" @click.prevent="imp = true">Import</a>
                     <LoadingComponent v-if="isExporting"/>
-                    <ButtonComponent v-else text="Export" @click="onExport"/>
+                    <a href="#" v-else @click.prevent="onExport">Export</a>
                     <FileInputComponent text="Upload" @click="onUpload"/>
-                    <ButtonComponent text="Reset" @click="onReset"/>
+                    <a href="#" @click.prevent="onReset">Reset</a>
                 </div>
                 <div v-if="imp" id="preset-selector" class="dropdown-layout">
                     <DropdownComponent
@@ -26,6 +26,7 @@
         <div id="body">
             <div id="sidebar">
                 <p class="text-large">Sets</p>
+                <SetsComponent/>
             </div>
             <div id="content">
                 <div class="column" style="margin-right: 10px;" v-if="busGroups">
@@ -41,13 +42,14 @@
             </div>
         </div>
 
+        <hr style="text-align: left; margin-top: 30px;">
         <div id="footer">
             <div>
-                <v-icon dark>mdi-xml</v-icon>
+                <v-icon>mdi-xml</v-icon>
                 <a href="https://github.com/comunica/comunica-packager">Source code</a>
             </div>
             <div>
-                <v-icon dark>mdi-bug</v-icon>
+                <v-icon>mdi-bug</v-icon>
                 <a href="https://github.com/comunica/comunica-packager/issues">Report a bug</a>
             </div>
 
@@ -68,9 +70,11 @@ import {getExpandedIRI, parseContext} from "@/utils/json";
 import {handleParameters} from "@/middleware/packages";
 import {extractLabel} from "@/utils/alpha";
 import LoadingComponent from "../components/LoadingComponent";
+import SetsComponent from "@/components/SetsComponent";
 
 export default {
     components: {
+        SetsComponent,
         LoadingComponent,
         DropdownComponent,
         LogoComponent,
@@ -207,20 +211,25 @@ export default {
 
     #header {
         background-color: $comunica-red;
+        top: 0;
+        left: 0;
         display: flex;
         justify-content: space-between;
         padding: 10px 20px;
+        position: fixed;
+        width: 100%;
+        z-index: 5;
     }
     #input {
-        max-width: 600px;
+        display: grid;
+        place-items: center;
     }
 
     #buttons {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
         place-items: center;
-        grid-gap: 10px;
-        margin-bottom: 10px;
+        grid-gap: 20px;
     }
 
     #logo {
@@ -232,7 +241,7 @@ export default {
         color: black;
         background-color: white;
         display: flex;
-        margin: 10px 20px 0;
+        margin: 100px 20px 0;
     }
 
     #sidebar {
@@ -263,23 +272,25 @@ export default {
     }
 
     #footer {
-        position: fixed;
-        bottom: 0;
-        left: 0;
         width: 100%;
         text-align: center;
-        background-color: $comunica-red;
         height: max(5vh, 40px);
         display: grid;
         grid-template-columns: 1fr 1fr;
         place-items: center;
         grid-gap: 20px;
-        padding: 0 25%;
+        padding: 30px 25%;
         z-index: 100;
     }
 
     a {
         color: white;
+        text-decoration: none;
+        font-weight: bold;
+    }
+
+    a:hover {
+        border-bottom: 2px solid white;
     }
 
 </style>
