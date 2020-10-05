@@ -56,9 +56,12 @@ function getDefaultState() {
         createdMediators: [],
         loggers: [],
         buses: [],
-        context: new Set(baseContext),
+        context: {
+            'default': new Set(baseContext),
+        },
         npmPackage: defaultPackage,
-        sets: ['default']
+        sets: ['default'],
+        currentSet: 'default'
     }
 }
 
@@ -112,9 +115,9 @@ export const mutations = {
 
     addToContext(state: any, payload: any) {
         if (typeof payload === 'string')
-            state.context.add(payload);
+            state.context[state.currentSet].add(payload);
         else
-            payload.forEach((x: string) => state.context.add(x));
+            payload.forEach((x: string) => state.context[state.currentSet].add(x));
     },
 
     resetState(state: any) {
@@ -200,17 +203,18 @@ export const mutations = {
 
 export const actions = {
 
-    addActor(context: any, payload: any) {
+    addActor({state, commit}: any, payload: any) {
 
         let parameters = payload.parameters ? payload.parameters : {};
 
         const actor = {
             actorName: payload.actorName,
             '@id': payload['@id'],
-            parameters: parameters
+            parameters: parameters,
+            set: state.currentSet,
         };
 
-        context.commit('addActor', {busGroup: payload.busGroup, actor: actor});
+        commit('addActor', {busGroup: payload.busGroup, actor: actor});
     },
 
     addMediator({state, commit}: any, payload: any) {
@@ -220,7 +224,8 @@ export const actions = {
             type: payload.mediator,
             '@id': payload.id ? payload.id : `${payload.mediator}#${state.createdMediators.length}`,
             parameters: selectedMediatorType.parameters,
-            name: payload.mediator
+            name: payload.mediator,
+            set: state.currentSet,
         });
     },
 
