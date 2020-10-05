@@ -77,13 +77,15 @@ export function handleMediator(normalizedContext: any, mediator: any, mediators:
 /**
  * Maps our inner state to a jsonld
  * @param state: Our inner state
+ * @param set: The set of the current json to map
  */
-export async function stateToJsonld(state: any) {
+export async function stateToJsonld(state: any, set: string) {
     let addedActors: any = [];
-    const createdActors: any[] = state.createdActors;
-    let normalizedContext = await parseContext([...state.context]);
+    const createdActors: any[] = state.createdActors
+    let normalizedContext = await parseContext([...state.context[set]]);
 
     for (let [busGroup, actors] of  Object.entries(createdActors)) {
+        actors = actors.filter((a: any) => a.set === set);
         if (actors.length) {
             for (let actor of actors) {
                 let actorToAdd: any = {
@@ -129,13 +131,12 @@ export async function stateToJsonld(state: any) {
 
     let runner = {
         '@id': 'urn:comunica:my',
-        '@type': 'Runner',
         'actors': addedActors
     };
 
     let graph: any[] = [runner];
 
-    const createdMediators: any[] = state.createdMediators;
+    const createdMediators: any[] = state.createdMediators.filter((m: any) => m.set === set);
 
     for (let mediator of createdMediators) {
         let mediatorToAdd: any = {
@@ -160,7 +161,7 @@ export async function stateToJsonld(state: any) {
     }
 
     let output = {
-        '@context': [...state.context],
+        '@context': [...state.context[set]],
         '@graph': graph
     };
 

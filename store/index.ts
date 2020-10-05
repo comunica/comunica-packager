@@ -327,6 +327,11 @@ export const actions = {
 
         if (context.state.sets.length > 1) {
             let sets = config.folder('sets');
+            for (const s of context.state.sets) {
+                if (s !== 'default')
+                    sets.file(s + '.json', await stateToJsonld(context.state, s));
+            }
+
             config.file('config-default.json', 'jeepse');
         } else {
             // config.file('config-default.json', await stateToJsonld(context.state));
