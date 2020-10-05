@@ -120,6 +120,23 @@ export const mutations = {
             payload.forEach((x: string) => state.context[state.currentSet].add(x));
     },
 
+    addSet(state: any, set: string) {
+        state.sets.push(set);
+    },
+
+    setSelectedSet(state: any, set: string) {
+        state.currentSet = set;
+    },
+
+    removeSet(state: any, set: string) {
+        if (set === state.currentSet)
+            state.currentSet = 'default'
+
+        state.sets.forEach( (item: string, index: number) => {
+            if(item === set) state.sets.splice(index,1);
+        });
+    },
+
     resetState(state: any) {
         state.context = new Set(baseContext);
         state.createdMediators = [];

@@ -25,9 +25,9 @@
         </nav>
         <div id="body">
             <div id="sidebar">
-                <p class="text-medium">Package information</p>
-                <PackageInformationComponent/>
-                <hr>
+<!--                <p class="text-medium">Package information</p>-->
+<!--                <PackageInformationComponent/>-->
+<!--                <hr>-->
                 <p class="text-medium">Sets</p>
                 <SetsComponent/>
             </div>

@@ -1,26 +1,47 @@
 <template>
-    <div>
+    <div v-if="sets">
         <div id="body">
-            <p :class="set === selected ? 'set selected' : 'set'" v-for="set in sets">
-                {{set}}
-            </p>
+            <div :class="set === selected ? 'set selected' : 'set'" v-for="set in sets" >
+                <p @click="onClick(set)">{{set}}</p>
+                <IconButtonComponent v-if="set !== 'default'" @click="onDelete(set)" style="z-index: 10;" icon-tag="mdi-close-circle"/>
+            </div>
         </div>
         <div id="add-set">
-            <input id="input-sets" class="input"/>
-            <ButtonComponent :is-small="true" text="Add"/>
+            <input v-model="setInput" id="input-sets" class="input"/>
+            <ButtonComponent :is-small="true" text="Add" @click="onAddSet"/>
         </div>
     </div>
 </template>
 
 <script>
     import ButtonComponent from "@/components/ButtonComponent";
+    import IconButtonComponent from "@/components/IconButtonComponent";
     export default {
         name: "SetsComponent",
-        components: {ButtonComponent},
+        components: {IconButtonComponent, ButtonComponent},
         data() {
             return {
-                sets: ['default', 'http', 'query-operation'],
-                selected: 'default'
+                setInput: ''
+            }
+        },
+        computed: {
+            sets() {
+                return this.$store.state.sets;
+            },
+            selected() {
+                return this.$store.state.currentSet;
+            }
+        },
+        methods: {
+            onAddSet() {
+                this.$store.commit('addSet', this.setInput);
+                this.setInput = '';
+            },
+            onClick(set) {
+                this.$store.commit('setSelectedSet', set);
+            },
+            onDelete(set) {
+                this.$store.commit('removeSet', set);
             }
         }
     }
@@ -37,17 +58,30 @@
         grid-template-columns: 10fr 1fr;
         grid-gap: 10px;
         padding-left: 10px;
+        margin-top: 10px;
     }
 
     .set {
         padding-left: 10px;
         width: 100%;
         line-height: 30pt;
+        border-radius: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    p {
+        flex: 1;
+    }
+
+    p:hover {
+        cursor: pointer;
     }
 
     .selected {
         color: $comunica-red;
-        text-decoration: underline;
+        background: $comunica-hover;
     }
 
 </style>
