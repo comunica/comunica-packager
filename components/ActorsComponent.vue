@@ -56,7 +56,9 @@
                 let busGroups = Object.keys(this.$store.state.createdActors).sort();
                 return busGroups.map(bg => ({
                     busGroup: bg,
-                    actors: this.$store.state.createdActors[bg]
+                    actors: this.$store.state.createdActors[bg].filter(
+                        actor => actor.set === this.$store.state.currentSet
+                    ),
                 }));
             }
         }

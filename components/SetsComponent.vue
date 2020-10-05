@@ -2,6 +2,7 @@
     <div v-if="sets">
         <div id="body">
             <div :class="set === selected ? 'set selected' : 'set'" v-for="set in sets" >
+                <v-icon style="margin-right: 5px; color: black">mdi-layers</v-icon>
                 <p @click="onClick(set)">{{set}}</p>
                 <IconButtonComponent v-if="set !== 'default'" @click="onDelete(set)" style="z-index: 10;" icon-tag="mdi-close-circle"/>
             </div>
@@ -80,7 +81,6 @@
     }
 
     .selected {
-        color: $comunica-red;
         background: $comunica-hover;
     }
 

@@ -56,7 +56,9 @@
         },
         computed: {
             addedActors() {
-                return this.$store.state.createdActors[this.busGroup];
+                return this.$store.state.createdActors[this.busGroup].filter(
+                    actor =>  actor.set === this.$store.state.currentSet
+                );
             }
         }
     }

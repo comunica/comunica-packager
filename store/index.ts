@@ -122,6 +122,7 @@ export const mutations = {
 
     addSet(state: any, set: string) {
         state.sets.push(set);
+        state.context[set] = new Set();
     },
 
     setSelectedSet(state: any, set: string) {
@@ -135,14 +136,17 @@ export const mutations = {
         state.sets.forEach( (item: string, index: number) => {
             if(item === set) state.sets.splice(index,1);
         });
+        delete state.context[set];
     },
 
     resetState(state: any) {
-        state.context = new Set(baseContext);
+        state.context = {'default': new Set(baseContext)}
         state.createdMediators = [];
         Object.keys(state.createdActors).forEach(key => {
             state.createdActors[key] = [];
         });
+        state.sets = ['default'];
+        state.currentSet = 'default';
     },
 
     changeID(state: any, id: string) {
@@ -317,9 +321,18 @@ export const actions = {
             bin.file(v, await (this as any).$axios.$get(`/comunica-packager/output/bin/${v}`));
         }
         bin.file('query.js', await (this as any).$axios.$get('/comunica-packager/output/bin/query.js'));
-        zip.file('config/config.json', await stateToJsonld(context.state));
         zip.file('.gitignore', await (this as any).$axios.$get('/comunica-packager/output/.gitignore'));
         zip.file('.npmignore', await (this as any).$axios.$get('/comunica-packager/output/.npmignore'));
+        let config = zip.folder('config');
+
+        if (context.state.sets.length > 1) {
+            let sets = config.folder('sets');
+            config.file('config-default.json', 'jeepse');
+        } else {
+            // config.file('config-default.json', await stateToJsonld(context.state));
+            config.file('config-default.json', '"test": "jeepse"');
+        }
+
         zip.generateAsync({type: 'blob'}).then(
             content => {
                 saveAs(content, 'engine.zip');
