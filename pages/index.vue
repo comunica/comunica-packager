@@ -258,7 +258,7 @@ export default {
     }
 
     #sidebar {
-        padding: 20px 20px 0;
+        padding: 20px 20px 50px;
         flex: 2;
         border-right: 1px solid $comunica-border;
     }

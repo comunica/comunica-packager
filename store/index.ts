@@ -373,7 +373,11 @@ export const actions = {
         const dataExpanded: any = await jsonldParser.expand(data);
         let imports = dataExpanded[0]['http://www.w3.org/2002/07/owl#imports'];
 
-        console.log(imports);
+        for (const imp of imports) {
+            const splitted = imp['@id'].split('/');
+            const set = splitted[splitted.length-1].slice(0, -5);
+            commit('addSet', set);
+        }
 
         // // Use entries() to get index for potential progress bar when fetching
         // for (const [index, imp] of imports.entries()) {
