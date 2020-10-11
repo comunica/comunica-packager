@@ -75,6 +75,20 @@ export function handleMediator(normalizedContext: any, mediator: any, mediators:
 }
 
 /**
+ *
+ * @param state
+ */
+export async function defaultJsonld(state: any) {
+    let jsonld: any = await stateToJsonld(state, 'default');
+    jsonld['@type'] = 'Runner';
+    if (state.sets.length > 1) {
+        jsonld['import'] = state.sets.map((s: string) => `config/sets/${s}`);
+    }
+
+    return jsonld;
+}
+
+/**
  * Maps our inner state to a jsonld
  * @param state: Our inner state
  * @param set: The set of the current json to map
@@ -160,12 +174,10 @@ export async function stateToJsonld(state: any, set: string) {
         graph.push(mediatorToAdd);
     }
 
-    let output = {
+    return {
         '@context': [...state.context[set]],
         '@graph': graph
     };
-
-    return JSON.stringify(output, null, '  ');
 }
 
 /**

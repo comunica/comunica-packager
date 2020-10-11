@@ -4,23 +4,29 @@
             <LogoComponent/>
             <div id="input">
                 <div id="buttons">
-                    <a class="button-top" href="#" @click.prevent="imp = true">Import</a>
+                    <a v-if="!isPresetLoading" class="button-top" href="#" @click.prevent="imp = !imp">Import</a>
+                    <LoadingComponent v-else/>
+                    <div v-if="imp" class="dd-import">
+                        <p class="preset" v-for="preset in presets" @click="onImport(preset.url)">
+                            {{preset.name}}
+                        </p>
+                    </div>
                     <LoadingComponent v-if="isExporting"/>
                     <a class="button-top" href="#" v-else @click.prevent="onExport">Export</a>
                     <FileInputComponent text="Upload" @click="onUpload"/>
                     <a class="button-top" href="#" @click.prevent="onReset">Reset</a>
                 </div>
-                <div v-if="imp" id="preset-selector" class="dropdown-layout">
-                    <DropdownComponent
-                        v-model="actorLink"
-                        :options="presets"
-                        placeholder="Choose preset"
-                        label="name"
-                        reduce="url"
-                    />
-                    <ButtonComponent v-if="!isPresetLoading" :disabled="!actorLink" :is-small="true" text="Import" @click="onImport"/>
-                    <LoadingComponent v-else/>
-                </div>
+<!--                <div v-if="imp" id="preset-selector" class="dropdown-layout">-->
+<!--                    <DropdownComponent-->
+<!--                        v-model="actorLink"-->
+<!--                        :options="presets"-->
+<!--                        placeholder="Choose preset"-->
+<!--                        label="name"-->
+<!--                        reduce="url"-->
+<!--                    />-->
+<!--                    <ButtonComponent v-if="!isPresetLoading" :disabled="!actorLink" :is-small="true" text="Import" @click="onImport"/>-->
+<!--                    <LoadingComponent v-else/>-->
+<!--                </div>-->
             </div>
         </nav>
         <div id="body">
@@ -107,9 +113,10 @@ export default {
         onUpload(file) {
             this.$store.dispatch('uploadZip', file);
         },
-        async onImport() {
+        async onImport(url) {
             this.isPresetLoading = true;
-            await this.$store.dispatch('importPreset', this.actorLink);
+            await this.$store.dispatch('importPreset', url);
+            console.log(url);
             this.isPresetLoading = false;
             this.imp = false;
         },
@@ -301,6 +308,27 @@ export default {
 
     a:hover {
         border-bottom: 2px solid white;
+    }
+
+    .dd-import {
+        padding: 10px 0;
+        position: absolute;
+        top: 60px;
+        color: black;
+        z-index: 5;
+        background: lightgray;
+        border-radius: 10px;
+        border: 1px solid $comunica-border;
+    }
+
+    .preset {
+        line-height: 30px;
+        padding: 0 10px;
+    }
+
+    .preset:hover {
+        cursor: pointer;
+        background: #79AAFC;
     }
 
 </style>

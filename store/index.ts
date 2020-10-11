@@ -3,7 +3,7 @@ import Vue from 'vue';
 import {pascalCaseToKebabCase} from "~/utils/alpha";
 import JSZip from "jszip";
 import {saveAs} from 'file-saver';
-import {getExpandedIRI, jsonldToState, parseContext, stateToJsonld} from "~/utils/json";
+import {defaultJsonld, getExpandedIRI, jsonldToState, parseContext, stateToJsonld} from "~/utils/json";
 import _ from 'lodash';
 import * as jsonldParser from 'jsonld';
 import {handleParameters} from "~/middleware/packages";
@@ -329,14 +329,13 @@ export const actions = {
             let sets = config.folder('sets');
             for (const s of context.state.sets) {
                 if (s !== 'default')
-                    sets.file(s + '.json', await stateToJsonld(context.state, s));
+                    sets.file(s + '.json', JSON.stringify(
+                        await stateToJsonld(context.state, s), null, '  '
+                    ));
             }
-
-            config.file('config-default.json', 'jeepse');
-        } else {
-            // config.file('config-default.json', await stateToJsonld(context.state));
-            config.file('config-default.json', '"test": "jeepse"');
         }
+
+        config.file('config-default.json', JSON.stringify(await defaultJsonld(context.state), null, '  '));
 
         zip.generateAsync({type: 'blob'}).then(
             content => {
@@ -366,7 +365,7 @@ export const actions = {
         }, function() {alert('Invalid zip.')});
     },
 
-    async importPreset({commit, dispatch}: any, presetLink: any) {
+    async importPreset({commit, dispatch}: any, presetLink: string) {
         // First reset everything
         commit('resetState');
 
@@ -374,18 +373,20 @@ export const actions = {
         const dataExpanded: any = await jsonldParser.expand(data);
         let imports = dataExpanded[0]['http://www.w3.org/2002/07/owl#imports'];
 
-        // Use entries() to get index for potential progress bar when fetching
-        for (const [index, imp] of imports.entries()) {
-            const fetchedImp = await (this as any).$axios.$get(imp['@id']);
-            const s = await jsonldToState(fetchedImp);
-            commit('addToContext', s.context);
+        console.log(imports);
 
-            // Handle mediators
-            for (const mediator of s.mediators)
-                dispatch('mapMediatorToState', mediator);
-            // Handle actors
-            for (const actor of s.actors)
-                dispatch('mapActorToState', actor);
-        }
+        // // Use entries() to get index for potential progress bar when fetching
+        // for (const [index, imp] of imports.entries()) {
+        //     const fetchedImp = await (this as any).$axios.$get(imp['@id']);
+        //     const s = await jsonldToState(fetchedImp);
+        //     commit('addToContext', s.context);
+        //
+        //     // Handle mediators
+        //     for (const mediator of s.mediators)
+        //         dispatch('mapMediatorToState', mediator);
+        //     // Handle actors
+        //     for (const actor of s.actors)
+        //         dispatch('mapActorToState', actor);
+        // }
     }
 }
