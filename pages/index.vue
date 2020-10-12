@@ -29,14 +29,15 @@
 <!--                </div>-->
             </div>
         </nav>
+        <div id="sidebar">
+            <!--<p class="text-medium">Package information</p>-->
+            <!--<PackageInformationComponent/>-->
+            <!--<hr>-->
+            <p class="text-medium">Sets</p>
+            <SetsComponent/>
+        </div>
         <div id="body">
-            <div id="sidebar">
-<!--                <p class="text-medium">Package information</p>-->
-<!--                <PackageInformationComponent/>-->
-<!--                <hr>-->
-                <p class="text-medium">Sets</p>
-                <SetsComponent/>
-            </div>
+
             <div id="content">
                 <div class="column" style="margin-right: 10px;" v-if="busGroups">
                     <p class="text-large">Actors</p>
@@ -251,6 +252,7 @@ export default {
 
     #body {
         margin-top: 75px;
+        margin-left: max(15vw, 250px);
         flex: 1;
         color: black;
         background-color: white;
@@ -258,9 +260,14 @@ export default {
     }
 
     #sidebar {
-        padding: 20px 20px 50px;
-        flex: 2;
+        color: black;
+        position: fixed;
+        bottom: max(5vh, 40px);
+        top: 75px;
+        width: max(15vw, 250px);
+        padding: 20px 20px;
         border-right: 1px solid $comunica-border;
+        overflow-y: auto;
     }
 
     #content {
@@ -277,7 +284,7 @@ export default {
         flex: 1;
     }
 
-    @media screen and (max-width: 900px) {
+    @media screen and (max-width: 1000px) {
         #content {
             flex-direction: column;
         }
