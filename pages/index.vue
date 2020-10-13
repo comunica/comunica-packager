@@ -43,7 +43,6 @@
                     <p class="text-large">Actors</p>
                     <ActorsComponent style="margin-top: 20px;"/>
                 </div>
-                <hr style="height:2px;border-width:0;color:gray;background-color:white;border-radius:2px">
                 <div class="column" style="margin-left: 10px;">
                     <p class="text-large">Mediators</p>
                     <MediatorComponent v-if="areMediatorsFetched" style="margin-top: 20px;"/>

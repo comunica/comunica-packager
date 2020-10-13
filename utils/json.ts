@@ -35,6 +35,8 @@ function handleParameter(obj: any, parameterNameFull: string, parameter: any) {
  * @param mediators: A list of handled mediators
  */
 export function handleActor(normalizedContext: any, actor: any, actors: any[], mediators: any[]) {
+
+    // console.log(actor);
     let actorExtracted: any = {
         parameters: {}
     };
@@ -183,8 +185,9 @@ export async function stateToJsonld(state: any, set: string) {
 /**
  * Maps a jsonld to our inner state.
  * @param jsonld: A jsonld
+ * @param set: The set of this jsonld
  */
-export async function jsonldToState(jsonld: any) {
+export async function jsonldToState(jsonld: any, set: string) {
     let id = '';
     let context = jsonld['@context'];
     let actors: any[] = [];

@@ -100,6 +100,10 @@
             busGroup: {
                 type: String,
                 default: undefined
+            },
+            set: {
+                type: String,
+                default: 'default'
             }
         },
         data() {
@@ -171,7 +175,8 @@
                    await this.$store.dispatch('fetchArgumentsOfActor', {
                        busGroup: this.busGroup,
                        actorName: this.objectName,
-                       '@id': this.id
+                       '@id': this.id,
+                       set: this.set,
                    });
                    this.areParametersFetched = true;
             } else {

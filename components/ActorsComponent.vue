@@ -41,7 +41,8 @@
                 await this.$store.dispatch('addActor', {
                     busGroup: busGroup,
                     '@id': id,
-                    actorName: this.selectedActor
+                    actorName: this.selectedActor,
+                    set: this.$store.state.currentSet,
                 });
 
                 this.selectedActor = null;

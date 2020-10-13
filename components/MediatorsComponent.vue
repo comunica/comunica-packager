@@ -49,7 +49,8 @@
             onCreate() {
                 // Create new object of mediator type
                 this.$store.dispatch('addMediator', {
-                    mediator: this.selectedMediator
+                    mediator: this.selectedMediator,
+                    set: this.$store.state.currentSet
                 });
             },
             onDelete(mediator) {

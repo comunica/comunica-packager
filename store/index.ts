@@ -11,6 +11,7 @@ import {handleParameters} from "~/middleware/packages";
 
 const baseUrl = 'https://linkedsoftwaredependencies.org/bundles/npm/@comunica/';
 const baseContext = [`${baseUrl}runner/^1.0.0/components/context.jsonld`];
+const baseSet = [{name: 'default', url: '', loaded: true}];
 const defaultPackage = {
     'name': 'temp name',
     'version': '1.0.0',
@@ -60,7 +61,7 @@ function getDefaultState() {
             'default': new Set(baseContext),
         },
         npmPackage: defaultPackage,
-        sets: ['default'],
+        sets: baseSet,
         currentSet: 'default'
     }
 }
@@ -114,15 +115,15 @@ export const mutations = {
     },
 
     addToContext(state: any, payload: any) {
-        if (typeof payload === 'string')
-            state.context[state.currentSet].add(payload);
+        if (Array.isArray(payload.context))
+            payload.context.forEach((x: string) => state.context[payload.set].add(x));
         else
-            payload.forEach((x: string) => state.context[state.currentSet].add(x));
+            state.context[payload.set].add(payload.context);
     },
 
-    addSet(state: any, set: string) {
+    addSet(state: any, set: any) {
         state.sets.push(set);
-        state.context[set] = new Set();
+        state.context[set.name] = new Set();
     },
 
     setSelectedSet(state: any, set: string) {
@@ -133,8 +134,8 @@ export const mutations = {
         if (set === state.currentSet)
             state.currentSet = 'default'
 
-        state.sets.forEach( (item: string, index: number) => {
-            if(item === set) state.sets.splice(index,1);
+        state.sets.forEach( (item: any, index: number) => {
+            if(item.name === set) state.sets.splice(index,1);
         });
         delete state.context[set];
     },
@@ -145,7 +146,7 @@ export const mutations = {
         Object.keys(state.createdActors).forEach(key => {
             state.createdActors[key] = [];
         });
-        state.sets = ['default'];
+        state.sets = baseSet;
         state.currentSet = 'default';
     },
 
@@ -232,7 +233,7 @@ export const actions = {
             actorName: payload.actorName,
             '@id': payload['@id'],
             parameters: parameters,
-            set: state.currentSet,
+            set: payload.set,
         };
 
         commit('addActor', {busGroup: payload.busGroup, actor: actor});
@@ -240,20 +241,24 @@ export const actions = {
 
     addMediator({state, commit}: any, payload: any) {
         const selectedMediatorType =  _.cloneDeep(state.mediators.find((m: any) => m.name === payload.mediator));
-        commit('addToContext', selectedMediatorType.context);
+        commit('addToContext', {
+            context: selectedMediatorType.context,
+            set: payload.set,
+        });
         commit('createNewMediator', {
             type: payload.mediator,
             '@id': payload.id ? payload.id : `${payload.mediator}#${state.createdMediators.length}`,
             parameters: selectedMediatorType.parameters,
             name: payload.mediator,
-            set: state.currentSet,
+            set: payload.set,
         });
     },
 
     mapMediatorToState({state, commit, dispatch}: any, payload: any) {
         dispatch('addMediator', {
             mediator: payload['@type'],
-            id: payload['@id']
+            id: payload['@id'],
+            set: payload.set
         });
 
         for (const parameter of Object.keys(payload.parameters)) {
@@ -271,7 +276,8 @@ export const actions = {
             actorName: payload['@type'],
             '@id': payload['@id'],
             busGroup: getBusGroupOfActor(state.busGroups, payload['@type']),
-            parameters: payload.parameters
+            parameters: payload.parameters,
+            set: payload.set
         });
     },
 
@@ -290,7 +296,7 @@ export const actions = {
         const normalizedContext = await parseContext(atContext);
         let parameters: any = {};
 
-        commit('addToContext', atContext);
+        commit('addToContext', {context: atContext, set: payload.set});
 
         if (componentContent.parameters)
             handleParameters(normalizedContext, parameters, componentContent.parameters);
@@ -346,26 +352,27 @@ export const actions = {
 
     async uploadZip({commit, dispatch}: any, file: any) {
 
+        // TODO: fix
         let zip = new JSZip();
-        zip.loadAsync(file).then(function(z) {
-            zip.file('config.json').async('text').then(async function(json) {
-                commit('resetState');
-                const s = await jsonldToState(JSON.parse(json));
-                commit('changeID', s.id);
-                commit('addToContext', s.context);
-                // Handle mediators
-                for (const mediator of s.mediators) {
-                    dispatch('mapMediatorToState', mediator);
-                }
-                // Handle actors
-                for (const actor of s.actors) {
-                    dispatch('mapActorToState', actor);
-                }
-            });
-        }, function() {alert('Invalid zip.')});
+        // zip.loadAsync(file).then(function(z) {
+        //     zip.file('config.json').async('text').then(async function(json) {
+        //         commit('resetState');
+        //         const s = await jsonldToState(JSON.parse(json));
+        //         commit('changeID', s.id);
+        //         commit('addToContext', s.context);
+        //         // Handle mediators
+        //         for (const mediator of s.mediators) {
+        //             dispatch('mapMediatorToState', mediator);
+        //         }
+        //         // Handle actors
+        //         for (const actor of s.actors) {
+        //             dispatch('mapActorToState', actor);
+        //         }
+        //     });
+        // }, function() {alert('Invalid zip.')});
     },
 
-    async importPreset({commit, dispatch}: any, presetLink: string) {
+    async importPreset({commit, dispatch, state}: any, presetLink: string) {
         // First reset everything
         commit('resetState');
 
@@ -373,24 +380,32 @@ export const actions = {
         const dataExpanded: any = await jsonldParser.expand(data);
         let imports = dataExpanded[0]['http://www.w3.org/2002/07/owl#imports'];
 
+        const imps = [];
+
         for (const imp of imports) {
             const splitted = imp['@id'].split('/');
-            const set = splitted[splitted.length-1].slice(0, -5);
+            const setName = splitted[splitted.length-1].slice(0, -5);
+            const set = {name: setName, url: imp['@id'], loaded: false}
             commit('addSet', set);
+            imps.push(set);
         }
 
-        // // Use entries() to get index for potential progress bar when fetching
-        // for (const [index, imp] of imports.entries()) {
-        //     const fetchedImp = await (this as any).$axios.$get(imp['@id']);
-        //     const s = await jsonldToState(fetchedImp);
-        //     commit('addToContext', s.context);
-        //
-        //     // Handle mediators
-        //     for (const mediator of s.mediators)
-        //         dispatch('mapMediatorToState', mediator);
-        //     // Handle actors
-        //     for (const actor of s.actors)
-        //         dispatch('mapActorToState', actor);
-        // }
+        for (const imp of imps) {
+            const fetchedImp = await (this as any).$axios.$get(imp.url);
+            console.log(fetchedImp);
+            const s = await jsonldToState(fetchedImp, imp.name);
+            commit('addToContext', {context: s.context, set: imp.name});
+
+            // TODO:
+
+            // Handle mediators
+            for (const mediator of s.mediators) {
+                mediator.set = imp.name;
+                dispatch('mapMediatorToState', mediator);
+            }
+            // // Handle actors
+            // for (const actor of s.actors)
+            //     dispatch('mapActorToState', actor);
+        }
     }
 }

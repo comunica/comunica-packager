@@ -8,6 +8,7 @@
                 :id="actor['@id']"
                 :parameters="actor.parameters"
                 :bus-group="busGroup"
+                :set="actor.set"
                 @click="onDelete"
                 @param="onChangeParameter"
                 @id="onIDChange"

@@ -1,9 +1,9 @@
 <template>
     <div v-if="sets">
         <div id="body">
-            <div :class="set === selected ? 'set selected' : 'set'" v-for="set in sets" >
+            <div :class="set.name === selected ? 'set selected' : 'set'" v-for="set in sets" >
                 <v-icon style="margin-right: 5px; color: black">mdi-layers</v-icon>
-                <p @click="onClick(set)">{{set}}</p>
+                <p @click="onClick(set)">{{set.name}}</p>
                 <IconButtonComponent v-if="set !== 'default'" @click="onDelete(set)" style="z-index: 10;" icon-tag="mdi-close-circle"/>
             </div>
         </div>
@@ -35,14 +35,17 @@
         },
         methods: {
             onAddSet() {
-                this.$store.commit('addSet', this.setInput);
+                this.$store.commit('addSet', {name: this.setInput, url: '', loaded: true});
                 this.setInput = '';
             },
             onClick(set) {
-                this.$store.commit('setSelectedSet', set);
+                if (!set.loaded) {
+                    console.log('yeet');
+                }
+                this.$store.commit('setSelectedSet', set.name);
             },
             onDelete(set) {
-                this.$store.commit('removeSet', set);
+                this.$store.commit('removeSet', set.name);
             }
         }
     }
