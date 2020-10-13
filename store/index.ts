@@ -403,9 +403,12 @@ export const actions = {
                 mediator.set = imp.name;
                 dispatch('mapMediatorToState', mediator);
             }
-            // // Handle actors
-            // for (const actor of s.actors)
-            //     dispatch('mapActorToState', actor);
+            // Handle actors
+            for (const actor of s.actors) {
+                actor.set = imp.name;
+                dispatch('mapActorToState', actor);
+            }
+
         }
     }
 }

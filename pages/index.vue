@@ -252,6 +252,7 @@ export default {
     #body {
         margin-top: 75px;
         margin-left: max(15vw, 250px);
+        margin-bottom: max(5vh, 40px);
         flex: 1;
         color: black;
         background-color: white;
@@ -294,6 +295,8 @@ export default {
     }
 
     #footer {
+        position: fixed;
+        bottom: 0;
         width: 100%;
         text-align: center;
         height: max(5vh, 40px);
