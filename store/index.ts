@@ -334,14 +334,14 @@ export const actions = {
         if (context.state.sets.length > 1) {
             let sets = config.folder('sets');
             for (const s of context.state.sets) {
-                if (s !== 'default')
-                    sets.file(s + '.json', JSON.stringify(
-                        await stateToJsonld(context.state, s), null, '  '
+                if (s.name !== 'default')
+                    sets.file(s.name + '.json', JSON.stringify(
+                        await stateToJsonld(context.state, s.name), null, '  '
                     ));
             }
         }
-
-        config.file('config-default.json', JSON.stringify(await defaultJsonld(context.state), null, '  '));
+        //
+        // config.file('config-default.json', JSON.stringify(await defaultJsonld(context.state), null, '  '));
 
         zip.generateAsync({type: 'blob'}).then(
             content => {
@@ -392,11 +392,8 @@ export const actions = {
 
         for (const imp of imps) {
             const fetchedImp = await (this as any).$axios.$get(imp.url);
-            console.log(fetchedImp);
             const s = await jsonldToState(fetchedImp, imp.name);
             commit('addToContext', {context: s.context, set: imp.name});
-
-            // TODO:
 
             // Handle mediators
             for (const mediator of s.mediators) {

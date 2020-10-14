@@ -116,7 +116,6 @@ export default {
         async onImport(url) {
             this.isPresetLoading = true;
             await this.$store.dispatch('importPreset', url);
-            console.log(url);
             this.isPresetLoading = false;
             this.imp = false;
         },

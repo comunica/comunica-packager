@@ -13,6 +13,7 @@
             :object-name="mediator.name"
             :id="mediator['@id']"
             :parameters="mediator.parameters"
+            :set="mediator.set"
             @click="onDelete(mediator['@id'])"
             @param="onChangeParameter"
             @id="onChangeID"
@@ -40,9 +41,7 @@
                 return this.mediators.map(p => p.name);
             },
             createdMediators() {
-                return this.$store.state.createdMediators.filter(
-                    mediator => mediator.set === this.$store.state.currentSet
-                );
+                return this.$store.state.createdMediators;
             }
         },
         methods: {

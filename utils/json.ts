@@ -36,7 +36,6 @@ function handleParameter(obj: any, parameterNameFull: string, parameter: any) {
  */
 export function handleActor(normalizedContext: any, actor: any, actors: any[], mediators: any[]) {
 
-    // console.log(actor);
     let actorExtracted: any = {
         parameters: {}
     };
@@ -84,7 +83,7 @@ export async function defaultJsonld(state: any) {
     let jsonld: any = await stateToJsonld(state, 'default');
     jsonld['@type'] = 'Runner';
     if (state.sets.length > 1) {
-        jsonld['import'] = state.sets.map((s: string) => `config/sets/${s}`);
+        jsonld['import'] = state.sets.map((s: any) => `config/sets/${s.name}`);
     }
 
     return jsonld;
@@ -108,6 +107,7 @@ export async function stateToJsonld(state: any, set: string) {
                     '@id': actor['@id'],
                     '@type': actor.actorName
                 };
+                console.log(actor.parameters);
                 for (let key of Object.keys(actor.parameters)) {
                     let parameter = actor.parameters[key];
                     if (parameter.value) {

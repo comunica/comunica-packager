@@ -1,5 +1,5 @@
 <template>
-    <div id="object">
+    <div v-if="set === currentSet" id="object">
         <div id="object-header">
             <p class="text-medium" style="align-self: center;">{{objectName}}</p>
             <IconButtonComponent
@@ -167,6 +167,9 @@
                     fullName: p,
                     name: extractLabel(p)
                 }));
+            },
+            currentSet() {
+                return this.$store.state.currentSet;
             }
         },
         async mounted() {
