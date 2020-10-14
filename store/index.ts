@@ -12,6 +12,24 @@ import {handleParameters} from "~/middleware/packages";
 const baseUrl = 'https://linkedsoftwaredependencies.org/bundles/npm/@comunica/';
 const baseContext = [`${baseUrl}runner/^1.0.0/components/context.jsonld`];
 const defaultPackage = {
+    "name": '%package_name%',
+    "version": '1.0.0',
+    "description": '',
+    "main": 'index.js',
+    "scripts": {
+        "prepublishOnly": "npm run build",
+        "build:engine": "comunica-compile-config config/config-default.json > engine-default.js",
+        "build:lib": "tsc",
+        "build": "npm run build:lib && npm run build:engine",
+        "postinstall": "npm run build"
+    },
+    "dependencies": {
+        "@comunica/actor-init-sparql": "^1.17.0",
+    },
+    "devDependencies": {
+        "typescript": "^4.0.0"
+    },
+    "license": "MIT",
     "lsd:module": "https://linkedsoftwaredependencies.org/bundles/npm/%package_name%",
     "lsd:contexts": {
         "https://linkedsoftwaredependencies.org/bundles/npm/%package_name%/^1.0.0/components/context.jsonld": "components/context.jsonld"
@@ -20,25 +38,11 @@ const defaultPackage = {
         "https://linkedsoftwaredependencies.org/bundles/npm/%package_name%/^1.0.0/components/": "components/",
         "https://linkedsoftwaredependencies.org/bundles/npm/%package_name%/^1.0.0/config/": "config/"
     },
-    'name': '%package_name%',
-    'version': '1.0.0',
-    'description': '',
-    'main': 'index.js',
-    'scripts': {
-        "prepublishOnly": "npm run build",
-        "build:engine": "comunica-compile-config config/config-default.json > engine-default.js",
-        "build:lib": "tsc",
-        "build": "npm run build:lib && npm run build:engine",
-        "postinstall": "npm run build"
-    },
-    'dependencies': {
-        "@comunica/actor-init-sparql": "^1.17.0",
-    },
-    'devDependencies': {
-        "typescript": "^4.0.0"
-    },
-    'license': 'MIT',
-
+    "bin": {
+        "my-comunica": "./bin/query.js",
+        "my-comunica-http": "./bin/http.js",
+        "my-comunica-dynamic": "./bin/query-dynamic.js"
+    }
 };
 
 function baseSet() {
@@ -369,6 +373,9 @@ export const actions = {
             bin.file(v, await (this as any).$axios.$get(`/comunica-packager/output/bin/${v}`));
         }
         bin.file('query.js', await (this as any).$axios.$get('/comunica-packager/output/bin/query.js'));
+
+        zip.file('package.json', JSON.stringify(defaultPackage, null, '  ')
+            .replace(/%package_name%/g, context.state.packageName));
         zip.file('.gitignore', await (this as any).$axios.$get('/comunica-packager/output/.gitignore'));
         zip.file('.npmignore', await (this as any).$axios.$get('/comunica-packager/output/.npmignore'));
         let config = zip.folder('config');
