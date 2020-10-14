@@ -80,10 +80,19 @@ export function handleMediator(normalizedContext: any, mediator: any, mediators:
  * @param state
  */
 export async function defaultJsonld(state: any) {
+    let normalizedContext = await parseContext([...state.context['default']]);
     let jsonld: any = await stateToJsonld(state, 'default');
     jsonld['@type'] = 'Runner';
     if (state.sets.length > 1) {
-        jsonld['import'] = state.sets.map((s: any) => `config/sets/${s.name}`);
+        jsonld.import = [];
+        state.sets.forEach((set: any) => {
+            if (set.name !== 'default') {
+                if (set.url && !set.edited)
+                    jsonld.import.push(getCompactedIRI(normalizedContext, set.url));
+                else
+                    jsonld.import.push('prefix-ex:config/sets/' + set.name + '.jsonld');
+            }
+        });
     }
 
     return jsonld;
@@ -134,8 +143,8 @@ export async function stateToJsonld(state: any, set: string) {
                                     } catch (err) {
                                         actorToAdd[getCompactedIRI(normalizedContext, key)] = parameter.value;
                                     }
-                                }
-                            }
+                                }      }
+
                         }
                     }
                 }

@@ -3,7 +3,7 @@ import Vue from 'vue';
 import {pascalCaseToKebabCase} from "~/utils/alpha";
 import JSZip from "jszip";
 import {saveAs} from 'file-saver';
-import {getExpandedIRI, jsonldToState, parseContext, stateToJsonld} from "~/utils/json";
+import {defaultJsonld, getExpandedIRI, jsonldToState, parseContext, stateToJsonld} from "~/utils/json";
 import _ from 'lodash';
 import * as jsonldParser from 'jsonld';
 import {handleParameters} from "~/middleware/packages";
@@ -12,7 +12,15 @@ import {handleParameters} from "~/middleware/packages";
 const baseUrl = 'https://linkedsoftwaredependencies.org/bundles/npm/@comunica/';
 const baseContext = [`${baseUrl}runner/^1.0.0/components/context.jsonld`];
 const defaultPackage = {
-    'name': 'temp name',
+    "lsd:module": "https://linkedsoftwaredependencies.org/bundles/npm/%package_name%",
+    "lsd:contexts": {
+        "https://linkedsoftwaredependencies.org/bundles/npm/%package_name%/^1.0.0/components/context.jsonld": "components/context.jsonld"
+    },
+    "lsd:importPaths": {
+        "https://linkedsoftwaredependencies.org/bundles/npm/%package_name%/^1.0.0/components/": "components/",
+        "https://linkedsoftwaredependencies.org/bundles/npm/%package_name%/^1.0.0/config/": "config/"
+    },
+    'name': '%package_name%',
     'version': '1.0.0',
     'description': '',
     'main': 'index.js',
@@ -29,11 +37,12 @@ const defaultPackage = {
     'devDependencies': {
         "typescript": "^4.0.0"
     },
-    'license': 'MIT'
+    'license': 'MIT',
+
 };
 
 function baseSet() {
-    return [{name: 'default', url: '', loaded: true, edited: false}];
+    return [{name: 'default', loaded: true, edited: false}];
 }
 
 /**
@@ -67,6 +76,7 @@ function getDefaultState() {
         sets: baseSet(),
         currentSet: 'default',
         isPresetLoading: false,
+        packageName: 'my-package-test'
     }
 }
 
@@ -343,6 +353,17 @@ export const actions = {
 
     async downloadZip(context: any) {
         let zip = new JSZip();
+
+        let components = zip.folder('components');
+        components.file('context.jsonld', JSON.stringify({
+            "@context": [
+                "https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^3.0.0/components/context.jsonld",
+                {
+                    "files-ex": "https://linkedsoftwaredependencies.org/bundles/npm/" + context.state.packageName + "/^1.0.0/"
+                }
+            ]
+        }, null, '  '));
+
         let bin = zip.folder('bin');
         for (const v of ['query.js', 'http.js', 'query-dynamic.js']) {
             bin.file(v, await (this as any).$axios.$get(`/comunica-packager/output/bin/${v}`));
@@ -355,14 +376,14 @@ export const actions = {
         if (context.state.sets.length > 1) {
             let sets = config.folder('sets');
             for (const s of context.state.sets) {
-                if (s.name !== 'default')
+                if (s.name !== 'default' && s.edited)
                     sets.file(s.name + '.json', JSON.stringify(
                         await stateToJsonld(context.state, s.name), null, '  '
                     ));
             }
         }
-        //
-        // config.file('config-default.json', JSON.stringify(await defaultJsonld(context.state), null, '  '));
+
+        config.file('config-default.json', JSON.stringify(await defaultJsonld(context.state), null, '  '));
 
         zip.generateAsync({type: 'blob'}).then(
             content => {
@@ -401,6 +422,8 @@ export const actions = {
         const data = await (this as any).$axios.$get(presetLink);
         const dataExpanded: any = await jsonldParser.expand(data);
         let imports = dataExpanded[0]['http://www.w3.org/2002/07/owl#imports'];
+
+        commit('addToContext', {context: data['@context'], set: 'default'});
 
         const imps = [];
 
