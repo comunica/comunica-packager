@@ -33,7 +33,7 @@ const defaultPackage = {
 };
 
 function baseSet() {
-    return [{name: 'default', url: '', loaded: true}];
+    return [{name: 'default', url: '', loaded: true, edited: false}];
 }
 
 /**
@@ -166,6 +166,12 @@ export const mutations = {
     setLoadedOfSet(state: any, set: string) {
         state.sets.forEach((item: any, index: number) => {
             if (item.name === set) state.sets[index].loaded = true;
+        });
+    },
+
+    setEditedOfSet(state: any, set: string) {
+        state.sets.forEach((item: any, index: number) => {
+            if (item.name === set) state.sets[index].edited = true;
         });
     },
 
@@ -401,7 +407,7 @@ export const actions = {
         for (const imp of imports) {
             const splitted = imp['@id'].split('/');
             const setName = splitted[splitted.length-1].slice(0, -5);
-            const set = {name: setName, url: imp['@id'], loaded: false}
+            const set = {name: setName, url: imp['@id'], loaded: false, edited: false}
             commit('addSet', set);
             imps.push(set);
         }

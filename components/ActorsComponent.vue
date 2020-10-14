@@ -46,6 +46,7 @@
                 });
 
                 this.selectedActor = null;
+                this.$store.commit('setEditedOfSet', this.$store.state.currentSet);
 
             }
         },

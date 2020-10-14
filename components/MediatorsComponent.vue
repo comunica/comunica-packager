@@ -51,9 +51,11 @@
                     mediator: this.selectedMediator,
                     set: this.$store.state.currentSet
                 });
+                this.$store.commit('setEditedOfSet', this.$store.state.currentSet);
             },
             onDelete(mediator) {
                 this.$store.commit('deleteMediator', mediator);
+                this.$store.commit('setEditedOfSet', this.$store.state.currentSet);
             },
             onChangeParameter(value, id, parameterName) {
                 this.$store.commit('changeParameterValueOfMediator', {
@@ -61,13 +63,14 @@
                     parameterName: parameterName,
                     value: value
                 });
+                this.$store.commit('setEditedOfSet', this.$store.state.currentSet);
             },
             onChangeID(currentID, newID) {
                 this.$store.commit('changeIDOfMediator', {
                     currentID: currentID,
                     newID: newID
-                })
-
+                });
+                this.$store.commit('setEditedOfSet', this.$store.state.currentSet);
             }
         }
     }

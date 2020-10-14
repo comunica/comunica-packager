@@ -35,7 +35,7 @@
         },
         methods: {
             onAddSet() {
-                this.$store.commit('addSet', {name: this.setInput, url: '', loaded: true});
+                this.$store.commit('addSet', {name: this.setInput, url: '', loaded: true, edited: false});
                 this.setInput = '';
             },
             onClick(set) {

@@ -50,7 +50,7 @@
                 </div>
             </div>
         </div>
-        <LoadingComponent size="100" v-else id="load-main"/>
+        <LoadingComponent :size="100" v-else id="load-main"/>
         <div id="footer">
             <div>
                 <v-icon dark>mdi-xml</v-icon>
