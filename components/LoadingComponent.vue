@@ -3,6 +3,7 @@
         <v-progress-circular
                 indeterminate
                 color="primary"
+                :size="size"
         ></v-progress-circular>
     </div>
 
@@ -10,7 +11,13 @@
 
 <script>
     export default {
-        name: "LoadingComponent"
+        name: "LoadingComponent",
+        props: {
+            size: {
+                type: Number,
+                default: 32
+            }
+        }
     }
 </script>
 

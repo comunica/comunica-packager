@@ -3,7 +3,7 @@ import Vue from 'vue';
 import {pascalCaseToKebabCase} from "~/utils/alpha";
 import JSZip from "jszip";
 import {saveAs} from 'file-saver';
-import {defaultJsonld, getExpandedIRI, jsonldToState, parseContext, stateToJsonld} from "~/utils/json";
+import {getExpandedIRI, jsonldToState, parseContext, stateToJsonld} from "~/utils/json";
 import _ from 'lodash';
 import * as jsonldParser from 'jsonld';
 import {handleParameters} from "~/middleware/packages";
@@ -11,7 +11,6 @@ import {handleParameters} from "~/middleware/packages";
 
 const baseUrl = 'https://linkedsoftwaredependencies.org/bundles/npm/@comunica/';
 const baseContext = [`${baseUrl}runner/^1.0.0/components/context.jsonld`];
-const baseSet = [{name: 'default', url: '', loaded: true}];
 const defaultPackage = {
     'name': 'temp name',
     'version': '1.0.0',
@@ -32,6 +31,10 @@ const defaultPackage = {
     },
     'license': 'MIT'
 };
+
+function baseSet() {
+    return [{name: 'default', url: '', loaded: true}];
+}
 
 /**
  * The extend part of an actor isn't fully correct which is handled here
@@ -61,8 +64,9 @@ function getDefaultState() {
             'default': new Set(baseContext),
         },
         npmPackage: defaultPackage,
-        sets: baseSet,
-        currentSet: 'default'
+        sets: baseSet(),
+        currentSet: 'default',
+        isPresetLoading: false,
     }
 }
 
@@ -146,12 +150,23 @@ export const mutations = {
         Object.keys(state.createdActors).forEach(key => {
             state.createdActors[key] = [];
         });
-        state.sets = baseSet;
+        state.sets = baseSet();
         state.currentSet = 'default';
+        state.isPresetLoading = false;
     },
 
     changeID(state: any, id: string) {
         state.id = id;
+    },
+
+    setIsPresetLoading(state: any, value: boolean) {
+        state.isPresetLoading = value;
+    },
+
+    setLoadedOfSet(state: any, set: string) {
+        state.sets.forEach((item: any, index: number) => {
+            if (item.name === set) state.sets[index].loaded = true;
+        });
     },
 
     /**
@@ -375,6 +390,7 @@ export const actions = {
     async importPreset({commit, dispatch, state}: any, presetLink: string) {
         // First reset everything
         commit('resetState');
+        commit('setIsPresetLoading', true);
 
         const data = await (this as any).$axios.$get(presetLink);
         const dataExpanded: any = await jsonldParser.expand(data);
@@ -390,6 +406,8 @@ export const actions = {
             imps.push(set);
         }
 
+        commit('setIsPresetLoading', false);
+
         for (const imp of imps) {
             const fetchedImp = await (this as any).$axios.$get(imp.url);
             const s = await jsonldToState(fetchedImp, imp.name);
@@ -398,14 +416,14 @@ export const actions = {
             // Handle mediators
             for (const mediator of s.mediators) {
                 mediator.set = imp.name;
-                dispatch('mapMediatorToState', mediator);
+                await dispatch('mapMediatorToState', mediator);
             }
             // Handle actors
             for (const actor of s.actors) {
                 actor.set = imp.name;
-                dispatch('mapActorToState', actor);
+                await dispatch('mapActorToState', actor);
             }
-
+            commit('setLoadedOfSet', imp.name);
         }
     }
 }

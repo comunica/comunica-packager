@@ -107,7 +107,6 @@ export async function stateToJsonld(state: any, set: string) {
                     '@id': actor['@id'],
                     '@type': actor.actorName
                 };
-                console.log(actor.parameters);
                 for (let key of Object.keys(actor.parameters)) {
                     let parameter = actor.parameters[key];
                     if (parameter.value) {

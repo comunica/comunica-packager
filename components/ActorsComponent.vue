@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div v-if="">
         <div class="box">
             <div class="dropdown-layout">
                 <DropdownComponent
@@ -24,7 +24,7 @@
     import DropdownComponent from "./DropdownComponent";
     import ButtonComponent from "./ButtonComponent";
     import BusGroupComponent from "./BusGroupComponent";
-    import {getBusGroupOfActor} from "../store";
+    import {getBusGroupOfActor} from "@/store";
 
     export default {
         name: "ActorsComponent",

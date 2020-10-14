@@ -36,7 +36,7 @@
             <p class="text-medium">Sets</p>
             <SetsComponent/>
         </div>
-        <div id="body">
+        <div v-if="!isCurrentSetLoading" id="body">
 
             <div id="content">
                 <div class="column" style="margin-right: 10px;" v-if="busGroups">
@@ -50,6 +50,7 @@
                 </div>
             </div>
         </div>
+        <LoadingComponent size="100" v-else id="load-main"/>
         <div id="footer">
             <div>
                 <v-icon dark>mdi-xml</v-icon>
@@ -100,13 +101,21 @@ export default {
             imp: false,
             presets: [],
             areMediatorsFetched: false,
-            isPresetLoading: false,
             isExporting: false,
         }
     },
     computed: {
         busGroups() {
             return this.$store.state.busGroups;
+        },
+        isPresetLoading() {
+            return this.$store.state.isPresetLoading;
+        },
+        isCurrentSetLoading() {
+            for (const set of this.$store.state.sets) {
+                if (set.name === this.$store.state.currentSet)
+                    return !set.loaded
+            }
         }
     },
     methods: {
@@ -114,10 +123,8 @@ export default {
             this.$store.dispatch('uploadZip', file);
         },
         async onImport(url) {
-            this.isPresetLoading = true;
-            await this.$store.dispatch('importPreset', url);
-            this.isPresetLoading = false;
             this.imp = false;
+            await this.$store.dispatch('importPreset', url);
         },
         async onExport() {
             this.isExporting = true;
@@ -256,6 +263,13 @@ export default {
         color: black;
         background-color: white;
         display: flex;
+    }
+
+    #load-main {
+        margin-top: 100px;
+        color: black;
+        margin-left: max(15vw, 250px);
+        align-self: center;
     }
 
     #sidebar {
