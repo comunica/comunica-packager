@@ -1,5 +1,5 @@
 <template>
-    <v-btn color="rgb(255, 255, 255)" icon @click="onClick($event)">
+    <v-btn color="#9D2D11" icon @click="onClick($event)">
         <v-icon>{{iconTag}}</v-icon>
     </v-btn>
 </template>
@@ -21,6 +21,5 @@
     }
 </script>
 
-<style scoped>
-
+<style scoped lang="scss">
 </style>

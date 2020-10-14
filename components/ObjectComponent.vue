@@ -1,5 +1,5 @@
 <template>
-    <div id="object">
+    <div v-if="set === currentSet" id="object">
         <div id="object-header">
             <p class="text-medium" style="align-self: center;">{{objectName}}</p>
             <IconButtonComponent
@@ -15,7 +15,7 @@
         </div>
         <div id="variables" v-if="!close">
             <div id="id-input">
-                <p class="text-small" style="align-self: center;">@id</p>
+                <p class="text-small" style="align-self: center; font-weight: bold;">@id</p>
                 <input
                         :value="id"
                         @change="onIDChange($event.target.value)"
@@ -100,6 +100,10 @@
             busGroup: {
                 type: String,
                 default: undefined
+            },
+            set: {
+                type: String,
+                default: 'default'
             }
         },
         data() {
@@ -163,6 +167,9 @@
                     fullName: p,
                     name: extractLabel(p)
                 }));
+            },
+            currentSet() {
+                return this.$store.state.currentSet;
             }
         },
         async mounted() {
@@ -171,7 +178,8 @@
                    await this.$store.dispatch('fetchArgumentsOfActor', {
                        busGroup: this.busGroup,
                        actorName: this.objectName,
-                       '@id': this.id
+                       '@id': this.id,
+                       set: this.set,
                    });
                    this.areParametersFetched = true;
             } else {
@@ -184,7 +192,7 @@
 <style scoped lang="scss">
 
     #object {
-        background: $comunica-red;
+        border: 1px solid $comunica-border;
         border-radius: 7px;
         padding: 7px;
         margin: 7px 0 0 0;
@@ -203,7 +211,7 @@
     }
 
     #parameters {
-        background-color: $comunica-dark-red;
+        border: 1px solid $comunica-border;
         border-radius: 7px;
     }
 
@@ -220,27 +228,5 @@
         align-self: center;
     }
 
-    .input {
-        border-radius: 7px;
-        line-height: 1.3;
-        width: 100%;
-        max-width: 100%;
-        padding: .6em 1.4em .5em .6em;
-        font-size: max(1vmin, 11pt);
-    }
-
-    .id-input {
-        border: 1px solid $comunica-dark-red;
-        background-color: $comunica-dark-red;
-    }
-
-    .parameter-input {
-        border: 1px solid $comunica-red;
-        background-color: $comunica-red;
-    }
-
-    .parameter-input::placeholder {
-        color: white;
-    }
 
 </style>

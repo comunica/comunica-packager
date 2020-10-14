@@ -35,6 +35,7 @@ function handleParameter(obj: any, parameterNameFull: string, parameter: any) {
  * @param mediators: A list of handled mediators
  */
 export function handleActor(normalizedContext: any, actor: any, actors: any[], mediators: any[]) {
+
     let actorExtracted: any = {
         parameters: {}
     };
@@ -75,15 +76,40 @@ export function handleMediator(normalizedContext: any, mediator: any, mediators:
 }
 
 /**
+ *
+ * @param state
+ */
+export async function defaultJsonld(state: any) {
+    let normalizedContext = await parseContext([...state.context['default']]);
+    let jsonld: any = await stateToJsonld(state, 'default');
+    jsonld['@type'] = 'Runner';
+    if (state.sets.length > 1) {
+        jsonld.import = [];
+        state.sets.forEach((set: any) => {
+            if (set.name !== 'default') {
+                if (set.url && !set.edited)
+                    jsonld.import.push(getCompactedIRI(normalizedContext, set.url));
+                else
+                    jsonld.import.push('prefix-ex:config/sets/' + set.name + '.jsonld');
+            }
+        });
+    }
+
+    return jsonld;
+}
+
+/**
  * Maps our inner state to a jsonld
  * @param state: Our inner state
+ * @param set: The set of the current json to map
  */
-export async function stateToJsonld(state: any) {
+export async function stateToJsonld(state: any, set: string) {
     let addedActors: any = [];
-    const createdActors: any[] = state.createdActors;
-    let normalizedContext = await parseContext([...state.context]);
+    const createdActors: any[] = state.createdActors
+    let normalizedContext = await parseContext([...state.context[set]]);
 
     for (let [busGroup, actors] of  Object.entries(createdActors)) {
+        actors = actors.filter((a: any) => a.set === set);
         if (actors.length) {
             for (let actor of actors) {
                 let actorToAdd: any = {
@@ -117,8 +143,8 @@ export async function stateToJsonld(state: any) {
                                     } catch (err) {
                                         actorToAdd[getCompactedIRI(normalizedContext, key)] = parameter.value;
                                     }
-                                }
-                            }
+                                }      }
+
                         }
                     }
                 }
@@ -129,13 +155,12 @@ export async function stateToJsonld(state: any) {
 
     let runner = {
         '@id': 'urn:comunica:my',
-        '@type': 'Runner',
         'actors': addedActors
     };
 
     let graph: any[] = [runner];
 
-    const createdMediators: any[] = state.createdMediators;
+    const createdMediators: any[] = state.createdMediators.filter((m: any) => m.set === set);
 
     for (let mediator of createdMediators) {
         let mediatorToAdd: any = {
@@ -159,19 +184,18 @@ export async function stateToJsonld(state: any) {
         graph.push(mediatorToAdd);
     }
 
-    let output = {
-        '@context': [...state.context],
+    return {
+        '@context': [...state.context[set]],
         '@graph': graph
     };
-
-    return JSON.stringify(output, null, '  ');
 }
 
 /**
  * Maps a jsonld to our inner state.
  * @param jsonld: A jsonld
+ * @param set: The set of this jsonld
  */
-export async function jsonldToState(jsonld: any) {
+export async function jsonldToState(jsonld: any, set: string) {
     let id = '';
     let context = jsonld['@context'];
     let actors: any[] = [];

@@ -8,6 +8,7 @@
                 :id="actor['@id']"
                 :parameters="actor.parameters"
                 :bus-group="busGroup"
+                :set="actor.set"
                 @click="onDelete"
                 @param="onChangeParameter"
                 @id="onIDChange"
@@ -37,6 +38,7 @@
                     busGroup: this.busGroup,
                     '@id': deletedActor
                 });
+                this.$store.commit('setEditedOfSet', this.$store.state.currentSet);
             },
             onChangeParameter(value, id, parameterName) {
                 this.$store.commit('changeParameterValueOfActor', {
@@ -45,6 +47,7 @@
                     parameterName: parameterName,
                     value: value
                 });
+                this.$store.commit('setEditedOfSet', this.$store.state.currentSet);
             },
             onIDChange(currentID, newID) {
                 this.$store.commit('changeIDOfActor', {
@@ -52,6 +55,7 @@
                     currentID: currentID,
                     newID: newID
                 });
+                this.$store.commit('setEditedOfSet', this.$store.state.currentSet);
             }
         },
         computed: {

@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div v-if="">
         <div class="box">
             <div class="dropdown-layout">
                 <DropdownComponent
@@ -24,7 +24,7 @@
     import DropdownComponent from "./DropdownComponent";
     import ButtonComponent from "./ButtonComponent";
     import BusGroupComponent from "./BusGroupComponent";
-    import {getBusGroupOfActor} from "../store";
+    import {getBusGroupOfActor} from "@/store";
 
     export default {
         name: "ActorsComponent",
@@ -41,10 +41,12 @@
                 await this.$store.dispatch('addActor', {
                     busGroup: busGroup,
                     '@id': id,
-                    actorName: this.selectedActor
+                    actorName: this.selectedActor,
+                    set: this.$store.state.currentSet,
                 });
 
                 this.selectedActor = null;
+                this.$store.commit('setEditedOfSet', this.$store.state.currentSet);
 
             }
         },
@@ -56,12 +58,14 @@
                 let busGroups = Object.keys(this.$store.state.createdActors).sort();
                 return busGroups.map(bg => ({
                     busGroup: bg,
-                    actors: this.$store.state.createdActors[bg]
+                    actors: this.$store.state.createdActors[bg].filter(
+                        actor => actor.set === this.$store.state.currentSet
+                    ),
                 }));
             }
         }
     }
 </script>
 
-
+<style>
 </style>
