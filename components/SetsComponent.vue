@@ -55,14 +55,15 @@
 
     #body {
         margin-top: 10px;
+        padding-left: 10px;
     }
 
     #add-set {
         display: grid;
         grid-template-columns: 10fr 1fr;
         grid-gap: 10px;
-        padding-left: 10px;
         margin-top: 10px;
+        padding-left: 10px;
     }
 
     .set {

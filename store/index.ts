@@ -189,6 +189,10 @@ export const mutations = {
         });
     },
 
+    setStateEntry(state: any, payload: any) {
+        state[payload.key] = payload.value;
+    },
+
     /**
      * Mediator mutations
      */
