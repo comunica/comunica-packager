@@ -49,6 +49,7 @@ function getDefaultState() {
         packageName: 'my-package-test',
         author: '',
         description: '',
+        appConfig: null
     }
 }
 
@@ -135,10 +136,6 @@ export const mutations = {
         state.sets = baseSet();
         state.currentSet = 'default';
         state.isPresetLoading = false;
-    },
-
-    changeID(state: any, id: string) {
-        state.id = id;
     },
 
     setIsPresetLoading(state: any, value: boolean) {
@@ -340,8 +337,7 @@ export const actions = {
             ]
         }, null, '  '));
 
-        // TODO: Retrieve this at first load to get presets and package urls
-        let appConfig = await (this as any).$axios.$get(`/comunica-packager/app-config.json`);
+        let appConfig = context.state.appConfig;
 
         console.log(appConfig);
         let bin = zip.folder('bin');

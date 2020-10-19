@@ -26,7 +26,11 @@ export function handleParameters(normalizedContext: any, parametersAll: any, par
 
 export default async ({$axios, store}: Context) => {
 
+    const appConfig = await $axios.$get('/comunica-packager/app-config.json');
+    store.commit('setStateEntry', {key: 'appConfig', value: appConfig});
+
     // Retrieve the list of all Comunica related packages
+    // TODO: use packageUrls from config
     const packages = await $axios.$get('https://api.github.com/repos/comunica/comunica/contents/packages?ref=master');
     // Define all different types of packages
     const packageNames = packages.map((p: Package) => p.name);
