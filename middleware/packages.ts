@@ -31,9 +31,16 @@ export default async ({$axios, store}: Context) => {
 
     // Retrieve the list of all Comunica related packages
     // TODO: use packageUrls from config
-    const packages = await $axios.$get('https://api.github.com/repos/comunica/comunica/contents/packages?ref=master');
-    // Define all different types of packages
-    const packageNames = packages.map((p: Package) => p.name);
+
+    const packageNames: any = [];
+
+    for (const packageUrl of appConfig['packageUrls']) {
+        const packages = await $axios.$get(packageUrl);
+        packageNames.push.apply(packageNames, packages.map((p: Package) => p.name));
+    }
+
+    packageNames.push.apply(packageNames, appConfig['actors']);
+
     const buses = packageNames.filter((p: string) => p.substring(0, 3) === 'bus').map((p: string) => p.substring(4));
     const mediatorPackages = packageNames.filter((p: string) => p.startsWith('mediator-'));
     const loggerPackages = packageNames.filter((p: string) => p.startsWith('logger-'));
