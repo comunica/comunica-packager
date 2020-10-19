@@ -48,6 +48,7 @@ export default async ({$axios, store}: Context) => {
         };
         let actors = packageNames
                 .filter((p: string) => p.startsWith(`actor-${b}`))
+                .filter((p: string) => !appConfig["ignoreActors"].includes(p))
                 .map(kebabCaseToPascalCase)
                 .filter((a: any) => !usedActors.has(a));
         actors.forEach((a: any) => usedActors.add(a));
