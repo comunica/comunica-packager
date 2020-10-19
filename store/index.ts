@@ -340,15 +340,19 @@ export const actions = {
             ]
         }, null, '  '));
 
+        // TODO: Retrieve this at first load to get presets and package urls
+        let appConfig = await (this as any).$axios.$get(`/comunica-packager/app-config.json`);
+
+        console.log(appConfig);
         let bin = zip.folder('bin');
         for (const v of ['query.js', 'http.js', 'query-dynamic.js']) {
-            bin.file(v, await (this as any).$axios.$get(`/comunica-packager/output/bin/${v}`));
+            bin.file(v, appConfig['bin'][v]);
         }
 
-        zip.file('app-config.json', JSON.stringify(defaultPackage, null, '  ')
+        zip.file('package.json', JSON.stringify(appConfig['package'], null, '  ')
             .replace(/%package_name%/g, context.state.packageName));
-        zip.file('.gitignore', await (this as any).$axios.$get('/comunica-packager/output/.gitignore'));
-        zip.file('.npmignore', await (this as any).$axios.$get('/comunica-packager/output/.npmignore'));
+        zip.file('.gitignore', appConfig['.gitignore']);
+        zip.file('.npmignore', appConfig['.npmignore']);
         let config = zip.folder('config');
 
         if (context.state.sets.length > 1) {
