@@ -346,7 +346,9 @@ export const actions = {
         }
 
         zip.file('package.json', JSON.stringify(appConfig['package'], null, '  ')
-            .replace(/%package_name%/g, context.state.packageName));
+            .replace(/%package_name%/g, context.state.packageName)
+            .replace(/%author%/g, context.state.author)
+            .replace(/%description%/g, context.state.description));
         zip.file('.gitignore', appConfig['.gitignore']);
         zip.file('.npmignore', appConfig['.npmignore']);
         let config = zip.folder('config');
