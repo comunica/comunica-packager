@@ -1,17 +1,22 @@
 <template>
     <div id="package-info">
-        <p class="text-small label">Package @id</p>
-        <input
-            v-model="packageID"
-            class="input"
-            type="text"
-        >
         <p class="text-small label">Package name</p>
         <input
             v-model="packageName"
             class="input"
             type="text"
-        >
+        />
+        <p class="text-small label">Author</p>
+        <input
+            v-model="author"
+            class="input"
+            type="text"
+        />
+        <p class="text-small label">Description</p>
+        <textarea
+            v-model="description"
+            class="input"
+        />
     </div>
 </template>
 
@@ -19,20 +24,28 @@
 export default {
     name: "PackageInformationComponent",
     computed: {
-        packageID: {
-            get: function() {
-                return this.$store.state.id;
-            },
-            set: function(newID) {
-                this.$store.commit('setStateEntry', {key: 'id', value: newID});
-            }
-        },
         packageName: {
             get: function() {
                 return this.$store.state.packageName;
             },
             set: function(newValue) {
                 this.$store.commit('setStateEntry', {key: 'packageName', value: newValue});
+            }
+        },
+        author: {
+            get: function() {
+                return this.$store.state.author;
+            },
+            set: function(newValue) {
+                this.$store.commit('setStateEntry', {key: 'author', value: newValue});
+            }
+        },
+        description: {
+            get: function() {
+                return this.$store.state.description;
+            },
+            set: function(newValue) {
+                this.$store.commit('setStateEntry', {key: 'description', value: newValue});
             }
         }
     }
