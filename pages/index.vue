@@ -30,9 +30,8 @@
             </div>
         </nav>
         <div id="sidebar">
-            <!--<p class="text-medium">Package information</p>-->
-            <!--<PackageInformationComponent/>-->
-            <!--<hr>-->
+            <p class="text-medium">Package information</p>
+            <PackageInformationComponent/>
             <p class="text-medium">Sets</p>
             <SetsComponent/>
         </div>
