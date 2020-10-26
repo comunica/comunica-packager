@@ -4,7 +4,7 @@
             <div :class="set.name === selected ? 'set selected' : 'set'" v-for="set in sets" >
                 <v-icon style="margin-right: 5px; color: black">mdi-layers</v-icon>
                 <p @click="onClick(set)">{{set.name}}</p>
-                <IconButtonComponent v-if="set !== 'default'" @click="onDelete(set)" style="z-index: 10;" icon-tag="mdi-close-circle"/>
+                <IconButtonComponent v-if="set.name !== 'default'" @click="onDelete(set)" style="z-index: 10;" icon-tag="mdi-close-circle"/>
             </div>
         </div>
         <div id="add-set">
@@ -17,6 +17,7 @@
 <script>
     import ButtonComponent from "@/components/ButtonComponent";
     import IconButtonComponent from "@/components/IconButtonComponent";
+    import ModalComponent from "@/components/ModalComponent";
     export default {
         name: "SetsComponent",
         components: {IconButtonComponent, ButtonComponent},
@@ -42,7 +43,15 @@
                 this.$store.commit('setSelectedSet', set.name);
             },
             onDelete(set) {
-                this.$store.commit('removeSet', set.name);
+
+                this.$modal.show(ModalComponent, {
+                    topText: 'Delete set ' + set.name,
+                    question: 'Are you sure you want to delete this set?',
+                    onConfirm: 'removeSet',
+                    potentialPayload: set.name
+                });
+
+                // this.$store.commit('removeSet', set.name);
             }
         }
     }

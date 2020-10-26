@@ -26,6 +26,7 @@
     import ButtonComponent from "./ButtonComponent";
     import ObjectComponent from "./ObjectComponent";
     import {extractLabel} from "../utils/alpha";
+    import ModalComponent from "@/components/ModalComponent";
 
     export default {
         name: "MediatorsComponent",
@@ -54,8 +55,12 @@
                 this.$store.commit('setEditedOfSet', this.$store.state.currentSet);
             },
             onDelete(mediator) {
-                this.$store.commit('deleteMediator', mediator);
-                this.$store.commit('setEditedOfSet', this.$store.state.currentSet);
+                this.$modal.show(ModalComponent, {
+                    topText: 'Delete mediator ' + mediator,
+                    question: 'Are you sure you want to delete this mediator?',
+                    onConfirm: 'deleteMediator',
+                    potentialPayload: mediator
+                });
             },
             onChangeParameter(value, id, parameterName) {
                 this.$store.commit('changeParameterValueOfMediator', {

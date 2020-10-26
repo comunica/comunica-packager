@@ -36,7 +36,10 @@ export default {
     /*
     ** Plugins to load before mounting the App
     */
-    plugins: ['@/plugins/select.js'],
+    plugins: [
+        '@/plugins/select.js',
+        '@/plugins/vue-js-modal.js'
+    ],
     /*
     ** Nuxt.js dev-modules
     */
