@@ -34,7 +34,7 @@ export default async ({$axios, store}: Context) => {
     const packageNames: any = [];
 
     for (const packageUrl of appConfig['packageUrls']) {
-        const packages = await $axios.$get(packageUrl);
+        const packages = await $axios.$get(`https://api.github.com/repos/${packageUrl}/contents/packages?ref=master`);
         packageNames.push.apply(packageNames, packages.map((p: Package) => p.name));
     }
 
@@ -48,7 +48,6 @@ export default async ({$axios, store}: Context) => {
 
     for (const i of inits) {
         const actorPart = kebabCaseToPascalCase(i.substring(11));
-        console.log(actorPart);
         const g = `https://linkedsoftwaredependencies.org/bundles/npm/@comunica/${i}/^1.0.0/components/Actor/Init/${actorPart}.jsonld`
 
         await $axios.$get(g).catch((error: any) => {

@@ -1,7 +1,7 @@
 {
   "packageUrls": [
-    "https://api.github.com/repos/comunica/comunica/contents/packages?ref=master",
-    "https://api.github.com/repos/comunica/comunica-feature-amf/contents/packages?ref=master"
+    "comunica/comunica",
+    "comunica/comunica-feature-amf"
   ],
   "actors": [
     "actor-http-solid-auth-fetch",
