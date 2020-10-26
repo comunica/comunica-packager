@@ -46,9 +46,10 @@ function getDefaultState() {
         sets: baseSet(),
         currentSet: 'default',
         isPresetLoading: false,
-        packageName: 'my-package-test',
+        packageName: 'my-package',
         author: '',
         description: '',
+        appConfig: null
     }
 }
 
@@ -135,10 +136,6 @@ export const mutations = {
         state.sets = baseSet();
         state.currentSet = 'default';
         state.isPresetLoading = false;
-    },
-
-    changeID(state: any, id: string) {
-        state.id = id;
     },
 
     setIsPresetLoading(state: any, value: boolean) {
@@ -340,8 +337,7 @@ export const actions = {
             ]
         }, null, '  '));
 
-        // TODO: Retrieve this at first load to get presets and package urls
-        let appConfig = await (this as any).$axios.$get(`/comunica-packager/app-config.json`);
+        let appConfig = context.state.appConfig;
 
         console.log(appConfig);
         let bin = zip.folder('bin');
@@ -350,7 +346,9 @@ export const actions = {
         }
 
         zip.file('package.json', JSON.stringify(appConfig['package'], null, '  ')
-            .replace(/%package_name%/g, context.state.packageName));
+            .replace(/%package_name%/g, context.state.packageName)
+            .replace(/%author%/g, context.state.author)
+            .replace(/%description%/g, context.state.description));
         zip.file('.gitignore', appConfig['.gitignore']);
         zip.file('.npmignore', appConfig['.npmignore']);
         let config = zip.folder('config');

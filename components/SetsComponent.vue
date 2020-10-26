@@ -39,9 +39,6 @@
                 this.setInput = '';
             },
             onClick(set) {
-                if (!set.loaded) {
-                    console.log('yeet');
-                }
                 this.$store.commit('setSelectedSet', set.name);
             },
             onDelete(set) {

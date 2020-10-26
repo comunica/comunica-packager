@@ -1,9 +1,18 @@
 {
   "packageUrls": [
-    "https://api.github.com/repos/comunica/comunica/contents/packages?ref=master"
+    "comunica/comunica",
+    "comunica/comunica-feature-amf"
+  ],
+  "actors": [
+    "actor-http-solid-auth-fetch",
+    "actor-rdf-resolve-quad-pattern-hdt"
   ],
   "presets": {
-    "Comunica SPARQL": "https://linkedsoftwaredependencies.org/bundles/npm/@comunica/actor-init-sparql/^1.0.0/config/config-default.json"
+    "Comunica SPARQL": "https://linkedsoftwaredependencies.org/bundles/npm/@comunica/actor-init-sparql/^1.0.0/config/config-default.json",
+    "Comunica SPARQL File": "https://linkedsoftwaredependencies.org/bundles/npm/@comunica/actor-init-sparql-file/^1.0.0/config/config-default.json",
+    "Comunica SPARQL RDFJS": "https://linkedsoftwaredependencies.org/bundles/npm/@comunica/actor-init-sparql-rdfjs/^1.0.0/config/config-default.json",
+    "Comunica SPARQL HDT": "https://linkedsoftwaredependencies.org/bundles/npm/@comunica/actor-init-sparql-hdt/^1.0.0/config/config-default.json",
+    "Comunica SPARQL AMF": "https://linkedsoftwaredependencies.org/bundles/npm/@comunica/actor-init-sparql-amf/^1.0.0/config/config-default.json"
   },
   "package" : {
     "name": "%package_name%",

@@ -98,7 +98,6 @@ export default {
         return {
             actorLink: undefined,
             imp: false,
-            presets: [],
             areMediatorsFetched: false,
             isExporting: false,
         }
@@ -115,6 +114,15 @@ export default {
                 if (set.name === this.$store.state.currentSet)
                     return !set.loaded
             }
+        },
+        presets() {
+            const rawPresets = this.$store.state.appConfig.presets;
+            return Object.keys(rawPresets).map(a => {
+                        return {
+                            name: a,
+                            url: rawPresets[a]
+                        };
+                    });
         }
     },
     methods: {
@@ -203,17 +211,6 @@ export default {
         this.$store.commit('addMediators', mediatorsList);
         this.areMediatorsFetched = true;
 
-    },
-    async asyncData(context) {
-        const rawPresets = await context.$axios.$get('/comunica-packager/presets.json');
-        return {
-            presets: Object.keys(rawPresets).map(a => {
-                return {
-                    name: a,
-                    url: rawPresets[a]
-                };
-            })
-        };
     }
 }
 </script>

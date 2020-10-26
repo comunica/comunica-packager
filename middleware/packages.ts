@@ -26,13 +26,34 @@ export function handleParameters(normalizedContext: any, parametersAll: any, par
 
 export default async ({$axios, store}: Context) => {
 
+    const appConfig = await $axios.$get('/comunica-packager/app-config.json');
+    store.commit('setStateEntry', {key: 'appConfig', value: appConfig});
+
     // Retrieve the list of all Comunica related packages
-    const packages = await $axios.$get('https://api.github.com/repos/comunica/comunica/contents/packages?ref=master');
-    // Define all different types of packages
-    const packageNames = packages.map((p: Package) => p.name);
+
+    const packageNames: any = [];
+
+    for (const packageUrl of appConfig['packageUrls']) {
+        const packages = await $axios.$get(`https://api.github.com/repos/${packageUrl}/contents/packages?ref=master`);
+        packageNames.push.apply(packageNames, packages.map((p: Package) => p.name));
+    }
+
+    packageNames.push.apply(packageNames, appConfig['actors']);
+
     const buses = packageNames.filter((p: string) => p.substring(0, 3) === 'bus').map((p: string) => p.substring(4));
     const mediatorPackages = packageNames.filter((p: string) => p.startsWith('mediator-'));
     const loggerPackages = packageNames.filter((p: string) => p.startsWith('logger-'));
+    const inits = packageNames.filter((p: string) => p.includes('actor-init'));
+    const ignoreInits: any[] = [];
+
+    for (const i of inits) {
+        const actorPart = kebabCaseToPascalCase(i.substring(11));
+        const g = `https://linkedsoftwaredependencies.org/bundles/npm/@comunica/${i}/^1.0.0/components/Actor/Init/${actorPart}.jsonld`
+
+        await $axios.$get(g).catch((error: any) => {
+            ignoreInits.push(i);
+        });
+    }
 
     let busGroups: any = [];
     // Avoid actors being added to multiple bus types
@@ -44,6 +65,7 @@ export default async ({$axios, store}: Context) => {
         };
         let actors = packageNames
                 .filter((p: string) => p.startsWith(`actor-${b}`))
+                .filter((p: string) => !ignoreInits.includes(p))
                 .map(kebabCaseToPascalCase)
                 .filter((a: any) => !usedActors.has(a));
         actors.forEach((a: any) => usedActors.add(a));
