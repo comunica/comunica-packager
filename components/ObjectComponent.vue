@@ -1,12 +1,7 @@
 <template>
     <div v-if="set === currentSet" id="object">
-        <div id="object-header">
-            <p class="text-medium" style="align-self: center;">{{objectName}}</p>
-            <IconButtonComponent
-                @click="close = !close"
-                style="justify-self: end;"
-                icon-tag="mdi-tune"
-            />
+        <div id="object-header" >
+            <p id="object-name" class="text-medium unselectable" @click="close= !close">{{objectName}}</p>
             <IconButtonComponent
                     @click="$emit('click', id)"
                     style="justify-self: end;"
@@ -200,8 +195,16 @@
 
     #object-header {
         display: grid;
-        grid-template-columns: 10fr 1fr 1fr;
+        grid-template-columns: 11fr 1fr;
         padding: 0 7px;
+    }
+
+    #object-name {
+        align-self: center;
+    }
+
+    #object-name:hover {
+        cursor: pointer;
     }
 
     #id-input {
