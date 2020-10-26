@@ -44,7 +44,12 @@
             },
             onDelete(set) {
 
-                this.$modal.show(ModalComponent);
+                this.$modal.show(ModalComponent, {
+                    topText: 'Delete set ' + set.name,
+                    question: 'Are you sure you want to delete this set?',
+                    onConfirm: 'removeSet',
+                    potentialPayload: set.name
+                });
 
                 // this.$store.commit('removeSet', set.name);
             }

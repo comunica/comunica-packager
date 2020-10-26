@@ -170,6 +170,9 @@ export const mutations = {
 
     deleteMediator(state: any, mediator: string) {
         Vue.set(state, 'createdMediators', state.createdMediators.filter((m: any) => m['@id'] !== mediator));
+        state.sets.forEach((item: any, index: number) => {
+            if (item.name === state.currentSet) state.sets[index].edited = true;
+        });
     },
 
     changeParameterValueOfMediator(state: any, payload: any) {
@@ -195,6 +198,9 @@ export const mutations = {
 
     deleteActor(state: any, payload: any) {
         Vue.set(state.createdActors, payload.busGroup, state.createdActors[payload.busGroup].filter((a: any) => a['@id'] !== payload['@id']));
+        state.sets.forEach((item: any, index: number) => {
+            if (item.name === state.currentSet) state.sets[index].edited = true;
+        });
     },
 
     addParametersToActor(state: any, payload: any) {

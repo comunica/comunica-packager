@@ -79,6 +79,7 @@ import {extractLabel} from "@/utils/alpha";
 import LoadingComponent from "../components/LoadingComponent";
 import SetsComponent from "@/components/SetsComponent";
 import PackageInformationComponent from "@/components/PackageInformationComponent";
+import ModalComponent from "@/components/ModalComponent";
 
 export default {
     components: {
@@ -139,7 +140,11 @@ export default {
             this.isExporting = false;
         },
         onReset() {
-            this.$store.commit('resetState');
+            this.$modal.show(ModalComponent, {
+                topText: 'Reset configuration',
+                question: 'Are you sure you want to reset the current configuration?',
+                onConfirm: 'resetState'
+            });
         }
     },
     async mounted () {

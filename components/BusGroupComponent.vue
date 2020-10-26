@@ -22,6 +22,7 @@
     import DeleteButtonComponent from "./IconButtonComponent";
     import ObjectComponent from "./ObjectComponent";
     import DropdownComponent from "./DropdownComponent";
+    import ModalComponent from "@/components/ModalComponent";
 
     export default {
         name: "BusGroupComponent",
@@ -34,11 +35,15 @@
         },
         methods: {
             onDelete(deletedActor) {
-                this.$store.commit('deleteActor', {
-                    busGroup: this.busGroup,
-                    '@id': deletedActor
+                this.$modal.show(ModalComponent, {
+                    topText: 'Delete actor ' + deletedActor,
+                    question: 'Are you sure you want to delete this actor?',
+                    onConfirm: 'deleteActor',
+                    potentialPayload: {
+                        busGroup: this.busGroup,
+                        '@id': deletedActor
+                    }
                 });
-                this.$store.commit('setEditedOfSet', this.$store.state.currentSet);
             },
             onChangeParameter(value, id, parameterName) {
                 this.$store.commit('changeParameterValueOfActor', {
