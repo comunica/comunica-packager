@@ -54,6 +54,5 @@
     "query-dynamic.js": "#!/usr/bin/env node\nimport {runArgsInProcess} from \"@comunica/runner-cli\";\nrunArgsInProcess(__dirname + '/../', __dirname + '/../config/config-default.json');"
   },
   ".gitignore": "engine-default.js\nnode_modules\nlib/**/*.js\nlib/**/*.js.map\nlib/**/*.d.ts\ntest/**/*.js\ntest/**/*.js.map\ntest/**/*.d.ts\nbin/**/*.js\nbin/**/*.js.map\nbin/**/*.d.ts\nindex.js\nindex.js.map\nindex.d.ts\nindex-browser.js\nindex-browser.js.map\nindex-browser.d.ts",
-  ".npmignore": "",
-  "runnerContext": "https://linkedsoftwaredependencies.org/bundles/npm/@comunica/runner/^1.0.0/components/context.jsonld"
+  ".npmignore": ""
 }
