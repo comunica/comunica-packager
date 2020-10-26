@@ -14,11 +14,6 @@
     "Comunica SPARQL HDT": "https://linkedsoftwaredependencies.org/bundles/npm/@comunica/actor-init-sparql-hdt/^1.0.0/config/config-default.json",
     "Comunica SPARQL AMF": "https://linkedsoftwaredependencies.org/bundles/npm/@comunica/actor-init-sparql-amf/^1.0.0/config/config-default.json"
   },
-  "ignoreActors": [
-    "actor-init-sparql-file",
-    "actor-init-sparql-rdfjs",
-    "actor-init-sparql-amf"
-  ],
   "package" : {
     "name": "%package_name%",
     "version": "1.0.0",

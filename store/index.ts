@@ -46,7 +46,7 @@ function getDefaultState() {
         sets: baseSet(),
         currentSet: 'default',
         isPresetLoading: false,
-        packageName: 'my-package-test',
+        packageName: 'my-package',
         author: '',
         description: '',
         appConfig: null
