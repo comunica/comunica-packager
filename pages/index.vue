@@ -180,46 +180,42 @@ export default {
         const mediatorPackages = this.$store.state.mediatorPackages;
         const mediatorsList = [];
 
-        if (localStorage.getItem('areMediatorsFetched') !== 'true') {
-            for (const m of mediatorPackages) {
-                const mediatorComponents = await this.$axios.$get(`https://linkedsoftwaredependencies.org/bundles/npm/@comunica/${m}/^1.0.0/components/components.jsonld`);
-                const mediatorPackageContext = await parseContext(mediatorComponents['@context']);
-                const mediatorComponentsExpanded = mediatorComponents['import']
-                    .map(i => getExpandedIRI(mediatorPackageContext, i));
-                for (const mediatorURL of mediatorComponentsExpanded) {
+        for (const m of mediatorPackages) {
+            const mediatorComponents = await this.$axios.$get(`https://linkedsoftwaredependencies.org/bundles/npm/@comunica/${m}/^1.0.0/components/components.jsonld`);
+            const mediatorPackageContext = await parseContext(mediatorComponents['@context']);
+            const mediatorComponentsExpanded = mediatorComponents['import']
+                .map(i => getExpandedIRI(mediatorPackageContext, i));
+            for (const mediatorURL of mediatorComponentsExpanded) {
 
-                    const mediatorJson = await this.$axios.$get(mediatorURL);
-                    const mediatorComponent = mediatorJson.components[0];
-                    const normalizedContext = await parseContext(mediatorJson['@context']);
-                    const parameters = {}
+                const mediatorJson = await this.$axios.$get(mediatorURL);
+                const mediatorComponent = mediatorJson.components[0];
+                const normalizedContext = await parseContext(mediatorJson['@context']);
+                const parameters = {}
 
-                    handleParameters(normalizedContext, parameters, [mediatorSuperParameter]) ;
+                handleParameters(normalizedContext, parameters, [mediatorSuperParameter]) ;
 
-                    if (mediatorComponent.extends && mediatorComponent.extends !== 'cc:Mediator') {
-                        handleParameters(normalizedContext, parameters, numberSuperParameters);
-                    } else {
-                        if (mediatorComponent.parameters)
-                            handleParameters(normalizedContext, parameters, mediatorComponent.parameters);
-                    }
-
-                    for (let p of Object.keys(parameters))
-                        if (parameters[p].hasOwnProperty('default'))
-                            parameters[p].value = parameters[p].default;
-
-                    mediatorsList.push({
-                        context: mediatorJson['@context'],
-                        name: extractLabel(mediatorComponent['@id']) ,
-                        parameters: parameters,
-                    });
+                if (mediatorComponent.extends && mediatorComponent.extends !== 'cc:Mediator') {
+                    handleParameters(normalizedContext, parameters, numberSuperParameters);
+                } else {
+                    if (mediatorComponent.parameters)
+                        handleParameters(normalizedContext, parameters, mediatorComponent.parameters);
                 }
-            }
 
-            this.$store.commit('addMediators', mediatorsList);
-            this.areMediatorsFetched = true;
-            localStorage.setItem('areMediatorsFetched', 'true');
-        } else {
-            this.areMediatorsFetched = true;
+                for (let p of Object.keys(parameters))
+                    if (parameters[p].hasOwnProperty('default'))
+                        parameters[p].value = parameters[p].default;
+
+                mediatorsList.push({
+                    context: mediatorJson['@context'],
+                    name: extractLabel(mediatorComponent['@id']) ,
+                    parameters: parameters,
+                });
+            }
         }
+
+        this.$store.commit('addMediators', mediatorsList);
+        this.areMediatorsFetched = true;
+        localStorage.setItem('areMediatorsFetched', 'true');
 
     }
 }
