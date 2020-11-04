@@ -41,7 +41,7 @@ function getDefaultState() {
         loggers: [],
         buses: [],
         context: {
-            'default': new Set(baseContext),
+            'default': _.cloneDeep(baseContext),
         },
         sets: baseSet(),
         currentSet: 'default',
@@ -102,15 +102,22 @@ export const mutations = {
     },
 
     addToContext(state: any, payload: any) {
-        if (Array.isArray(payload.context))
-            payload.context.forEach((x: string) => state.context[payload.set].add(x));
-        else
-            state.context[payload.set].add(payload.context);
+        if (Array.isArray(payload.context)) {
+            payload.context.forEach((x: string) => {
+                if (!state.context[payload.set].includes(x))
+                    state.context[payload.set].push(x);
+            });
+        }
+        else {
+            if (!state.context[payload.set].includes(payload.context))
+                state.context[payload.set].push(payload.context);
+        }
+
     },
 
     addSet(state: any, set: any) {
         state.sets.push(set);
-        state.context[set.name] = new Set();
+        state.context[set.name] = []
     },
 
     setSelectedSet(state: any, set: string) {
