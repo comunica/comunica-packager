@@ -80,9 +80,13 @@ export const mutations = {
 
     addBusGroups(state: any, busGroups: BusGroup[]) {
         state.busGroups = busGroups;
-        busGroups.forEach((bs) => {
-            state.createdActors[bs.busGroupName] = []
-        });
+        if (localStorage.getItem('areBusGroupsFetched') !== 'true') {
+            busGroups.forEach((bs) => {
+                state.createdActors[bs.busGroupName] = []
+            });
+            localStorage.setItem('areBusGroupsFetched', 'true');
+        }
+
     },
 
     addMediatorPackages(state: any, packages: string[]) {
