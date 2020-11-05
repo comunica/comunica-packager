@@ -139,7 +139,7 @@ export const mutations = {
     },
 
     resetState(state: any) {
-        state.context = {'default': new Set(baseContext)}
+        state.context = {'default': _.cloneDeep(baseContext)}
         state.createdMediators = [];
         Object.keys(state.createdActors).forEach(key => {
             state.createdActors[key] = [];

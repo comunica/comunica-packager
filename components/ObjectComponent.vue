@@ -220,7 +220,7 @@
 
     .parameter {
         display: grid;
-        grid-template-columns: 6fr 7fr;
+        grid-template-columns: 2fr 3fr;
         column-gap: 5px;
         padding: 7px;
     }
