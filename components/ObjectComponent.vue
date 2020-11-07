@@ -224,12 +224,12 @@
         column-gap: 5px;
         padding: 7px;
     }
+
     .parameter-text {
         overflow-wrap: break-word;
         word-wrap: break-word;
         overflow: hidden;
         align-self: center;
     }
-
 
 </style>

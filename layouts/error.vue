@@ -1,14 +1,10 @@
 <template>
     <div id="error">
-        <h1 v-if="error.statusCode === 404">
-            {{ pageNotFound }}
-        </h1>
-        <h1 v-else>
-            {{ otherError }}
-        </h1>
-        <NuxtLink to="/">
-            Return
-        </NuxtLink>
+
+        <h1>{{error.statusCode}}</h1>
+        <h2>Error message: {{error.message}}</h2>
+        <a @click="refresh()" href="#">Refresh page</a>
+
     </div>
 </template>
 
@@ -23,22 +19,32 @@
         },
         data() {
             return {
-                pageNotFound: '404 Not Found',
-                otherError: 'An error occurred'
-            }
+            };
         },
         head() {
-            const title =
-                this.error.statusCode === 404 ? this.pageNotFound : this.otherError
-            return {
-                title
+            return 'An error has occurred';
+        },
+        methods: {
+            refresh() {
+                location.reload();
             }
         }
     }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
+    #error {
+        display: grid;
+        place-items: center;
+        color: $comunica-red;
+        margin-top: 30vh;
+    }
+
     h1 {
-        font-size: 20px;
+        margin-bottom: 5vh;
+    }
+
+    h2 {
+        margin-bottom: 3vh;
     }
 </style>
