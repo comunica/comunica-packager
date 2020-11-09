@@ -106,8 +106,10 @@ export const mutations = {
     },
 
     addToContext(state: any, payload: any) {
+
+        console.log(payload);
         if (Array.isArray(payload.context)) {
-            payload.context.forEach((x: string) => {
+            payload.context.forEach((x: any) => {
                 if (!state.context[payload.set].includes(x))
                     state.context[payload.set].push(x);
             });
@@ -116,6 +118,8 @@ export const mutations = {
             if (!state.context[payload.set].includes(payload.context))
                 state.context[payload.set].push(payload.context);
         }
+
+        console.log('done');
 
     },
 
@@ -420,23 +424,32 @@ export const actions = {
         const dataExpanded: any = await jsonldParser.expand(data);
         let imports = dataExpanded[0]['http://www.w3.org/2002/07/owl#imports'];
 
+        const presetUrls = Object.values<string>(state.appConfig.presets);
+
         commit('addToContext', {context: data['@context'], set: 'default'});
 
         const imps = [];
 
         for (const imp of imports) {
-            const splitted = imp['@id'].split('/');
-            const setName = splitted[splitted.length-1].slice(0, -5);
-            const set = {name: setName, url: imp['@id'], loaded: false, edited: false}
-            commit('addSet', set);
-            imps.push(set);
+
+            if (!presetUrls.includes(imp['@id'])) {
+                const splitted = imp['@id'].split('/');
+                const setName = splitted[splitted.length-1].slice(0, -5);
+                const set = {name: setName, url: imp['@id'], loaded: false, edited: false}
+                commit('addSet', set);
+                imps.push(set);
+            } else {
+                await dispatch('importPreset', imp['@id']);
+            }
         }
 
         commit('setIsPresetLoading', false);
 
         for (const imp of imps) {
             const fetchedImp = await (this as any).$axios.$get(imp.url);
+
             const s = await jsonldToState(fetchedImp, imp.name);
+
             commit('addToContext', {context: s.context, set: imp.name});
 
             // Handle mediators
@@ -449,7 +462,9 @@ export const actions = {
                 actor.set = imp.name;
                 await dispatch('mapActorToState', actor);
             }
+
             commit('setLoadedOfSet', imp.name);
+
         }
     }
 }
