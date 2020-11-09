@@ -54,14 +54,14 @@
                             :options="actors"
                             no-items="No other actors defined."
                     />
-                    <input
+                    <textarea
                             v-else
                             :value="objectParameters[p].value ? objectParameters[p].value : getDefaultValue(objectParameters[p])"
                             @change="$emit('param', $event.target.value, id, p)"
                             class="input parameter-input"
-                            type="text"
+                            rows="1"
                             :placeholder="getDefaultValue(objectParameters[p])"
-                    >
+                    />
                 </div>
             </div>
             <LoadingComponent v-else/>
@@ -138,7 +138,7 @@
                         if (typeof defaultValue === 'string')
                             return defaultValue;
                         else
-                            return defaultValue ? JSON.stringify(defaultValue) : '' ;
+                            return defaultValue ? JSON.stringify(defaultValue, null, '  ') : '' ;
                     }
                 }
             },
@@ -148,7 +148,9 @@
                         Object.values(this.$store.state.createdActors).flat() :
                         this.$store.state.createdMediators;
 
+                    let connectedObjects = candidates.map(c => {
 
+                    });
                 } else {
 
                 }
