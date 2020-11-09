@@ -75,11 +75,20 @@
     .set {
         padding-left: 10px;
         width: 100%;
-        line-height: 30pt;
+        line-height: 20pt;
         border-radius: 10px;
         display: flex;
         justify-content: space-between;
         align-items: center;
+
+        border: 1px solid transparent;
+    }
+
+    .set:hover {
+        border: 1px solid $comunica-hover;
+        -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+        -moz-box-sizing: border-box;    /* Firefox, other Gecko */
+        box-sizing: border-box;
     }
 
     p {

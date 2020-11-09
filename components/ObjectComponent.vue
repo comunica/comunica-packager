@@ -1,5 +1,5 @@
 <template>
-    <div v-if="set === currentSet" id="object">
+    <div @click="onSelect()" v-if="set === currentSet" id="object">
         <div id="object-header" >
             <p id="object-name" class="text-medium unselectable" @click="close= !close">{{objectName}}</p>
             <IconButtonComponent
@@ -140,6 +140,13 @@
                         else
                             return defaultValue ? JSON.stringify(defaultValue) : '' ;
                     }
+                }
+            },
+            onSelect() {
+                if (!this.close) {
+                    console.log(this.id);
+                } else {
+
                 }
             }
         },
