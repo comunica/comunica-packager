@@ -215,6 +215,7 @@ export default {
 
         this.$store.commit('addMediators', mediatorsList);
         this.areMediatorsFetched = true;
+        localStorage.setItem('areMediatorsFetched', 'true');
 
     }
 }

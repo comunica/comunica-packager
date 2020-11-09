@@ -33,8 +33,6 @@ name: "ModalComponent",
     },
     methods: {
         confirm() {
-            console.log(this.onConfirm);
-            console.log(this.potentialPayload);
             this.$store.commit(this.onConfirm, this.potentialPayload);
             this.$emit('close');
         }

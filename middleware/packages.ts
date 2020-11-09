@@ -83,4 +83,5 @@ export default async ({$axios, store}: Context) => {
         let prefix = 'cb' + bus.split('-').map(x => x[0]).join('');
         return `${prefix}:Bus/${kebabCaseToPascalCase(bus)}`
     }));
+    store.commit('setStateEntry', {key: 'isPresetLoading', value: false});
 }

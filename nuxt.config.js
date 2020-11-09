@@ -38,7 +38,8 @@ export default {
     */
     plugins: [
         '@/plugins/select.js',
-        '@/plugins/vue-js-modal.js'
+        '@/plugins/vue-js-modal.js',
+        {src: '@/plugins/vuex-persist.js', ssr: false}
     ],
     /*
     ** Nuxt.js dev-modules
