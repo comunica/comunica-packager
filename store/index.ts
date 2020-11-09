@@ -107,7 +107,6 @@ export const mutations = {
 
     addToContext(state: any, payload: any) {
 
-        console.log(payload);
         if (Array.isArray(payload.context)) {
             payload.context.forEach((x: any) => {
                 if (!state.context[payload.set].includes(x))
@@ -118,8 +117,6 @@ export const mutations = {
             if (!state.context[payload.set].includes(payload.context))
                 state.context[payload.set].push(payload.context);
         }
-
-        console.log('done');
 
     },
 
@@ -359,8 +356,6 @@ export const actions = {
         }, null, '  '));
 
         let appConfig = context.state.appConfig;
-
-        console.log(appConfig);
         let bin = zip.folder('bin');
         for (const v of ['query.js', 'http.js', 'query-dynamic.js']) {
             bin.file(v, appConfig['bin'][v]);

@@ -34,7 +34,7 @@
                             v-else-if="objectParameters[p].range === 'cc:Bus'"
                             :value="objectParameters[p].value"
                             @input="x => changeParameterValue(p, x)"
-                            :placeholder="showDefaultAsPlaceholder(objectParameters[p])"
+                            :placeholder="getDefaultValue(objectParameters[p])"
                             :options="buses"
                             label="name"
                             reduce="fullName"
@@ -43,7 +43,7 @@
                             v-else-if="objectParameters[p].range === 'cc:Logger'"
                             :value="objectParameters[p].value"
                             @input="x => changeParameterValue(p, x)"
-                            :placeholder="showDefaultAsPlaceholder(objectParameters[p])"
+                            :placeholder="getDefaultValue(objectParameters[p])"
                             :options="loggers"
                     />
                     <DropdownComponent
@@ -56,11 +56,11 @@
                     />
                     <input
                             v-else
-                            :value="objectParameters[p].value"
+                            :value="objectParameters[p].value ? objectParameters[p].value : getDefaultValue(objectParameters[p])"
                             @change="$emit('param', $event.target.value, id, p)"
                             class="input parameter-input"
                             type="text"
-                            :placeholder="showDefaultAsPlaceholder(objectParameters[p])"
+                            :placeholder="getDefaultValue(objectParameters[p])"
                     >
                 </div>
             </div>
@@ -120,7 +120,7 @@
                 this.$emit('param', value, this.id, key);
                 this.$forceUpdate();
             },
-            showDefaultAsPlaceholder(obj) {
+            getDefaultValue(obj) {
                 if (obj.value)
                     return '';
                 switch (obj.range) {
