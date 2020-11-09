@@ -144,7 +144,11 @@
             },
             onSelect() {
                 if (!this.close) {
-                    console.log(this.id);
+                    let candidates = this.busGroup ?
+                        Object.values(this.$store.state.createdActors).flat() :
+                        this.$store.state.createdMediators;
+
+
                 } else {
 
                 }

@@ -86,9 +86,6 @@
 
     .set:hover {
         border: 1px solid $comunica-hover;
-        -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
-        -moz-box-sizing: border-box;    /* Firefox, other Gecko */
-        box-sizing: border-box;
     }
 
     p {
