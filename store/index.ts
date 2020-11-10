@@ -49,7 +49,9 @@ function getDefaultState() {
         packageName: 'my-package',
         author: '',
         description: '',
-        appConfig: null
+        appConfig: null,
+        currConnectedObjects: [],
+        currConnectedSets: [],
     }
 }
 
@@ -159,6 +161,7 @@ export const mutations = {
         state.sets = baseSet();
         state.currentSet = 'default';
         state.isPresetLoading = false;
+        state.currConnectedObjects = [];
     },
 
     setIsPresetLoading(state: any, value: boolean) {

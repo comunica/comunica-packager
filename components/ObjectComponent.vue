@@ -144,13 +144,38 @@
             },
             onSelect() {
                 if (!this.close) {
-                    let candidates = this.busGroup ?
-                        Object.values(this.$store.state.createdActors).flat() :
-                        this.$store.state.createdMediators;
+                    if (this.busGroup) {
+                        let connectedMediators = [];
+                        Object.keys(this.parameters).forEach(key => {
+                            if (key.includes('mediator')) {
+                                connectedMediators.push(this.parameters[key].value);
+                            }
+                        });
 
-                    let connectedObjects = candidates.map(c => {
+                        let outerSets = new Set();
+                        let innerMediators = [];
 
-                    });
+                        this.$store.state.createdMediators.forEach(c => {
+                            if (connectedMediators.includes(c['@id'])) {
+                                if (c.set === this.set)
+                                    innerMediators.push(c['@id']);
+                                else
+                                    outerSets.add(c.set);
+                            }
+                        });
+
+                        this.$store.commit('setStateEntry', {
+                            key: 'currConnectedObjects',
+                            value: innerMediators
+                        });
+
+                        this.$store.commit('setStateEntry', {
+                            key: 'currConnectedSets',
+                            value: [...outerSets]
+                        });
+                    } else {
+
+                    }
                 } else {
 
                 }
