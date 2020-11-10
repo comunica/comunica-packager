@@ -155,12 +155,12 @@
                         let outerSets = new Set();
                         let innerMediators = [];
 
-                        this.$store.state.createdMediators.forEach(c => {
-                            if (connectedMediators.includes(c['@id'])) {
-                                if (c.set === this.set)
-                                    innerMediators.push(c['@id']);
+                        this.$store.state.createdMediators.forEach(m => {
+                            if (connectedMediators.includes(m['@id'])) {
+                                if (m.set === this.set)
+                                    innerMediators.push(m['@id']);
                                 else
-                                    outerSets.add(c.set);
+                                    outerSets.add(m.set);
                             }
                         });
 
@@ -174,7 +174,30 @@
                             value: [...outerSets]
                         });
                     } else {
+                        let actors = Object.values(this.$store.state.createdActors).flat();
+                        let innerActors = [];
+                        let outerSets = new Set();
 
+                        actors.forEach(a => {
+                            Object.keys(a.parameters).forEach(p => {
+                                if (p.includes('mediator') && a.parameters[p].value === this.id) {
+                                    if (a.set === this.set)
+                                        innerActors.push(a['@id']);
+                                    else
+                                        outerSets.add(a.set);
+                                }
+                            })
+                        });
+
+                        this.$store.commit('setStateEntry', {
+                            key: 'currConnectedObjects',
+                            value: innerActors
+                        });
+
+                        this.$store.commit('setStateEntry', {
+                            key: 'currConnectedSets',
+                            value: [...outerSets]
+                        });
                     }
                 } else {
 
