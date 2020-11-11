@@ -1,5 +1,5 @@
 <template>
-    <div @click="onSelect()" v-if="set === currentSet" id="object">
+    <div :class="isConnectedObject ? 'ref' : 'no-ref'" @click="onSelect()" v-if="set === currentSet" id="object">
         <div id="object-header" >
             <p id="object-name" class="text-medium unselectable" @click="close= !close">{{objectName}}</p>
             <IconButtonComponent
@@ -157,9 +157,8 @@
 
                         this.$store.state.createdMediators.forEach(m => {
                             if (connectedMediators.includes(m['@id'])) {
-                                if (m.set === this.set)
-                                    innerMediators.push(m['@id']);
-                                else
+                                innerMediators.push(m['@id']);
+                                if (m.set !== this.set)
                                     outerSets.add(m.set);
                             }
                         });
@@ -181,9 +180,8 @@
                         actors.forEach(a => {
                             Object.keys(a.parameters).forEach(p => {
                                 if (p.includes('mediator') && a.parameters[p].value === this.id) {
-                                    if (a.set === this.set)
-                                        innerActors.push(a['@id']);
-                                    else
+                                    innerActors.push(a['@id']);
+                                    if (a.set !== this.set)
                                         outerSets.add(a.set);
                                 }
                             })
@@ -200,7 +198,15 @@
                         });
                     }
                 } else {
+                    this.$store.commit('setStateEntry', {
+                        key: 'currConnectedObjects',
+                        value: []
+                    });
 
+                    this.$store.commit('setStateEntry', {
+                        key: 'currConnectedSets',
+                        value: []
+                    });
                 }
             }
         },
@@ -226,6 +232,9 @@
             },
             currentSet() {
                 return this.$store.state.currentSet;
+            },
+            isConnectedObject() {
+                return this.$store.state.currConnectedObjects.includes(this.id);
             }
         },
         async mounted() {
@@ -248,9 +257,17 @@
 <style scoped lang="scss">
 
     #object {
-        border: 1px solid $comunica-border;
         border-radius: 7px;
         padding: 7px;
+    }
+
+    .no-ref {
+        border: 1px solid $comunica-border;
+        margin: 8px 1px 1px 1px;
+    }
+
+    .ref {
+        border: 2px solid $comunica-dark-red;
         margin: 7px 0 0 0;
     }
 

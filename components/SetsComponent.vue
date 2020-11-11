@@ -3,7 +3,7 @@
         <div id="body">
             <div :class="set.name === selected ? 'set selected' : 'set'" v-for="set in sets" >
                 <v-icon style="margin-right: 5px; color: black">mdi-layers</v-icon>
-                <p @click="onClick(set)">{{set.name}}</p>
+                <p :class="containsConnectedObjects(set.name) ? 'bold' : ''" @click="onClick(set)">{{set.name}}</p>
                 <IconButtonComponent v-if="set.name !== 'default'" @click="onDelete(set)" style="z-index: 10;" icon-tag="mdi-close-circle"/>
             </div>
         </div>
@@ -52,6 +52,9 @@
                 });
 
                 // this.$store.commit('removeSet', set.name);
+            },
+            containsConnectedObjects(set) {
+                return this.$store.state.currConnectedSets.includes(set);
             }
         }
     }
@@ -98,6 +101,10 @@
 
     .selected {
         background: $comunica-hover;
+    }
+
+    .bold {
+        font-weight: bold;
     }
 
 </style>
