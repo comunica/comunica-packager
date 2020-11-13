@@ -49,7 +49,9 @@ function getDefaultState() {
         packageName: 'my-package',
         author: '',
         description: '',
-        appConfig: null
+        appConfig: null,
+        currConnectedObjects: [],
+        currConnectedSets: [],
     }
 }
 
@@ -134,8 +136,19 @@ export const mutations = {
             state.currentSet = 'default'
 
         state.sets.forEach( (item: any, index: number) => {
-            if(item.name === set) state.sets.splice(index,1);
+            if(item.name === set) state.sets.splice(index, 1);
         });
+
+        Object.keys(state.createdActors).forEach((busGroup: string) => {
+            state.createdActors[busGroup].forEach((actor: any, index: number) => {
+                if (actor.set === set) state.createdActors[busGroup].splice(index, 1);
+            })
+        });
+
+        state.createdMediators.forEach((mediator: any, index: number) => {
+            if (mediator.set === set) state.createdMediators.splice(index, 1);
+        });
+
         delete state.context[set];
     },
 
@@ -148,6 +161,7 @@ export const mutations = {
         state.sets = baseSet();
         state.currentSet = 'default';
         state.isPresetLoading = false;
+        state.currConnectedObjects = [];
     },
 
     setIsPresetLoading(state: any, value: boolean) {

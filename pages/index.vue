@@ -328,6 +328,7 @@ export default {
         color: white;
         text-decoration: none;
         font-weight: bold;
+        border-bottom: 2px solid transparent;
     }
 
     a:hover {

@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div id="upload">
         <input type="file" id="file" accept="application/zip" @change="handleFile">
         <label for="file">{{text}}</label>
     </div>
@@ -35,7 +35,11 @@
         font-weight: bold;
     }
 
-    label:hover {
+    #upload {
+        border-bottom: 2px solid transparent;
+    }
+
+    #upload:hover {
         border-bottom: 2px solid white;
     }
 
