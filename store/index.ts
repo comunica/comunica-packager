@@ -184,6 +184,10 @@ export const mutations = {
         state[payload.key] = payload.value;
     },
 
+    setAppConfigEntry(state: any, payload: any) {
+        state.appConfig[payload.key] = payload.value;
+    },
+
     /**
      * Mediator mutations
      */
@@ -404,8 +408,53 @@ export const actions = {
 
     async uploadZip({commit, dispatch}: any, file: any) {
 
-        // TODO: fix
         let zip = new JSZip();
+
+        zip.loadAsync(file).then(function(z) {
+
+            commit('resetState');
+
+            ['.npmignore', '.gitignore'].forEach((s: string) => {
+
+                z.files[s].async('text').then(function(c) {
+                    commit('setAppConfigEntry', {
+                        key: s,
+                        value: c
+                    })
+                });
+            });
+
+            z.files['package.json'].async('text').then(function(c) {
+                const json = JSON.parse(c);
+                console.log(json);
+                commit('setStateEntry', {
+                    key: 'author',
+                    value: json.author
+                });
+                commit('setStateEntry', {
+                    key: 'description',
+                    value: json.description
+                });
+            });
+
+            // Object.keys(z.files).filter((s: string) => !s.includes('/')).forEach((s: string) => {
+            //     console.log(s);
+            // });
+
+            // console.log(z.files);
+            //
+            // zip.folder('config').forEach((rel: string, file: JSZip.JSZipObject) => {
+            //     console.log(rel);
+            //     console.log(file);
+            // })
+            // console.log(z);
+            // console.log(z.files);
+            // console.log(Object.keys(z.files));
+            // console.log(zip.folder('config'));
+        });
+
+
+
         // zip.loadAsync(file).then(function(z) {
         //     zip.file('config.json').async('text').then(async function(json) {
         //         commit('resetState');
