@@ -412,8 +412,10 @@ export const actions = {
 
         zip.loadAsync(file).then(function(z) {
 
+            // Reset
             commit('resetState');
 
+            // Static files
             ['.npmignore', '.gitignore'].forEach((s: string) => {
 
                 z.files[s].async('text').then(function(c) {
@@ -424,9 +426,13 @@ export const actions = {
                 });
             });
 
-            z.files['package.json'].async('text').then(function(c) {
-                const json = JSON.parse(c);
+            z.files['package.json'].async('text').then(function(packageString) {
+                let json = JSON.parse(packageString);
                 console.log(json);
+                commit('setStateEntry', {
+                    key: name,
+                    value: json.name
+                });
                 commit('setStateEntry', {
                     key: 'author',
                     value: json.author
@@ -435,7 +441,20 @@ export const actions = {
                     key: 'description',
                     value: json.description
                 });
+
+                json = JSON.parse(packageString.replace(new RegExp(json.name, 'g'), '%package_name%'));
+                json.author = '%author%';
+                json.description = '%description%';
+
+                commit('setAppConfigEntry', {
+                    key: 'package',
+                    value: json
+                });
             });
+
+            // Config
+
+            const configItems = zip.folder('config').filter((rel, file) => true);
 
             // Object.keys(z.files).filter((s: string) => !s.includes('/')).forEach((s: string) => {
             //     console.log(s);
