@@ -48,6 +48,7 @@ function getDefaultState() {
         isPresetLoading: false,
         packageName: 'my-package',
         author: '',
+        prefix: 'files-ex',
         description: '',
         appConfig: null,
         currConnectedObjects: [],
@@ -163,6 +164,10 @@ export const mutations = {
         state.isPresetLoading = false;
         state.currConnectedObjects = [];
         state.currConnectedSets = [];
+        state.packageName = 'my-package';
+        state.author = '';
+        state.prefix = 'files-ex';
+        state.description = '';
     },
 
     setIsPresetLoading(state: any, value: boolean) {
@@ -365,14 +370,13 @@ export const actions = {
 
     async downloadZip(context: any) {
         let zip = new JSZip();
-
         let components = zip.folder('components');
+        let prefixObj: any = {};
+        prefixObj[context.state.prefix] = "https://linkedsoftwaredependencies.org/bundles/npm/" + context.state.packageName + "/^1.0.0/"
         components.file('context.jsonld', JSON.stringify({
             "@context": [
                 "https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^3.0.0/components/context.jsonld",
-                {
-                    "files-ex": "https://linkedsoftwaredependencies.org/bundles/npm/" + context.state.packageName + "/^1.0.0/"
-                }
+                prefixObj
             ]
         }, null, '  '));
 
@@ -477,13 +481,20 @@ export const actions = {
 
             // Config
 
+            zip.file('config/config-default.json').async('text').then((content) => {
+                console.log(JSON.parse(content));
+            });
+
             const configItems = zip.folder('config').filter((rel, file) => true);
             if (configItems.length > 1) {
                 // Using sets
 
             } else {
                 // Only default
-
+                zip.file('config/config-default.json').async('text').then((content) => {
+                    const configDefault = JSON.parse(content);
+                    commit('addToContext', {context: configDefault['@context'], set: 'default'});
+                });
             }
 
 

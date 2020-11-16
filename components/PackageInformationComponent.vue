@@ -12,6 +12,12 @@
             class="input"
             type="text"
         />
+        <p class="text-small label">Prefix</p>
+        <input
+            v-model="prefix"
+            class="input"
+            type="text"
+        />
         <p class="text-small label">Description</p>
         <textarea
             v-model="description"
@@ -38,6 +44,14 @@ export default {
             },
             set: function(newValue) {
                 this.$store.commit('setStateEntry', {key: 'author', value: newValue});
+            }
+        },
+        prefix: {
+            get: function() {
+                return this.$store.state.prefix;
+            },
+            set: function(newValue) {
+                this.$store.commit('setStateEntry', {key: 'prefix', value: newValue});
             }
         },
         description: {
