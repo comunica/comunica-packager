@@ -162,6 +162,7 @@ export const mutations = {
         state.currentSet = 'default';
         state.isPresetLoading = false;
         state.currConnectedObjects = [];
+        state.currConnectedSets = [];
     },
 
     setIsPresetLoading(state: any, value: boolean) {
@@ -262,6 +263,8 @@ export const mutations = {
         state.createdActors[payload.busGroup][indexActor]['@id'] = payload.newID;
     }
 }
+
+
 
 export const actions = {
 
@@ -406,6 +409,27 @@ export const actions = {
         );
     },
 
+    async loadSet({commit, dispatch, state}: any, payload: any) {
+        const fetchedImp = await (this as any).$axios.$get(payload.url);
+
+        const s = await jsonldToState(fetchedImp, payload.name);
+
+        commit('addToContext', {context: s.context, set: payload.name});
+
+        // Handle mediators
+        for (const mediator of s.mediators) {
+            mediator.set = payload.name;
+            await dispatch('mapMediatorToState', mediator);
+        }
+        // Handle actors
+        for (const actor of s.actors) {
+            actor.set = payload.name;
+            await dispatch('mapActorToState', actor);
+        }
+
+        commit('setLoadedOfSet', payload.name);
+    },
+
     async uploadZip({commit, dispatch}: any, file: any) {
 
         let zip = new JSZip();
@@ -428,7 +452,6 @@ export const actions = {
 
             z.files['package.json'].async('text').then(function(packageString) {
                 let json = JSON.parse(packageString);
-                console.log(json);
                 commit('setStateEntry', {
                     key: name,
                     value: json.name
@@ -455,6 +478,14 @@ export const actions = {
             // Config
 
             const configItems = zip.folder('config').filter((rel, file) => true);
+            if (configItems.length > 1) {
+                // Using sets
+
+            } else {
+                // Only default
+
+            }
+
 
             // Object.keys(z.files).filter((s: string) => !s.includes('/')).forEach((s: string) => {
             //     console.log(s);
@@ -523,25 +554,7 @@ export const actions = {
         commit('setIsPresetLoading', false);
 
         for (const imp of imps) {
-            const fetchedImp = await (this as any).$axios.$get(imp.url);
-
-            const s = await jsonldToState(fetchedImp, imp.name);
-
-            commit('addToContext', {context: s.context, set: imp.name});
-
-            // Handle mediators
-            for (const mediator of s.mediators) {
-                mediator.set = imp.name;
-                await dispatch('mapMediatorToState', mediator);
-            }
-            // Handle actors
-            for (const actor of s.actors) {
-                actor.set = imp.name;
-                await dispatch('mapActorToState', actor);
-            }
-
-            commit('setLoadedOfSet', imp.name);
-
+            await dispatch('loadSet', imp);
         }
     }
 }
