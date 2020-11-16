@@ -205,7 +205,6 @@ export async function jsonldToState(jsonld: any, set: string) {
 
     if (jsonld.hasOwnProperty('@graph')) {
         let actorPart = jsonld['@graph'][0];
-        // TODO: auto-generated id if not present (for importing)
         id = actorPart['@id'] ? actorPart['@id'] : ''
 
         for (const a of actorPart.actors) {

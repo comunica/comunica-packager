@@ -414,7 +414,7 @@ export const actions = {
     },
 
     async loadSet({commit, dispatch, state}: any, payload: any) {
-        const fetchedImp = await (this as any).$axios.$get(payload.url);
+        const fetchedImp = payload.url ? await (this as any).$axios.$get(payload.url) : payload.fetchedImp;
 
         const s = await jsonldToState(fetchedImp, payload.name);
 
@@ -491,16 +491,14 @@ export const actions = {
 
             } else {
                 // Only default
-                zip.file('config/config-default.json').async('text').then((content) => {
+                zip.file('config/config-default.json').async('text').then(async (content) => {
                     const configDefault = JSON.parse(content);
-                    commit('addToContext', {context: configDefault['@context'], set: 'default'});
+                    await dispatch('loadSet', {
+                        fetchedImp: configDefault,
+                        name: 'default'
+                    });
                 });
             }
-
-
-            // Object.keys(z.files).filter((s: string) => !s.includes('/')).forEach((s: string) => {
-            //     console.log(s);
-            // });
 
             // console.log(z.files);
             //
