@@ -434,11 +434,11 @@ export const actions = {
         commit('setLoadedOfSet', payload.name);
     },
 
-    async uploadZip({commit, dispatch}: any, file: any) {
+    async uploadZip({commit, dispatch, state}: any, file: any) {
 
         let zip = new JSZip();
 
-        zip.loadAsync(file).then(function(z) {
+        zip.loadAsync(file).then(async function (z) {
 
             // Reset
             commit('resetState');
@@ -446,15 +446,14 @@ export const actions = {
             // Static files
             ['.npmignore', '.gitignore'].forEach((s: string) => {
 
-                z.files[s].async('text').then(function(c) {
+                z.files[s].async('text').then(function (c) {
                     commit('setAppConfigEntry', {
                         key: s,
                         value: c
                     })
                 });
             });
-
-            z.files['package.json'].async('text').then(function(packageString) {
+            z.files['package.json'].async('text').then(function (packageString) {
                 let json = JSON.parse(packageString);
                 commit('setStateEntry', {
                     key: name,
@@ -481,13 +480,51 @@ export const actions = {
 
             // Config
 
-            zip.file('config/config-default.json').async('text').then((content) => {
-                console.log(JSON.parse(content));
-            });
-
             const configItems = zip.folder('config').filter((rel, file) => true);
             if (configItems.length > 1) {
                 // Using sets
+                let prefix = '';
+                await zip.file('components/context.jsonld').async('text').then(content => {
+                    let context = JSON.parse(content);
+                    prefix = Object.keys(context['@context'][1])[0];
+                });
+                const presetUrls = Object.values<string>(state.appConfig.presets);
+
+                zip.file('config/config-default.json').async('text').then(async content => {
+                    const configDefault = JSON.parse(content);
+
+                    const configDefaultExpanded: any = await jsonldParser.expand(configDefault);
+                    let imports = configDefaultExpanded[0]['http://www.w3.org/2002/07/owl#imports'];
+                    const imps = [];
+
+                    console.log(prefix);
+
+                    for (const imp of imports) {
+                        if (!presetUrls.includes(imp['@id'])) {
+                            const splitted = imp['@id'].split('/');
+                            const setName = splitted[splitted.length-1].slice(0, -5);
+                            const set: any = {name: setName, loaded: false, edited: false}
+
+                            console.log(imp['@id']);
+                            console.log(imp['@id'].startsWith(prefix));
+                            if (imp['@id'].startsWith(prefix)) {
+                                await zip.file(`config/sets/${setName}.json`).async('text').then((content) => {
+                                    set.fetchedImp = JSON.parse(content);
+                                });
+                            } else {
+                                set.url = imp['@id'];
+                            }
+                            commit('addSet', set);
+                            imps.push(set);
+                        } else {
+                            await dispatch('importPreset', imp);
+                        }
+                    }
+
+                    for (const imp of imps) {
+                        await dispatch('loadSet', imp);
+                    }
+                });
 
             } else {
                 // Only default
@@ -500,36 +537,9 @@ export const actions = {
                 });
             }
 
-            // console.log(z.files);
-            //
-            // zip.folder('config').forEach((rel: string, file: JSZip.JSZipObject) => {
-            //     console.log(rel);
-            //     console.log(file);
-            // })
-            // console.log(z);
-            // console.log(z.files);
-            // console.log(Object.keys(z.files));
-            // console.log(zip.folder('config'));
+
         });
 
-
-
-        // zip.loadAsync(file).then(function(z) {
-        //     zip.file('config.json').async('text').then(async function(json) {
-        //         commit('resetState');
-        //         const s = await jsonldToState(JSON.parse(json));
-        //         commit('changeID', s.id);
-        //         commit('addToContext', s.context);
-        //         // Handle mediators
-        //         for (const mediator of s.mediators) {
-        //             dispatch('mapMediatorToState', mediator);
-        //         }
-        //         // Handle actors
-        //         for (const actor of s.actors) {
-        //             dispatch('mapActorToState', actor);
-        //         }
-        //     });
-        // }, function() {alert('Invalid zip.')});
     },
 
     async importPreset({commit, dispatch, state}: any, presetLink: string) {
