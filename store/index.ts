@@ -40,6 +40,7 @@ function getDefaultState() {
         createdMediators: [],
         loggers: [],
         buses: [],
+        inits: [],
         context: {
             'default': _.cloneDeep(baseContext),
         },

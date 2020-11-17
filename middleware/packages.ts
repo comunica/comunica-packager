@@ -44,16 +44,6 @@ export default async ({$axios, store}: Context) => {
     const mediatorPackages = packageNames.filter((p: string) => p.startsWith('mediator-'));
     const loggerPackages = packageNames.filter((p: string) => p.startsWith('logger-'));
     const inits = packageNames.filter((p: string) => p.includes('actor-init'));
-    const ignoreInits: any[] = [];
-
-    for (const i of inits) {
-        const actorPart = kebabCaseToPascalCase(i.substring(11));
-        const g = `https://linkedsoftwaredependencies.org/bundles/npm/@comunica/${i}/^1.0.0/components/Actor/Init/${actorPart}.jsonld`
-
-        await $axios.$get(g).catch((error: any) => {
-            ignoreInits.push(i);
-        });
-    }
 
     let busGroups: any = [];
     // Avoid actors being added to multiple bus types
@@ -65,13 +55,17 @@ export default async ({$axios, store}: Context) => {
         };
         let actors = packageNames
                 .filter((p: string) => p.startsWith(`actor-${b}`))
-                .filter((p: string) => !ignoreInits.includes(p))
                 .map(kebabCaseToPascalCase)
                 .filter((a: any) => !usedActors.has(a));
         actors.forEach((a: any) => usedActors.add(a));
         busGroup.actors = actors;
         busGroups.push(busGroup);
     }
+
+    store.commit('setStateEntry', {
+        key: 'inits',
+        value: inits
+    })
 
     store.commit('addBusGroups', busGroups);
 

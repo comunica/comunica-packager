@@ -16,17 +16,6 @@
                     <FileInputComponent text="Upload" @click="onUpload"/>
                     <a class="button-top" href="#" @click.prevent="onReset">Reset</a>
                 </div>
-<!--                <div v-if="imp" id="preset-selector" class="dropdown-layout">-->
-<!--                    <DropdownComponent-->
-<!--                        v-model="actorLink"-->
-<!--                        :options="presets"-->
-<!--                        placeholder="Choose preset"-->
-<!--                        label="name"-->
-<!--                        reduce="url"-->
-<!--                    />-->
-<!--                    <ButtonComponent v-if="!isPresetLoading" :disabled="!actorLink" :is-small="true" text="Import" @click="onImport"/>-->
-<!--                    <LoadingComponent v-else/>-->
-<!--                </div>-->
             </div>
         </nav>
         <div id="sidebar">
@@ -263,7 +252,6 @@ export default {
     #body {
         margin-top: 75px;
         margin-left: max(15vw, 250px);
-        //margin-bottom: max(5vh, 40px);
         flex: 1;
         color: black;
         background-color: white;
@@ -316,8 +304,6 @@ export default {
     }
 
     #footer {
-        //position: fixed;
-        //bottom: 0;
         width: 100%;
         text-align: center;
         height: max(5vh, 40px);

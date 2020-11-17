@@ -1,5 +1,5 @@
 <template>
-    <div v-if="">
+    <div v-if="areActorsFiltered">
         <div class="box">
             <div class="dropdown-layout">
                 <DropdownComponent
@@ -18,6 +18,8 @@
         />
     </div>
 
+    <LoadingComponent v-else/>
+
 </template>
 
 <script>
@@ -25,12 +27,16 @@
     import ButtonComponent from "./ButtonComponent";
     import BusGroupComponent from "./BusGroupComponent";
     import {getBusGroupOfActor} from "@/store";
+    import {kebabCaseToPascalCase} from "@/utils/alpha";
+    import LoadingComponent from "@/components/LoadingComponent";
 
     export default {
         name: "ActorsComponent",
-        components: {BusGroupComponent, ButtonComponent, DropdownComponent},
+        components: {LoadingComponent, BusGroupComponent, ButtonComponent, DropdownComponent},
         data: () => ({
-            selectedActor: null
+            selectedActor: null,
+            actors: [],
+            areActorsFiltered: false,
         }),
         methods: {
             async onCreate() {
@@ -51,9 +57,6 @@
             }
         },
         computed: {
-            actors() {
-                return this.$store.state.busGroups.flatMap(x => [...x.actors]);
-            },
             busGroups() {
                 let busGroups = Object.keys(this.$store.state.createdActors).sort();
                 return busGroups.map(bg => ({
@@ -63,6 +66,26 @@
                     ),
                 }));
             }
+        },
+        async mounted() {
+
+            const inits = this.$store.state.inits;
+            const ignoreInits = [];
+
+            for (const i of inits) {
+                const iUpper = kebabCaseToPascalCase(i);
+                const actorPart = iUpper.substring(9);
+                const g = `https://linkedsoftwaredependencies.org/bundles/npm/@comunica/${i}/^1.0.0/components/Actor/Init/${actorPart}.jsonld`
+
+                await this.$axios.$get(g).catch(_ => {
+                    ignoreInits.push(iUpper);
+                });
+            }
+
+            this.actors = this.$store.state.busGroups.flatMap(x => [...x.actors])
+                .filter(a => !ignoreInits.includes(a));
+            
+            this.areActorsFiltered = true;
         }
     }
 </script>
