@@ -90,7 +90,7 @@ export async function defaultJsonld(state: any) {
                 if (set.url && !set.edited)
                     jsonld.import.push(getCompactedIRI(normalizedContext, set.url));
                 else
-                    jsonld.import.push('prefix-ex:config/sets/' + set.name + '.jsonld');
+                    jsonld.import.push(state.prefix + ':config/sets/' + set.name + '.json');
             }
         });
     }
@@ -205,7 +205,6 @@ export async function jsonldToState(jsonld: any, set: string) {
 
     if (jsonld.hasOwnProperty('@graph')) {
         let actorPart = jsonld['@graph'][0];
-        // TODO: auto-generated id if not present (for importing)
         id = actorPart['@id'] ? actorPart['@id'] : ''
 
         for (const a of actorPart.actors) {

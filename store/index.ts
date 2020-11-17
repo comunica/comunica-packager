@@ -48,6 +48,7 @@ function getDefaultState() {
         isPresetLoading: false,
         packageName: 'my-package',
         author: '',
+        prefix: 'files-ex',
         description: '',
         appConfig: null,
         currConnectedObjects: [],
@@ -162,6 +163,11 @@ export const mutations = {
         state.currentSet = 'default';
         state.isPresetLoading = false;
         state.currConnectedObjects = [];
+        state.currConnectedSets = [];
+        state.packageName = 'my-package';
+        state.author = '';
+        state.prefix = 'files-ex';
+        state.description = '';
     },
 
     setIsPresetLoading(state: any, value: boolean) {
@@ -182,6 +188,10 @@ export const mutations = {
 
     setStateEntry(state: any, payload: any) {
         state[payload.key] = payload.value;
+    },
+
+    setAppConfigEntry(state: any, payload: any) {
+        state.appConfig[payload.key] = payload.value;
     },
 
     /**
@@ -258,6 +268,8 @@ export const mutations = {
         state.createdActors[payload.busGroup][indexActor]['@id'] = payload.newID;
     }
 }
+
+
 
 export const actions = {
 
@@ -358,14 +370,13 @@ export const actions = {
 
     async downloadZip(context: any) {
         let zip = new JSZip();
-
         let components = zip.folder('components');
+        let prefixObj: any = {};
+        prefixObj[context.state.prefix] = "https://linkedsoftwaredependencies.org/bundles/npm/" + context.state.packageName + "/^1.0.0/"
         components.file('context.jsonld', JSON.stringify({
             "@context": [
                 "https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^3.0.0/components/context.jsonld",
-                {
-                    "files-ex": "https://linkedsoftwaredependencies.org/bundles/npm/" + context.state.packageName + "/^1.0.0/"
-                }
+                prefixObj
             ]
         }, null, '  '));
 
@@ -402,26 +413,129 @@ export const actions = {
         );
     },
 
-    async uploadZip({commit, dispatch}: any, file: any) {
+    async loadSet({commit, dispatch, state}: any, payload: any) {
+        const fetchedImp = payload.url ? await (this as any).$axios.$get(payload.url) : payload.fetchedImp;
 
-        // TODO: fix
+        const s = await jsonldToState(fetchedImp, payload.name);
+
+        commit('addToContext', {context: s.context, set: payload.name});
+
+        // Handle mediators
+        for (const mediator of s.mediators) {
+            mediator.set = payload.name;
+            await dispatch('mapMediatorToState', mediator);
+        }
+        // Handle actors
+        for (const actor of s.actors) {
+            actor.set = payload.name;
+            await dispatch('mapActorToState', actor);
+        }
+
+        commit('setLoadedOfSet', payload.name);
+    },
+
+    async uploadZip({commit, dispatch, state}: any, file: any) {
+
         let zip = new JSZip();
-        // zip.loadAsync(file).then(function(z) {
-        //     zip.file('config.json').async('text').then(async function(json) {
-        //         commit('resetState');
-        //         const s = await jsonldToState(JSON.parse(json));
-        //         commit('changeID', s.id);
-        //         commit('addToContext', s.context);
-        //         // Handle mediators
-        //         for (const mediator of s.mediators) {
-        //             dispatch('mapMediatorToState', mediator);
-        //         }
-        //         // Handle actors
-        //         for (const actor of s.actors) {
-        //             dispatch('mapActorToState', actor);
-        //         }
-        //     });
-        // }, function() {alert('Invalid zip.')});
+
+        zip.loadAsync(file).then(async function (z) {
+
+            // Reset
+            commit('resetState');
+
+            // Static files
+            ['.npmignore', '.gitignore'].forEach((s: string) => {
+
+                z.files[s].async('text').then(function (c) {
+                    commit('setAppConfigEntry', {
+                        key: s,
+                        value: c
+                    })
+                });
+            });
+            z.files['package.json'].async('text').then(function (packageString) {
+                let json = JSON.parse(packageString);
+                commit('setStateEntry', {
+                    key: name,
+                    value: json.name
+                });
+                commit('setStateEntry', {
+                    key: 'author',
+                    value: json.author
+                });
+                commit('setStateEntry', {
+                    key: 'description',
+                    value: json.description
+                });
+
+                json = JSON.parse(packageString.replace(new RegExp(json.name, 'g'), '%package_name%'));
+                json.author = '%author%';
+                json.description = '%description%';
+
+                commit('setAppConfigEntry', {
+                    key: 'package',
+                    value: json
+                });
+            });
+
+            // Config
+
+            const configItems = zip.folder('config').filter((rel, file) => true);
+            if (configItems.length > 1) {
+                // Using sets
+                let prefix = '';
+                await zip.file('components/context.jsonld').async('text').then(content => {
+                    let context = JSON.parse(content);
+                    prefix = Object.keys(context['@context'][1])[0];
+                });
+                const presetUrls = Object.values<string>(state.appConfig.presets);
+
+                zip.file('config/config-default.json').async('text').then(async content => {
+                    const configDefault = JSON.parse(content);
+
+                    const configDefaultExpanded: any = await jsonldParser.expand(configDefault);
+                    let imports = configDefaultExpanded[0]['http://www.w3.org/2002/07/owl#imports'];
+                    const imps = [];
+
+                    for (const imp of imports) {
+                        if (!presetUrls.includes(imp['@id'])) {
+                            const splitted = imp['@id'].split('/');
+                            const setName = splitted[splitted.length-1].slice(0, -5);
+                            const set: any = {name: setName, loaded: false, edited: false}
+
+                            if (imp['@id'].startsWith(prefix)) {
+                                await zip.file(`config/sets/${setName}.json`).async('text').then((content) => {
+                                    set.fetchedImp = JSON.parse(content);
+                                });
+                            } else {
+                                set.url = imp['@id'];
+                            }
+                            commit('addSet', set);
+                            imps.push(set);
+                        } else {
+                            await dispatch('importPreset', imp);
+                        }
+                    }
+
+                    for (const imp of imps) {
+                        await dispatch('loadSet', imp);
+                    }
+                });
+
+            } else {
+                // Only default
+                zip.file('config/config-default.json').async('text').then(async (content) => {
+                    const configDefault = JSON.parse(content);
+                    await dispatch('loadSet', {
+                        fetchedImp: configDefault,
+                        name: 'default'
+                    });
+                });
+            }
+
+
+        });
+
     },
 
     async importPreset({commit, dispatch, state}: any, presetLink: string) {
@@ -455,25 +569,7 @@ export const actions = {
         commit('setIsPresetLoading', false);
 
         for (const imp of imps) {
-            const fetchedImp = await (this as any).$axios.$get(imp.url);
-
-            const s = await jsonldToState(fetchedImp, imp.name);
-
-            commit('addToContext', {context: s.context, set: imp.name});
-
-            // Handle mediators
-            for (const mediator of s.mediators) {
-                mediator.set = imp.name;
-                await dispatch('mapMediatorToState', mediator);
-            }
-            // Handle actors
-            for (const actor of s.actors) {
-                actor.set = imp.name;
-                await dispatch('mapActorToState', actor);
-            }
-
-            commit('setLoadedOfSet', imp.name);
-
+            await dispatch('loadSet', imp);
         }
     }
 }
