@@ -48,19 +48,20 @@
                     <LoadingComponent v-else/>
                 </div>
             </div>
+
+            <div id="footer">
+                <div>
+                    <v-icon dark>mdi-xml</v-icon>
+                    <a href="https://github.com/comunica/comunica-packager">Source code</a>
+                </div>
+                <div>
+                    <v-icon dark>mdi-bug</v-icon>
+                    <a href="https://github.com/comunica/comunica-packager/issues">Report a bug</a>
+                </div>
+            </div>
         </div>
         <LoadingComponent :size="100" v-else id="load-main"/>
-        <div id="footer">
-            <div>
-                <v-icon dark>mdi-xml</v-icon>
-                <a href="https://github.com/comunica/comunica-packager">Source code</a>
-            </div>
-            <div>
-                <v-icon dark>mdi-bug</v-icon>
-                <a href="https://github.com/comunica/comunica-packager/issues">Report a bug</a>
-            </div>
 
-        </div>
     </div>
 </template>
 
@@ -133,6 +134,7 @@ export default {
         async onImport(url) {
             this.imp = false;
             await this.$store.dispatch('importPreset', url);
+            // this.$router.push()
         },
         async onExport() {
             this.isExporting = true;
@@ -179,6 +181,7 @@ export default {
 
         const mediatorPackages = this.$store.state.mediatorPackages;
         const mediatorsList = [];
+
 
         for (const m of mediatorPackages) {
             const mediatorComponents = await this.$axios.$get(`https://linkedsoftwaredependencies.org/bundles/npm/@comunica/${m}/^1.0.0/components/components.jsonld`);
@@ -260,11 +263,13 @@ export default {
     #body {
         margin-top: 75px;
         margin-left: max(15vw, 250px);
-        margin-bottom: max(5vh, 40px);
+        //margin-bottom: max(5vh, 40px);
         flex: 1;
         color: black;
         background-color: white;
         display: flex;
+        flex-direction: column;
+        min-height: calc(100vh - 75px);
     }
 
     #load-main {
@@ -277,7 +282,8 @@ export default {
     #sidebar {
         color: black;
         position: fixed;
-        bottom: max(5vh, 40px);
+        //bottom: max(5vh, 40px);
+        bottom: 0;
         top: 75px;
         width: max(15vw, 250px);
         padding: 20px 20px;
@@ -289,7 +295,7 @@ export default {
         padding: 20px 20px;
         color: black;
         display: flex;
-        flex: 11;
+        flex: 1;
     }
 
     .column {
@@ -310,8 +316,8 @@ export default {
     }
 
     #footer {
-        position: fixed;
-        bottom: 0;
+        //position: fixed;
+        //bottom: 0;
         width: 100%;
         text-align: center;
         height: max(5vh, 40px);

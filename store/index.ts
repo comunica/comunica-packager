@@ -497,16 +497,12 @@ export const actions = {
                     let imports = configDefaultExpanded[0]['http://www.w3.org/2002/07/owl#imports'];
                     const imps = [];
 
-                    console.log(prefix);
-
                     for (const imp of imports) {
                         if (!presetUrls.includes(imp['@id'])) {
                             const splitted = imp['@id'].split('/');
                             const setName = splitted[splitted.length-1].slice(0, -5);
                             const set: any = {name: setName, loaded: false, edited: false}
 
-                            console.log(imp['@id']);
-                            console.log(imp['@id'].startsWith(prefix));
                             if (imp['@id'].startsWith(prefix)) {
                                 await zip.file(`config/sets/${setName}.json`).async('text').then((content) => {
                                     set.fetchedImp = JSON.parse(content);
