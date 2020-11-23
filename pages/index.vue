@@ -127,10 +127,13 @@ export default {
                 value: true
             });
             let currQuery = _.cloneDeep(this.$router.currentRoute.query);
-            currQuery.preset = preset.name;
-            await this.$router.replace({
-                query:  currQuery
-            });
+            if (currQuery.preset !== preset.name) {
+                currQuery.preset = preset.name;
+                await this.$router.replace({
+                    query:  currQuery
+                });
+            }
+
             await this.$store.dispatch('importPreset', preset.url);
         },
         async onExport() {

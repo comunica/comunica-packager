@@ -156,7 +156,7 @@ export const mutations = {
         delete state.context[set];
 
         if (state.persistUrl) {
-            (this as any).$router.push('/');
+            (this as any).$router.replace('/');
             state.persistUrl = false;
         }
     },
@@ -211,10 +211,6 @@ export const mutations = {
         const createdMediators = state.createdMediators;
         createdMediators.push(mediator);
         Vue.set(state, 'createdMediators', createdMediators);
-        if (state.persistUrl) {
-            (this as any).$router.replace('/');
-            state.persistUrl = false;
-        }
     },
 
     deleteMediator(state: any, mediator: string) {
@@ -231,19 +227,11 @@ export const mutations = {
     changeParameterValueOfMediator(state: any, payload: any) {
         const indexMediator = state.createdMediators.findIndex((x: any) => x['@id'] === payload['@id']);
         state.createdMediators[indexMediator].parameters[payload.parameterName].value = payload.value;
-        if (state.persistUrl) {
-            (this as any).$router.replace('/');
-            state.persistUrl = false;
-        }
     },
 
     changeIDOfMediator(state: any, payload: any) {
         const indexMediator = state.createdMediators.findIndex((x: any) => x['@id'] === payload.currentID);
         state.createdMediators[indexMediator]['@id'] = payload.newID;
-        if (state.persistUrl) {
-            (this as any).$router.replace('/');
-            state.persistUrl = false;
-        }
     },
 
     /**
