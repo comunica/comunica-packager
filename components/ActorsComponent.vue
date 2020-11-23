@@ -84,7 +84,7 @@
 
             this.actors = this.$store.state.busGroups.flatMap(x => [...x.actors])
                 .filter(a => !ignoreInits.includes(a));
-            
+
             this.areActorsFiltered = true;
         }
     }

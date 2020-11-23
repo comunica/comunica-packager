@@ -7,7 +7,7 @@
                     <a v-if="!isPresetLoading" class="button-top" href="#" @click.prevent="imp = !imp">Import</a>
                     <LoadingComponent v-else/>
                     <div v-if="imp" class="dd-import">
-                        <p class="preset" v-for="preset in presets" @click="onImport(preset.url)">
+                        <p class="preset" v-for="preset in presets" @click="onImport(preset)">
                             {{preset.name}}
                         </p>
                     </div>
@@ -120,10 +120,18 @@ export default {
         onUpload(file) {
             this.$store.dispatch('uploadZip', file);
         },
-        async onImport(url) {
+        async onImport(preset) {
             this.imp = false;
-            await this.$store.dispatch('importPreset', url);
-            // this.$router.push()
+            this.$store.commit('setStateEntry', {
+                key: 'persistUrl',
+                value: true
+            });
+            await this.$router.push({
+                query: {
+                    preset: preset.name
+                }
+            });
+            await this.$store.dispatch('importPreset', preset.url);
         },
         async onExport() {
             this.isExporting = true;

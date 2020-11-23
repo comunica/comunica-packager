@@ -54,6 +54,7 @@ function getDefaultState() {
         appConfig: null,
         currConnectedObjects: [],
         currConnectedSets: [],
+        persistUrl: true
     }
 }
 
