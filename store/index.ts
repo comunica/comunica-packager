@@ -54,7 +54,8 @@ function getDefaultState() {
         appConfig: null,
         currConnectedObjects: [],
         currConnectedSets: [],
-        persistUrl: true
+        persistUrl: true,
+        initialLoad: false
     }
 }
 
@@ -170,8 +171,6 @@ export const mutations = {
         state.author = '';
         state.prefix = 'files-ex';
         state.description = '';
-
-        console.log(this);
     },
 
     setIsPresetLoading(state: any, value: boolean) {
