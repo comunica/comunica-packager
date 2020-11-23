@@ -26,62 +26,67 @@ export function handleParameters(normalizedContext: any, parametersAll: any, par
 
 export default async ({$axios, store}: Context) => {
 
-    const appConfig = await $axios.$get('/comunica-packager/app-config.json');
-    store.commit('setStateEntry', {key: 'appConfig', value: appConfig});
+    if (!store.state.initialLoad) {
+        const appConfig = await $axios.$get('/comunica-packager/app-config.json');
+        store.commit('setStateEntry', {key: 'appConfig', value: appConfig});
 
-    // Retrieve the list of all Comunica related packages
+        // Retrieve the list of all Comunica related packages
 
-    const packageNames: any = [];
+        const packageNames: any = [];
 
-    for (const packageUrl of appConfig['packageUrls']) {
-        const packages = await $axios.$get(`https://api.github.com/repos/${packageUrl}/contents/packages?ref=master`);
-        packageNames.push.apply(packageNames, packages.map((p: Package) => p.name));
-    }
+        console.log('test');
 
-    packageNames.push.apply(packageNames, appConfig['actors']);
+        $axios.setToken('temp:temp', 'Basic');
 
-    const buses = packageNames.filter((p: string) => p.substring(0, 3) === 'bus').map((p: string) => p.substring(4));
-    const mediatorPackages = packageNames.filter((p: string) => p.startsWith('mediator-'));
-    const loggerPackages = packageNames.filter((p: string) => p.startsWith('logger-'));
-    const inits = packageNames.filter((p: string) => p.includes('actor-init'));
-    const ignoreInits: any[] = [];
+        for (const packageUrl of appConfig['packageUrls']) {
+            const packages = await $axios.$get(`https://api.github.com/repos/${packageUrl}/contents/packages?ref=master`);
+            packageNames.push.apply(packageNames, packages.map((p: Package) => p.name));
+        }
 
-    for (const i of inits) {
-        const actorPart = kebabCaseToPascalCase(i.substring(11));
-        const g = `https://linkedsoftwaredependencies.org/bundles/npm/@comunica/${i}/^1.0.0/components/Actor/Init/${actorPart}.jsonld`
+        $axios.setToken(false);
 
-        await $axios.$get(g).catch((error: any) => {
-            ignoreInits.push(i);
-        });
-    }
+        packageNames.push.apply(packageNames, appConfig['actors']);
 
-    let busGroups: any = [];
-    // Avoid actors being added to multiple bus types
-    let usedActors = new Set();
+        const buses = packageNames.filter((p: string) => p.substring(0, 3) === 'bus').map((p: string) => p.substring(4));
+        const mediatorPackages = packageNames.filter((p: string) => p.startsWith('mediator-'));
+        const loggerPackages = packageNames.filter((p: string) => p.startsWith('logger-'));
+        const inits = packageNames.filter((p: string) => p.includes('actor-init'));
 
-    for (const b of buses) {
-        let busGroup: any = {
-            busGroupName: kebabCaseToPascalCase(b)
-        };
-        let actors = packageNames
+        let busGroups: any = [];
+        // Avoid actors being added to multiple bus types
+        let usedActors = new Set();
+
+        for (const b of buses) {
+            let busGroup: any = {
+                busGroupName: kebabCaseToPascalCase(b)
+            };
+            let actors = packageNames
                 .filter((p: string) => p.startsWith(`actor-${b}`))
-                .filter((p: string) => !ignoreInits.includes(p))
                 .map(kebabCaseToPascalCase)
                 .filter((a: any) => !usedActors.has(a));
-        actors.forEach((a: any) => usedActors.add(a));
-        busGroup.actors = actors;
-        busGroups.push(busGroup);
+            actors.forEach((a: any) => usedActors.add(a));
+            busGroup.actors = actors;
+            busGroups.push(busGroup);
+        }
+
+        store.commit('setStateEntry', {
+            key: 'inits',
+            value: inits
+        })
+
+        store.commit('addBusGroups', busGroups);
+
+        store.commit('addMediatorPackages', mediatorPackages);
+
+        store.commit('addLoggers', loggerPackages.map(kebabCaseToPascalCase));
+
+        store.commit('addBuses', buses.map((bus: string) => {
+            let prefix = 'cb' + bus.split('-').map(x => x[0]).join('');
+            return `${prefix}:Bus/${kebabCaseToPascalCase(bus)}`
+        }));
+        store.commit('setStateEntry', {key: 'isPresetLoading', value: false});
+        store.commit('setStateEntry', {key: 'initialLoad', value: true});
     }
 
-    store.commit('addBusGroups', busGroups);
 
-    store.commit('addMediatorPackages', mediatorPackages);
-
-    store.commit('addLoggers', loggerPackages.map(kebabCaseToPascalCase));
-
-    store.commit('addBuses', buses.map((bus: string) => {
-        let prefix = 'cb' + bus.split('-').map(x => x[0]).join('');
-        return `${prefix}:Bus/${kebabCaseToPascalCase(bus)}`
-    }));
-    store.commit('setStateEntry', {key: 'isPresetLoading', value: false});
 }

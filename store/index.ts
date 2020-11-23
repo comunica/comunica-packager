@@ -40,6 +40,7 @@ function getDefaultState() {
         createdMediators: [],
         loggers: [],
         buses: [],
+        inits: [],
         context: {
             'default': _.cloneDeep(baseContext),
         },
@@ -53,6 +54,8 @@ function getDefaultState() {
         appConfig: null,
         currConnectedObjects: [],
         currConnectedSets: [],
+        persistUrl: true,
+        initialLoad: false
     }
 }
 
@@ -125,7 +128,7 @@ export const mutations = {
 
     addSet(state: any, set: any) {
         state.sets.push(set);
-        state.context[set.name] = []
+        state.context[set.name] = [];
     },
 
     setSelectedSet(state: any, set: string) {
@@ -151,6 +154,11 @@ export const mutations = {
         });
 
         delete state.context[set];
+
+        if (state.persistUrl) {
+            (this as any).$router.replace('/');
+            state.persistUrl = false;
+        }
     },
 
     resetState(state: any) {
@@ -168,6 +176,7 @@ export const mutations = {
         state.author = '';
         state.prefix = 'files-ex';
         state.description = '';
+        state.persistUrl = true;
     },
 
     setIsPresetLoading(state: any, value: boolean) {
@@ -209,6 +218,10 @@ export const mutations = {
         state.sets.forEach((item: any, index: number) => {
             if (item.name === state.currentSet) state.sets[index].edited = true;
         });
+        if (state.persistUrl) {
+            (this as any).$router.replace('/');
+            state.persistUrl = false;
+        }
     },
 
     changeParameterValueOfMediator(state: any, payload: any) {
@@ -237,6 +250,10 @@ export const mutations = {
         state.sets.forEach((item: any, index: number) => {
             if (item.name === state.currentSet) state.sets[index].edited = true;
         });
+        if (state.persistUrl) {
+            (this as any).$router.replace('/');
+            state.persistUrl = false;
+        }
     },
 
     addParametersToActor(state: any, payload: any) {

@@ -4,29 +4,18 @@
             <LogoComponent/>
             <div id="input">
                 <div id="buttons">
-                    <a v-if="!isPresetLoading" class="button-top" href="#" @click.prevent="imp = !imp">Import</a>
+                    <a v-if="!isPresetLoading" class="button-top" href="#" @click.prevent="imp = !imp">Import config</a>
                     <LoadingComponent v-else/>
                     <div v-if="imp" class="dd-import">
-                        <p class="preset" v-for="preset in presets" @click="onImport(preset.url)">
+                        <p class="preset" v-for="preset in presets" @click="onImport(preset)">
                             {{preset.name}}
                         </p>
                     </div>
                     <LoadingComponent v-if="isExporting"/>
-                    <a class="button-top" href="#" v-else @click.prevent="onExport">Export</a>
-                    <FileInputComponent text="Upload" @click="onUpload"/>
+                    <a class="button-top" href="#" v-else @click.prevent="onExport">Export config</a>
+                    <FileInputComponent text="Upload config" @click="onUpload"/>
                     <a class="button-top" href="#" @click.prevent="onReset">Reset</a>
                 </div>
-<!--                <div v-if="imp" id="preset-selector" class="dropdown-layout">-->
-<!--                    <DropdownComponent-->
-<!--                        v-model="actorLink"-->
-<!--                        :options="presets"-->
-<!--                        placeholder="Choose preset"-->
-<!--                        label="name"-->
-<!--                        reduce="url"-->
-<!--                    />-->
-<!--                    <ButtonComponent v-if="!isPresetLoading" :disabled="!actorLink" :is-small="true" text="Import" @click="onImport"/>-->
-<!--                    <LoadingComponent v-else/>-->
-<!--                </div>-->
             </div>
         </nav>
         <div id="sidebar">
@@ -131,10 +120,21 @@ export default {
         onUpload(file) {
             this.$store.dispatch('uploadZip', file);
         },
-        async onImport(url) {
+        async onImport(preset) {
             this.imp = false;
-            await this.$store.dispatch('importPreset', url);
-            // this.$router.push()
+            this.$store.commit('setStateEntry', {
+                key: 'persistUrl',
+                value: true
+            });
+            let currQuery = _.cloneDeep(this.$router.currentRoute.query);
+            if (currQuery.preset !== preset.name) {
+                currQuery.preset = preset.name;
+                await this.$router.replace({
+                    query:  currQuery
+                });
+            }
+
+            await this.$store.dispatch('importPreset', preset.url);
         },
         async onExport() {
             this.isExporting = true;
@@ -220,6 +220,25 @@ export default {
         this.areMediatorsFetched = true;
         localStorage.setItem('areMediatorsFetched', 'true');
 
+        const currQuery = this.$route.query;
+        if (currQuery.preset) {
+            this.$store.commit('setStateEntry', {
+                key: 'isPresetLoading',
+                value: true
+            });
+            for (const preset of this.presets) {
+                if (preset.name === currQuery.preset) {
+                    await this.onImport(preset);
+                    if (currQuery.set) {
+                        this.$store.commit('setSelectedSet', currQuery.set);
+                    }
+                }
+            }
+            this.$store.commit('setStateEntry', {
+                key: 'isPresetLoading',
+                value: false
+            });
+        }
     }
 }
 </script>
@@ -263,7 +282,6 @@ export default {
     #body {
         margin-top: 75px;
         margin-left: max(15vw, 250px);
-        //margin-bottom: max(5vh, 40px);
         flex: 1;
         color: black;
         background-color: white;
@@ -316,8 +334,6 @@ export default {
     }
 
     #footer {
-        //position: fixed;
-        //bottom: 0;
         width: 100%;
         text-align: center;
         height: max(5vh, 40px);

@@ -41,6 +41,13 @@
             },
             onClick(set) {
                 this.$store.commit('setSelectedSet', set.name);
+                if (this.$store.state.persistUrl) {
+                    let currQuery = _.cloneDeep(this.$router.currentRoute.query);
+                    currQuery.set = set.name
+                    this.$router.replace({
+                        query:  currQuery
+                    });
+                }
             },
             onDelete(set) {
 

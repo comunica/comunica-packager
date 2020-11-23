@@ -53,6 +53,13 @@
                     set: this.$store.state.currentSet
                 });
                 this.$store.commit('setEditedOfSet', this.$store.state.currentSet);
+                if (this.$store.state.persistUrl) {
+                    this.$router.replace('/');
+                    this.$store.commit('setStateEntry', {
+                        key: 'persistUrl',
+                        value: false,
+                    });
+                }
             },
             onDelete(mediator) {
                 this.$modal.show(ModalComponent, {
@@ -69,6 +76,13 @@
                     value: value
                 });
                 this.$store.commit('setEditedOfSet', this.$store.state.currentSet);
+                if (this.$store.state.persistUrl) {
+                    this.$router.replace('/');
+                    this.$store.commit('setStateEntry', {
+                        key: 'persistUrl',
+                        value: false,
+                    });
+                }
             },
             onChangeID(currentID, newID) {
                 this.$store.commit('changeIDOfMediator', {
@@ -76,6 +90,13 @@
                     newID: newID
                 });
                 this.$store.commit('setEditedOfSet', this.$store.state.currentSet);
+                if (this.$store.state.persistUrl) {
+                    this.$router.replace('/');
+                    this.$store.commit('setStateEntry', {
+                        key: 'persistUrl',
+                        value: false,
+                    });
+                }
             }
         }
     }
