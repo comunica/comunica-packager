@@ -4,7 +4,7 @@
             <LogoComponent/>
             <div id="input">
                 <div id="buttons">
-                    <a v-if="!isPresetLoading" class="button-top" href="#" @click.prevent="imp = !imp">Import</a>
+                    <a v-if="!isPresetLoading" class="button-top" href="#" @click.prevent="imp = !imp">Import config</a>
                     <LoadingComponent v-else/>
                     <div v-if="imp" class="dd-import">
                         <p class="preset" v-for="preset in presets" @click="onImport(preset)">
@@ -12,8 +12,8 @@
                         </p>
                     </div>
                     <LoadingComponent v-if="isExporting"/>
-                    <a class="button-top" href="#" v-else @click.prevent="onExport">Export</a>
-                    <FileInputComponent text="Upload" @click="onUpload"/>
+                    <a class="button-top" href="#" v-else @click.prevent="onExport">Export config</a>
+                    <FileInputComponent text="Upload config" @click="onUpload"/>
                     <a class="button-top" href="#" @click.prevent="onReset">Reset</a>
                 </div>
             </div>
@@ -126,10 +126,10 @@ export default {
                 key: 'persistUrl',
                 value: true
             });
+            let currQuery = _.cloneDeep(this.$router.currentRoute.query);
+            currQuery.preset = preset.name;
             await this.$router.push({
-                query: {
-                    preset: preset.name
-                }
+                query:  currQuery
             });
             await this.$store.dispatch('importPreset', preset.url);
         },
@@ -217,6 +217,25 @@ export default {
         this.areMediatorsFetched = true;
         localStorage.setItem('areMediatorsFetched', 'true');
 
+        const currQuery = this.$route.query;
+        if (currQuery.preset) {
+            this.$store.commit('setStateEntry', {
+                key: 'isPresetLoading',
+                value: true
+            });
+            for (const preset of this.presets) {
+                if (preset.name === currQuery.preset) {
+                    await this.onImport(preset);
+                    if (currQuery.set) {
+                        this.$store.commit('setSelectedSet', currQuery.set);
+                    }
+                }
+            }
+            this.$store.commit('setStateEntry', {
+                key: 'isPresetLoading',
+                value: false
+            });
+        }
     }
 }
 </script>

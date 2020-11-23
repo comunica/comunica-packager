@@ -33,10 +33,14 @@ export default async ({$axios, store}: Context) => {
 
     const packageNames: any = [];
 
+    $axios.setToken('temp:temp', 'Basic');
+
     for (const packageUrl of appConfig['packageUrls']) {
         const packages = await $axios.$get(`https://api.github.com/repos/${packageUrl}/contents/packages?ref=master`);
         packageNames.push.apply(packageNames, packages.map((p: Package) => p.name));
     }
+
+    $axios.setToken(false);
 
     packageNames.push.apply(packageNames, appConfig['actors']);
 

@@ -170,6 +170,8 @@ export const mutations = {
         state.author = '';
         state.prefix = 'files-ex';
         state.description = '';
+
+        console.log(this);
     },
 
     setIsPresetLoading(state: any, value: boolean) {
