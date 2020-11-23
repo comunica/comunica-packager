@@ -128,7 +128,7 @@ export default {
             });
             let currQuery = _.cloneDeep(this.$router.currentRoute.query);
             currQuery.preset = preset.name;
-            await this.$router.push({
+            await this.$router.replace({
                 query:  currQuery
             });
             await this.$store.dispatch('importPreset', preset.url);

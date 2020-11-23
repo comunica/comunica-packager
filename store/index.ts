@@ -128,7 +128,7 @@ export const mutations = {
 
     addSet(state: any, set: any) {
         state.sets.push(set);
-        state.context[set.name] = []
+        state.context[set.name] = [];
     },
 
     setSelectedSet(state: any, set: string) {
@@ -154,6 +154,11 @@ export const mutations = {
         });
 
         delete state.context[set];
+
+        if (state.persistUrl) {
+            (this as any).$router.push('/');
+            state.persistUrl = false;
+        }
     },
 
     resetState(state: any) {
@@ -171,6 +176,7 @@ export const mutations = {
         state.author = '';
         state.prefix = 'files-ex';
         state.description = '';
+        state.persistUrl = true;
     },
 
     setIsPresetLoading(state: any, value: boolean) {
@@ -205,6 +211,10 @@ export const mutations = {
         const createdMediators = state.createdMediators;
         createdMediators.push(mediator);
         Vue.set(state, 'createdMediators', createdMediators);
+        if (state.persistUrl) {
+            (this as any).$router.replace('/');
+            state.persistUrl = false;
+        }
     },
 
     deleteMediator(state: any, mediator: string) {
@@ -212,16 +222,28 @@ export const mutations = {
         state.sets.forEach((item: any, index: number) => {
             if (item.name === state.currentSet) state.sets[index].edited = true;
         });
+        if (state.persistUrl) {
+            (this as any).$router.replace('/');
+            state.persistUrl = false;
+        }
     },
 
     changeParameterValueOfMediator(state: any, payload: any) {
         const indexMediator = state.createdMediators.findIndex((x: any) => x['@id'] === payload['@id']);
         state.createdMediators[indexMediator].parameters[payload.parameterName].value = payload.value;
+        if (state.persistUrl) {
+            (this as any).$router.replace('/');
+            state.persistUrl = false;
+        }
     },
 
     changeIDOfMediator(state: any, payload: any) {
         const indexMediator = state.createdMediators.findIndex((x: any) => x['@id'] === payload.currentID);
         state.createdMediators[indexMediator]['@id'] = payload.newID;
+        if (state.persistUrl) {
+            (this as any).$router.replace('/');
+            state.persistUrl = false;
+        }
     },
 
     /**
@@ -233,6 +255,10 @@ export const mutations = {
         updatedAddedActors.push(payload.actor);
         delete state.createdActors[payload.busGroup];
         Vue.set(state.createdActors, payload.busGroup, updatedAddedActors);
+        if (state.persistUrl) {
+            (this as any).$router.replace('/');
+            state.persistUrl = false;
+        }
     },
 
     deleteActor(state: any, payload: any) {
@@ -240,6 +266,10 @@ export const mutations = {
         state.sets.forEach((item: any, index: number) => {
             if (item.name === state.currentSet) state.sets[index].edited = true;
         });
+        if (state.persistUrl) {
+            (this as any).$router.replace('/');
+            state.persistUrl = false;
+        }
     },
 
     addParametersToActor(state: any, payload: any) {
@@ -263,12 +293,20 @@ export const mutations = {
         const indexActor = currentBusGroup.findIndex((x: any) => x['@id'] === payload['@id']);
 
         state.createdActors[payload.busGroup][indexActor].parameters[payload.parameterName].value = payload.value;
+        if (state.persistUrl) {
+            (this as any).$router.replace('/');
+            state.persistUrl = false;
+        }
     },
 
     changeIDOfActor(state: any, payload: any) {
         const currentBusGroup = state.createdActors[payload.busGroup];
         const indexActor = currentBusGroup.findIndex((x: any) => x['@id'] === payload.currentID);
         state.createdActors[payload.busGroup][indexActor]['@id'] = payload.newID;
+        if (state.persistUrl) {
+            (this as any).$router.replace('/');
+            state.persistUrl = false;
+        }
     }
 }
 
