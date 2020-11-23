@@ -255,10 +255,6 @@ export const mutations = {
         updatedAddedActors.push(payload.actor);
         delete state.createdActors[payload.busGroup];
         Vue.set(state.createdActors, payload.busGroup, updatedAddedActors);
-        if (state.persistUrl) {
-            (this as any).$router.replace('/');
-            state.persistUrl = false;
-        }
     },
 
     deleteActor(state: any, payload: any) {
@@ -293,20 +289,12 @@ export const mutations = {
         const indexActor = currentBusGroup.findIndex((x: any) => x['@id'] === payload['@id']);
 
         state.createdActors[payload.busGroup][indexActor].parameters[payload.parameterName].value = payload.value;
-        if (state.persistUrl) {
-            (this as any).$router.replace('/');
-            state.persistUrl = false;
-        }
     },
 
     changeIDOfActor(state: any, payload: any) {
         const currentBusGroup = state.createdActors[payload.busGroup];
         const indexActor = currentBusGroup.findIndex((x: any) => x['@id'] === payload.currentID);
         state.createdActors[payload.busGroup][indexActor]['@id'] = payload.newID;
-        if (state.persistUrl) {
-            (this as any).$router.replace('/');
-            state.persistUrl = false;
-        }
     }
 }
 

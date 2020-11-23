@@ -53,6 +53,13 @@
 
                 this.selectedActor = null;
                 this.$store.commit('setEditedOfSet', this.$store.state.currentSet);
+                if (this.$store.state.persistUrl) {
+                    await this.$router.replace('/');
+                    this.$store.commit('setStateEntry', {
+                        key: 'persistUrl',
+                        value: false,
+                    });
+                }
 
             }
         },
