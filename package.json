@@ -8,7 +8,9 @@
     "dev": "nuxt-ts",
     "build": "nuxt-ts build",
     "generate": "nuxt-ts generate",
-    "start": "nuxt-ts start"
+    "start": "nuxt-ts start",
+    "test": "jest",
+    "cy:run": "cypress run"
   },
   "dependencies": {
     "@nuxt/typescript-runtime": "^0.4.0",
@@ -29,6 +31,11 @@
   "devDependencies": {
     "@nuxt/typescript-build": "^0.6.0",
     "@nuxtjs/vuetify": "^1.0.0",
-    "@types/lodash": "^4.14.152"
+    "@types/lodash": "^4.14.152",
+    "babel-jest": "^26.6.3",
+    "cypress": "^6.0.0",
+    "jest": "^26.6.3",
+    "vue-jest": "^3.0.7",
+    "vue-test-utils": "^1.0.0-beta.11"
   }
 }
