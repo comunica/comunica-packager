@@ -82,17 +82,18 @@ export function handleMediator(normalizedContext: any, mediator: any, mediators:
 export async function defaultJsonld(state: any) {
     let normalizedContext = await parseContext([...state.context['default']]);
     let jsonld: any = await stateToJsonld(state, 'default');
-    jsonld['@type'] = 'Runner';
+    jsonld['@graph'][0]['@type'] = 'Runner';
     if (state.sets.length > 1) {
-        jsonld.import = [];
+        let imports: any = [];
         state.sets.forEach((set: any) => {
             if (set.name !== 'default') {
                 if (set.url && !set.edited)
-                    jsonld.import.push(getCompactedIRI(normalizedContext, set.url));
+                    imports.push(getCompactedIRI(normalizedContext, set.url));
                 else
-                    jsonld.import.push(state.prefix + ':config/sets/' + set.name + '.json');
+                    imports.push(state.prefix + ':config/sets/' + set.name + '.json');
             }
         });
+        jsonld['@graph'][0].import = imports;
     }
 
     return jsonld;

@@ -90,5 +90,5 @@ sw.*
 *.swp
 
 # Cypress
-cypress/integration/examples
+cypress/integration/examples/
 cypress/videos/*

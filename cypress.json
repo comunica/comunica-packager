@@ -1,3 +1,4 @@
 {
-  "ignoreTestFiles": "**/examples/*.spec.js"
+  "ignoreTestFiles": "**/examples/*.spec.js",
+  "baseUrl": "http://localhost:3000/comunica-packager"
 }
