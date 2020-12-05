@@ -92,3 +92,4 @@ sw.*
 # Cypress
 cypress/integration/examples/
 cypress/videos/*
+cypress/downloads
