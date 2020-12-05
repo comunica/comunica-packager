@@ -10,7 +10,7 @@
     "generate": "nuxt-ts generate",
     "start": "nuxt-ts start",
     "test": "jest",
-    "cy:run": "cypress run"
+    "cy:run": "cypress run --browser firefox --headless"
   },
   "dependencies": {
     "@nuxt/typescript-runtime": "^0.4.0",

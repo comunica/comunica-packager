@@ -12,10 +12,31 @@
 // This function is called when a project is opened or re-opened (e.g. due to
 // the project's config changing)
 
+const path = require('path');
+
 /**
  * @type {Cypress.PluginConfig}
  */
 module.exports = (on, config) => {
   // `on` is used to hook into various events Cypress emits
   // `config` is the resolved Cypress config
+    on('before:browser:launch', (browser, options) => {
+        const downloadDirectory = path.join(__dirname, '..', 'downloads')
+
+        if (browser.family === 'chromium' && browser.name !== 'electron') {
+            options.preferences.default['download'] = { default_directory: downloadDirectory }
+
+            return options
+        }
+
+        if (browser.family === 'firefox') {
+            options.preferences['browser.download.dir'] = downloadDirectory
+            options.preferences['browser.download.folderList'] = 2
+
+            // needed to prevent download prompt for text/csv files.
+            options.preferences['browser.helperApps.neverAsk.saveToDisk'] = 'text/csv'
+
+            return options
+        }
+    })
 }
