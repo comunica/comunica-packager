@@ -9,7 +9,8 @@
     "build": "nuxt-ts build",
     "generate": "nuxt-ts generate",
     "start": "nuxt-ts start",
-    "test": "jest",
+    "test": "nuxt-ts &",
+    "jest:test": "jest",
     "cy:run": "cypress run --browser firefox --headless"
   },
   "dependencies": {
