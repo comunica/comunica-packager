@@ -3,7 +3,6 @@ node_js:
   - "10"
 install:
   - npm install
-  - npm run generate
 script:
   - echo "Starting tests"
   # Test
@@ -11,11 +10,13 @@ script:
   # Run cypress tests
   - npm run cy:run
   # Stop development local server
-  - kill $(job -p) || true
+  - kill $(jobs -p) || true
+  - npm run generate
 cache:
   directories:
     - node_modules
-    - ~/.cache/Cypress
+    - ~/.npm
+    - ~/.cache
 deploy:
   provider: pages
   skip-cleanup: tru
