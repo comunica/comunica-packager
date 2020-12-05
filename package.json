@@ -11,6 +11,8 @@
     "start": "nuxt-ts start",
     "test": "nuxt-ts &",
     "jest:test": "jest",
+    "cy:verify": "cypress verify",
+    "cy:info": "cypress info",
     "cy:run": "cypress run --browser firefox --headless"
   },
   "dependencies": {
