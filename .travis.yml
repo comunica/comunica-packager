@@ -2,10 +2,9 @@ language: node_js
 node_js:
   - "10"
 install:
-  - npm install
-script:
-  # Cypress setup
   - npm ci
+script:
+  # Cypress verification
   - npm run cy:verify
   - npm run cy:info
   # Test
@@ -14,6 +13,7 @@ script:
   - npm run cy:run
   # Stop development local server
   - kill $(jobs -p) || true
+  # Run generate for deployment
   - npm run generate
 cache:
   directories:

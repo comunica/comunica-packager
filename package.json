@@ -13,7 +13,7 @@
     "jest:test": "jest",
     "cy:verify": "cypress verify",
     "cy:info": "cypress info",
-    "cy:run": "cypress run --browser firefox --headless"
+    "cy:run": "cypress run --browser chrome"
   },
   "dependencies": {
     "@nuxt/typescript-runtime": "^0.4.0",
