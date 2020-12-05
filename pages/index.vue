@@ -4,7 +4,7 @@
             <LogoComponent/>
             <div id="input">
                 <div id="buttons">
-                    <a id="import-conf" v-if="!isPresetLoading" class="button-top" href="#" @click.prevent="imp = !imp">Import config</a>
+                    <a  id="import-conf" v-if="!isPresetLoading" class="button-top" href="#" @click.prevent="imp = !imp">Import config</a>
                     <LoadingComponent v-else/>
                     <div v-if="imp" class="dd-import">
                         <p class="preset" v-for="preset in presets" @click="onImport(preset)">
@@ -133,6 +133,8 @@ export default {
                     query:  currQuery
                 });
             }
+
+            while(!this.areMediatorsFetched);
 
             await this.$store.dispatch('importPreset', preset.url);
         },

@@ -7,10 +7,10 @@ describe('The home (index) page', () => {
 
         cy.visit('/');
         // Wait 10 seconds to load everything in
-        cy.wait(10000);
+        cy.wait(30000);
         cy.get('#import-conf').click();
         cy.contains('Comunica SPARQL').click();
-        cy.wait(11000);
+        cy.wait(30000);
         cy.get('#export-conf').click();
         cy.wait(500);
         // Assert if file exists
