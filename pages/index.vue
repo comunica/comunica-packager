@@ -134,8 +134,6 @@ export default {
                 });
             }
 
-            while(!this.areMediatorsFetched);
-
             await this.$store.dispatch('importPreset', preset.url);
         },
         async onExport() {
