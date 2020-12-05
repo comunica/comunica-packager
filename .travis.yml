@@ -5,7 +5,13 @@ install:
   - npm install
   - npm run generate
 script:
-  - echo "No tests"
+  - echo "Starting tests"
+  # Start development local server
+  - npm run dev
+  # Run cypress tests
+  - npm run cy:run
+  # Stop development local server
+  - kill $(job -p) || true
 cache:
   directories:
     - node_modules
