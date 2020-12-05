@@ -12,7 +12,6 @@ describe('The home (index) page', () => {
             (x) => {
                 let zip = new JSZip();
                 zip.loadAsync(x).then(async (z) => {
-                    console.log(z);
                 })
             }
         );

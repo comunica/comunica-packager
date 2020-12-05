@@ -6,8 +6,10 @@ install:
   - npm run generate
 script:
   - echo "Starting tests"
-  # Start development local server
-  - npm run dev
+  # Build locally
+  - npm run build
+  # Serve locally
+  - npm run start
   # Run cypress tests
   - npm run cy:run
   # Stop development local server
