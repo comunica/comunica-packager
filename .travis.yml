@@ -7,7 +7,7 @@ install:
 script:
   - echo "Starting tests"
   # Test
-  - npm run dev
+  - npm run test
   # Run cypress tests
   - npm run cy:run
   # Stop development local server
