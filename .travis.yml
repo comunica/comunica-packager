@@ -15,7 +15,8 @@ script:
 cache:
   directories:
     - node_modules
-    - .cache
+    - ~/.npm
+    - ~/.cache
 deploy:
   provider: pages
   skip-cleanup: true
