@@ -6,8 +6,11 @@ describe('The home (index) page', () => {
         const downloadDirectory = path.join(__dirname, '..', 'downloads');
 
         cy.visit('/');
-        // Wait 10 seconds to load everything in
+        // Wait 30 seconds to load everything in
+        cy.get('#mediators').should('not.exist');
         cy.wait(30000);
+        // If #mediators exists then mediators are loaded.
+        cy.get('#mediators').should('exist');
         cy.get('#import-conf').click();
         cy.contains('Comunica SPARQL').click();
         cy.wait(30000);
