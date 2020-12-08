@@ -19,7 +19,7 @@
     "testPathIgnorePatterns": [
       "<rootDir>/cypress"
     ],
-    "testTimeout": 10000
+    "testTimeout": 30000
   },
   "dependencies": {
     "@nuxt/typescript-runtime": "^0.4.0",
