@@ -11,6 +11,8 @@ script:
   - npm run test
   # Run cypress tests
   - npm run cy:run
+  # Run jest tests
+  - npm run jest:test
   # Stop development local server
   - kill $(jobs -p) || true
   # Run generate for deployment
