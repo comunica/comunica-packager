@@ -5,7 +5,7 @@
         <p class="text text-small">{{question}}</p>
         <div id="buttons">
             <ButtonComponent text="Cancel" :is-small="true" @click="$emit('close')"/>
-            <ButtonComponent text="Confirm" :is-small="true" @click="confirm()"/>
+            <ButtonComponent id="confirm" text="Confirm" :is-small="true" @click="confirm()"/>
         </div>
     </div>
 </template>

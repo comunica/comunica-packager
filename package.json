@@ -10,10 +10,16 @@
     "generate": "nuxt-ts generate",
     "start": "nuxt-ts start",
     "test": "nuxt-ts &",
-    "jest:test": "jest",
+    "jest:test": "jest --detectOpenHandles",
     "cy:verify": "cypress verify",
     "cy:info": "cypress info",
     "cy:run": "cypress run --browser chrome"
+  },
+  "jest": {
+    "testPathIgnorePatterns": [
+      "<rootDir>/cypress"
+    ],
+    "testTimeout": 10000
   },
   "dependencies": {
     "@nuxt/typescript-runtime": "^0.4.0",
