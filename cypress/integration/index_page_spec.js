@@ -1,8 +1,7 @@
-import JSZip from "jszip";
 const path = require('path');
 
 describe('The home (index) page', () => {
-    it('imports and successfully downloads config', () => {
+    it('imports and successfully downloads config', async () => {
         const downloadFolder = path.join(__dirname, '..', 'downloads');
         const zipFile = downloadFolder + '/engine.zip';
         const engineFolder = downloadFolder + '/engine/';
@@ -22,8 +21,9 @@ describe('The home (index) page', () => {
         cy.readFile(zipFile, 'binary');
         // Unzip file
         cy.exec('unzip -d ' + engineFolder + ' ' + zipFile);
-
-
+        const myEngine = await newEngineDynamic({
+            configResourceUrl: engineFolder + 'config/config-default.json'
+        });
 
         // Finally delete downloaded zip and unzipped folder
         cy.exec('rm ' + zipFile);

@@ -13,6 +13,7 @@
 // the project's config changing)
 
 const path = require('path');
+const newEngineDynamic = require('@comunica/actor-init-sparql').newEngineDynamic;
 
 /**
  * @type {Cypress.PluginConfig}

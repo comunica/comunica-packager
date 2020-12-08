@@ -32,6 +32,7 @@
     "webpack": "^4.43.0"
   },
   "devDependencies": {
+    "@comunica/actor-init-sparql": "^1.18.1",
     "@nuxt/typescript-build": "^0.6.0",
     "@nuxtjs/vuetify": "^1.0.0",
     "@types/lodash": "^4.14.152",
