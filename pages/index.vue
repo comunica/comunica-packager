@@ -4,7 +4,7 @@
             <LogoComponent/>
             <div id="input">
                 <div id="buttons">
-                    <a v-if="!isPresetLoading" class="button-top" href="#" @click.prevent="imp = !imp">Import config</a>
+                    <a  id="import-conf" v-if="!isPresetLoading" class="button-top" href="#" @click.prevent="imp = !imp">Import config</a>
                     <LoadingComponent v-else/>
                     <div v-if="imp" class="dd-import">
                         <p class="preset" v-for="preset in presets" @click="onImport(preset)">
@@ -12,9 +12,9 @@
                         </p>
                     </div>
                     <LoadingComponent v-if="isExporting"/>
-                    <a class="button-top" href="#" v-else @click.prevent="onExport">Export config</a>
+                    <a id="export-conf" class="button-top" href="#" v-else @click.prevent="onExport">Export config</a>
                     <FileInputComponent text="Upload config" @click="onUpload"/>
-                    <a class="button-top" href="#" @click.prevent="onReset">Reset</a>
+                    <a id="reset-conf" class="button-top" href="#" @click.prevent="onReset">Reset</a>
                 </div>
             </div>
         </nav>

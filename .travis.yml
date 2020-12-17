@@ -2,16 +2,29 @@ language: node_js
 node_js:
   - "10"
 install:
-  - npm install
-  - npm run generate
+  - npm ci
 script:
-  - echo "No tests"
+  # Cypress verification
+  - npm run cy:verify
+  - npm run cy:info
+  # Test
+  - npm run test
+  # Run cypress tests
+  - npm run cy:run
+  # Run jest tests
+  - npm run jest:test
+  # Stop development local server
+  - kill $(jobs -p) || true
+  # Run generate for deployment
+  - npm run generate
 cache:
   directories:
     - node_modules
+    - ~/.npm
+    - ~/.cache
 deploy:
   provider: pages
-  skip-cleanup: true
+  skip-cleanup: tru
   github-token: $GITHUB_TOKEN
   target-branch: gh-pages
   local-dir: dist

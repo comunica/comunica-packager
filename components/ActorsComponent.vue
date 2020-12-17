@@ -1,6 +1,6 @@
 <template>
     <div v-if="areActorsFiltered">
-        <div class="box">
+        <div id="actors" class="box">
             <div class="dropdown-layout">
                 <DropdownComponent
                         v-model="selectedActor"

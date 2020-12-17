@@ -1,5 +1,5 @@
 <template>
-    <div class="box">
+    <div id="mediators" class="box">
         <div class="dropdown-layout">
             <DropdownComponent
                 v-model="selectedMediator"

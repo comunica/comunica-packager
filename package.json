@@ -8,7 +8,18 @@
     "dev": "nuxt-ts",
     "build": "nuxt-ts build",
     "generate": "nuxt-ts generate",
-    "start": "nuxt-ts start"
+    "start": "nuxt-ts start",
+    "test": "nuxt-ts &",
+    "jest:test": "jest --detectOpenHandles",
+    "cy:verify": "cypress verify",
+    "cy:info": "cypress info",
+    "cy:run": "cypress run --browser chrome"
+  },
+  "jest": {
+    "testPathIgnorePatterns": [
+      "<rootDir>/cypress"
+    ],
+    "testTimeout": 30000
   },
   "dependencies": {
     "@nuxt/typescript-runtime": "^0.4.0",
@@ -27,8 +38,14 @@
     "webpack": "^4.43.0"
   },
   "devDependencies": {
+    "@comunica/actor-init-sparql": "^1.18.1",
     "@nuxt/typescript-build": "^0.6.0",
     "@nuxtjs/vuetify": "^1.0.0",
-    "@types/lodash": "^4.14.152"
+    "@types/lodash": "^4.14.152",
+    "babel-jest": "^26.6.3",
+    "cypress": "^6.0.0",
+    "jest": "^26.6.3",
+    "vue-jest": "^3.0.7",
+    "vue-test-utils": "^1.0.0-beta.11"
   }
 }

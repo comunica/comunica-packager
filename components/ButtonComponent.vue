@@ -1,5 +1,5 @@
 <template>
-    <button :disabled="disabled" id="btn" :class="isSmall ? 'small ' : 'large'" @click="onClick($event)">
+    <button :disabled="disabled" :class="isSmall ? 'small btn' : 'large btn'" @click="onClick($event)">
         {{text}}
     </button>
 </template>
@@ -30,7 +30,7 @@
 </script>
 
 <style scoped lang="scss">
-    #btn {
+    .btn {
         color: white;
         text-align: center;
         border-radius: 8px;
