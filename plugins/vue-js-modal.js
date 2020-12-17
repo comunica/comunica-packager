@@ -5,7 +5,6 @@ import 'vue-js-modal/dist/styles.css'
 
 Vue.use(VModal, {
     dynamicDefaults: {
-        height: 'auto',
-        width: '20%'
+        height: 'auto'
     }
 });

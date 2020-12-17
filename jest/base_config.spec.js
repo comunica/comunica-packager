@@ -9,9 +9,10 @@ test('engine folder contains necessary files and subfolders', () => {
     expect(engineFolderFiles).toContain('package.json');
     expect(engineFolderFiles).toContain('.gitignore');
     expect(engineFolderFiles).toContain('.npmignore');
+    expect(engineFolderFiles).toContain('bin');
     expect(engineFolderFiles).toContain('config');
     expect(engineFolderFiles).toContain('components');
-    // TODO: check tsconfig file and other necessities
+    expect(engineFolderFiles).toContain('tsconfig.json');
 });
 
 test('config folder contains config-default.json', () => {
