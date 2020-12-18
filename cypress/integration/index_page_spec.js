@@ -36,11 +36,5 @@ describe('The home (index) page', () => {
         // Unzip the file for further testing
         cy.exec('unzip -d ' + engineFolder + ' ' + zipFile);
 
-        // const myEngine = newEngineDynamic();
-        //
-        // // Finally delete downloaded zip and unzipped folder
-        // cy.exec('rm ' + zipFile);
-        // cy.exec('rm -r ' + engineFolder);
-
     });
 });

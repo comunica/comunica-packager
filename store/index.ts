@@ -177,6 +177,7 @@ export const mutations = {
         state.prefix = 'files-ex';
         state.description = '';
         state.persistUrl = true;
+        (this as any).$router.replace('/');
     },
 
     setIsPresetLoading(state: any, value: boolean) {
@@ -556,8 +557,7 @@ export const actions = {
     },
 
     async importPreset({commit, dispatch, state}: any, presetLink: string) {
-        // First reset everything
-        commit('resetState');
+
         commit('setIsPresetLoading', true);
 
         const data = await (this as any).$axios.$get(presetLink);
