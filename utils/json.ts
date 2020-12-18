@@ -82,6 +82,9 @@ export function handleMediator(normalizedContext: any, mediator: any, mediators:
 export async function defaultJsonld(state: any) {
     let normalizedContext = await parseContext([...state.context['default']]);
     let jsonld: any = await stateToJsonld(state, 'default');
+    let prefixObj: any = {};
+    prefixObj[state.prefix] = "https://linkedsoftwaredependencies.org/bundles/npm/" + state.packageName + "/^1.0.0/"
+    jsonld['@context'].push(prefixObj);
     jsonld['@graph'][0]['@type'] = 'Runner';
     if (state.sets.length > 1) {
         let imports: any = [];

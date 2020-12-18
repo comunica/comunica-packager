@@ -1,4 +1,5 @@
 const path = require('path');
+const downloadFolder = path.join(__dirname, '..', 'downloads');
 
 describe('The home (index) page', () => {
     before(() => {
@@ -19,7 +20,6 @@ describe('The home (index) page', () => {
 
     it('imports preset and exports default config',  () => {
 
-        const downloadFolder = path.join(__dirname, '..', 'downloads');
         const zipFile = downloadFolder + '/engine.zip';
         const engineFolder = downloadFolder + '/engine/';
 
