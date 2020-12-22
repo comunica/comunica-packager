@@ -7,7 +7,7 @@ describe('The home (index) page', () => {
         // Mediators should load
         cy.get('#mediators').should('not.exist');
         // Wait enough seconds to load everything in
-        cy.wait(11000);
+        cy.wait(60000);
         // Mediators should be loaded
         cy.get('#mediators').should('exist');
     });
