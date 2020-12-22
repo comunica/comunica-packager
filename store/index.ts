@@ -410,6 +410,7 @@ export const actions = {
             .replace(/%description%/g, context.state.description));
         zip.file('.gitignore', appConfig['.gitignore']);
         zip.file('.npmignore', appConfig['.npmignore']);
+        zip.file('tsconfig.json', appConfig['tsconfig.json']);
         let config = zip.folder('config');
 
         if (context.state.sets.length > 1) {
