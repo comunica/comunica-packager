@@ -34,6 +34,7 @@ describe('The home (index) page', () => {
         // Wait 2 seconds
         cy.wait(2000);
         // Unzip the file for further testing
+        cy.exec('ls ' + downloadFolder);
         cy.exec('unzip -d ' + engineFolder + ' ' + zipFile);
 
     });
