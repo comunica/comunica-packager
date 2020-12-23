@@ -1,5 +1,5 @@
 const path = require('path');
-const isCI = process.env.CI || process.env.CONTINOUS_INTEGRATION;
+const isCI = Cypress.env('IS_CI');
 
 describe('The home (index) page', () => {
     before(() => {

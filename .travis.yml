@@ -3,6 +3,8 @@ node_js:
   - "10"
 install:
   - npm ci
+env:
+  - CYPRESS_IS_CI=true
 script:
   # Cypress verification
   - npm run cy:verify
