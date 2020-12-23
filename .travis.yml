@@ -13,8 +13,6 @@ script:
   - npm run test
   # Run cypress tests
   - npm run cy:run
-  - ls
-  - ls cypress/
   - ls cypress/downloads
   # Run jest tests
   - npm run jest:test

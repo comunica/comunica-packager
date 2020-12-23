@@ -21,14 +21,9 @@ describe('The home (index) page', () => {
 
     it('imports preset and exports default config',  () => {
 
-        const downloadFolder = isCI ? '/home/travis/build/comunica/comunica-packager/cypress/downloads' : path.join(__dirname, '..', 'downloads');
+        const downloadFolder = path.join(__dirname, '..', 'downloads');
         const zipFile = downloadFolder + '/engine.zip';
         const engineFolder = downloadFolder + '/engine/';
-
-
-
-        cy.exec('echo ' + downloadFolder);
-
         // Open dropdown of import configs
         cy.get('#import-conf').click();
         // Click Comunica SPARQL
