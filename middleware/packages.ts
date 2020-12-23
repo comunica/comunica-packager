@@ -26,7 +26,16 @@ export function handleParameters(normalizedContext: any, parametersAll: any, par
 
 export default async ({$axios, store}: Context) => {
 
-    if (!store.state.initialLoad) {
+    let appVersion = await $axios.$get('/comunica-packager/version.txt');
+    let appVersionStored = localStorage.getItem('appVersion');
+
+    console.log(appVersion);
+
+    if (typeof appVersionStored === 'undefined' || appVersionStored === null)
+        localStorage.setItem('appVersion', appVersion);
+
+
+    if (appVersionStored !== appVersion || !store.state.initialLoad) {
         const appConfig = await $axios.$get('/comunica-packager/app-config.json');
         store.commit('setStateEntry', {key: 'appConfig', value: appConfig});
 
@@ -86,6 +95,8 @@ export default async ({$axios, store}: Context) => {
         }));
         store.commit('setStateEntry', {key: 'isPresetLoading', value: false});
         store.commit('setStateEntry', {key: 'initialLoad', value: true});
+
+        localStorage.setItem('appVersion', appVersion);
     }
 
 

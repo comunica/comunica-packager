@@ -11,8 +11,7 @@
                             {{preset.name}}
                         </p>
                     </div>
-                    <LoadingComponent v-if="isExporting"/>
-                    <a id="export-conf" class="button-top" href="#" v-else @click.prevent="onExport">Export config</a>
+                    <a id="export-conf" class="button-top" href="#" @click.prevent="onExport">Export config</a>
                     <FileInputComponent text="Upload config" @click="onUpload"/>
                     <a id="reset-conf" class="button-top" href="#" @click.prevent="onReset">Reset</a>
                 </div>
@@ -20,7 +19,7 @@
         </nav>
         <div id="sidebar">
             <p class="text-medium">Package information</p>
-            <PackageInformationComponent/>
+            <PackageInformationComponent id="package-info"/>
             <p class="text-medium">Sets</p>
             <SetsComponent/>
         </div>
@@ -70,6 +69,7 @@ import LoadingComponent from "../components/LoadingComponent";
 import SetsComponent from "@/components/SetsComponent";
 import PackageInformationComponent from "@/components/PackageInformationComponent";
 import ModalComponent from "@/components/ModalComponent";
+import PackageInformationModalComponent from "~/components/PackageInformationModalComponent";
 
 export default {
     components: {
@@ -122,6 +122,7 @@ export default {
         },
         async onImport(preset) {
             this.imp = false;
+            this.$store.commit('resetState');
             this.$store.commit('setStateEntry', {
                 key: 'persistUrl',
                 value: true
@@ -137,9 +138,7 @@ export default {
             await this.$store.dispatch('importPreset', preset.url);
         },
         async onExport() {
-            this.isExporting = true;
-            await this.$store.dispatch('downloadZip');
-            this.isExporting = false;
+            this.$modal.show(PackageInformationModalComponent, {});
         },
         onReset() {
             this.$modal.show(ModalComponent, {
@@ -244,6 +243,11 @@ export default {
 </script>
 
 <style scoped lang="scss">
+
+    #package-info {
+      padding-left: 10px;
+      margin: 10px 0;
+    }
 
     #container {
         display: flex;

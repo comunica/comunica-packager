@@ -1,4 +1,5 @@
 const path = require('path');
+const isCI = Cypress.env('IS_CI');
 
 describe('The home (index) page', () => {
     before(() => {
@@ -7,7 +8,8 @@ describe('The home (index) page', () => {
         // Mediators should load
         cy.get('#mediators').should('not.exist');
         // Wait enough seconds to load everything in
-        cy.wait(60000);
+        const seconds = isCI ? 60000 : 11000;
+        cy.wait(seconds);
         // Mediators should be loaded
         cy.get('#mediators').should('exist');
     });
@@ -22,25 +24,19 @@ describe('The home (index) page', () => {
         const downloadFolder = path.join(__dirname, '..', 'downloads');
         const zipFile = downloadFolder + '/engine.zip';
         const engineFolder = downloadFolder + '/engine/';
-
         // Open dropdown of import configs
         cy.get('#import-conf').click();
         // Click Comunica SPARQL
         cy.contains('Comunica SPARQL').click();
         // Wait half a second
         cy.wait(500);
-        // Click export
+        // Export
         cy.get('#export-conf').click();
+        cy.get('#btn-export').click();
         // Wait 2 seconds
         cy.wait(2000);
         // Unzip the file for further testing
         cy.exec('unzip -d ' + engineFolder + ' ' + zipFile);
-
-        // const myEngine = newEngineDynamic();
-        //
-        // // Finally delete downloaded zip and unzipped folder
-        // cy.exec('rm ' + zipFile);
-        // cy.exec('rm -r ' + engineFolder);
 
     });
 });

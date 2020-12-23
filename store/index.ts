@@ -177,6 +177,7 @@ export const mutations = {
         state.prefix = 'files-ex';
         state.description = '';
         state.persistUrl = true;
+        (this as any).$router.replace('/');
     },
 
     setIsPresetLoading(state: any, value: boolean) {
@@ -409,6 +410,7 @@ export const actions = {
             .replace(/%description%/g, context.state.description));
         zip.file('.gitignore', appConfig['.gitignore']);
         zip.file('.npmignore', appConfig['.npmignore']);
+        zip.file('tsconfig.json', appConfig['tsconfig.json']);
         let config = zip.folder('config');
 
         if (context.state.sets.length > 1) {
@@ -556,8 +558,7 @@ export const actions = {
     },
 
     async importPreset({commit, dispatch, state}: any, presetLink: string) {
-        // First reset everything
-        commit('resetState');
+
         commit('setIsPresetLoading', true);
 
         const data = await (this as any).$axios.$get(presetLink);

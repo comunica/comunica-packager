@@ -3,6 +3,8 @@ node_js:
   - "10"
 install:
   - npm ci
+env:
+  - CYPRESS_IS_CI=true
 script:
   # Cypress verification
   - npm run cy:verify
@@ -11,6 +13,7 @@ script:
   - npm run test
   # Run cypress tests
   - npm run cy:run
+  - ls cypress/downloads
   # Run jest tests
   - npm run jest:test
   # Stop development local server

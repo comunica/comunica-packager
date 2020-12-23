@@ -1,5 +1,5 @@
 <template>
-    <div id="package-info">
+    <div>
         <p class="text-small label">Package name</p>
         <input
             v-model="packageName"
@@ -67,10 +67,6 @@ export default {
 </script>
 
 <style scoped>
-    #package-info {
-        padding-left: 10px;
-        margin: 10px 0;
-    }
     .label {
         font-weight: bold;
         margin: 5px 0;

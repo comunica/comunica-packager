@@ -1,5 +1,5 @@
 <template>
-    <div id="modal">
+    <div class="modal">
         <v-icon id="icon" x-large>mdi-alert-circle-outline</v-icon>
         <p id="title" class="text">{{topText}}</p>
         <p class="text text-small">{{question}}</p>
@@ -41,11 +41,7 @@ name: "ModalComponent",
 </script>
 
 <style scoped lang="scss">
-    #modal {
-        font-family: "Open Sans", Verdana, Arial, sans-serif;
-        display: grid;
-        padding: 10px;
-    }
+
 
     #icon {
         color: $comunica-red;
