@@ -25,6 +25,8 @@ describe('The home (index) page', () => {
         const zipFile = downloadFolder + '/engine.zip';
         const engineFolder = downloadFolder + '/engine/';
 
+
+
         cy.exec('echo ' + downloadFolder);
 
         // Open dropdown of import configs
