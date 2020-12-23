@@ -13,9 +13,9 @@ script:
   - npm run test
   # Run cypress tests
   - npm run cy:run
-  - ls home/travis/build/comunica/comunica-packager/
-  - ls home/travis/build/comunica/comunica-packager/cypress/
-  - ls home/travis/build/comunica/comunica-packager/cypress/downloads
+  - ls
+  - ls cypress/
+  - ls cypress/downloads
   # Run jest tests
   - npm run jest:test
   # Stop development local server
