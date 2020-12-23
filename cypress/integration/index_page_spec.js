@@ -1,4 +1,5 @@
 const path = require('path');
+const isCI = process.env.CI || process.env.CONTINOUS_INTEGRATION;
 
 describe('The home (index) page', () => {
     before(() => {
@@ -7,7 +8,8 @@ describe('The home (index) page', () => {
         // Mediators should load
         cy.get('#mediators').should('not.exist');
         // Wait enough seconds to load everything in
-        cy.wait(60000);
+        const seconds = isCI ? 60000 : 11000;
+        cy.wait(seconds);
         // Mediators should be loaded
         cy.get('#mediators').should('exist');
     });
@@ -19,7 +21,7 @@ describe('The home (index) page', () => {
 
     it('imports preset and exports default config',  () => {
 
-        const downloadFolder = path.join(__dirname, '..', 'downloads');
+        const downloadFolder = isCI ? '/home/travis/build/comunica/comunica-packager/cypress/downloads' : path.join(__dirname, '..', 'downloads');
         const zipFile = downloadFolder + '/engine.zip';
         const engineFolder = downloadFolder + '/engine/';
 
