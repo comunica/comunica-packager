@@ -1,8 +1,0 @@
-{
-  "@context": [
-    "https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^3.0.0/components/context.jsonld",
-    {
-      "files-ex": "https://linkedsoftwaredependencies.org/bundles/npm/my-package/^1.0.0/"
-    }
-  ]
-}
