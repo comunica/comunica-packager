@@ -411,6 +411,8 @@ export const actions = {
         zip.file('.gitignore', appConfig['.gitignore']);
         zip.file('.npmignore', appConfig['.npmignore']);
         zip.file('tsconfig.json', appConfig['tsconfig.json']);
+        zip.file('index-browser.ts', appConfig['index-browser.ts']);
+        zip.file('index.ts', appConfig['index.ts']);
         let config = zip.folder('config');
 
         if (context.state.sets.length > 1) {

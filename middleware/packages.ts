@@ -29,8 +29,6 @@ export default async ({$axios, store}: Context) => {
     let appVersion = await $axios.$get('/comunica-packager/version.txt');
     let appVersionStored = localStorage.getItem('appVersion');
 
-    console.log(appVersion);
-
     if (typeof appVersionStored === 'undefined' || appVersionStored === null)
         localStorage.setItem('appVersion', appVersion);
 
@@ -42,8 +40,6 @@ export default async ({$axios, store}: Context) => {
         // Retrieve the list of all Comunica related packages
 
         const packageNames: any = [];
-
-        console.log('test');
 
         $axios.setToken('temp:temp', 'Basic');
 
