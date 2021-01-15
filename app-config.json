@@ -1,0 +1,57 @@
+{
+  "packageUrls": [
+    "comunica/comunica",
+    "comunica/comunica-feature-amf"
+  ],
+  "actors": [
+    "actor-http-solid-auth-fetch",
+    "actor-rdf-resolve-quad-pattern-hdt"
+  ],
+  "presets": {
+    "Comunica SPARQL": "https://linkedsoftwaredependencies.org/bundles/npm/@comunica/actor-init-sparql/^1.0.0/config/config-default.json",
+    "Comunica SPARQL File": "https://linkedsoftwaredependencies.org/bundles/npm/@comunica/actor-init-sparql-file/^1.0.0/config/config-default.json",
+    "Comunica SPARQL RDFJS": "https://linkedsoftwaredependencies.org/bundles/npm/@comunica/actor-init-sparql-rdfjs/^1.0.0/config/config-default.json",
+    "Comunica SPARQL HDT": "https://linkedsoftwaredependencies.org/bundles/npm/@comunica/actor-init-sparql-hdt/^1.0.0/config/config-default.json",
+    "Comunica SPARQL AMF": "https://linkedsoftwaredependencies.org/bundles/npm/@comunica/actor-init-sparql-amf/^1.0.0/config/config-default.json"
+  },
+  "package" : {
+    "name": "%package_name%",
+    "version": "1.0.0",
+    "description": "%description%",
+    "author": "%author%",
+    "main": "index.js",
+    "scripts": {
+      "prepublishOnly": "npm run build",
+      "build:engine": "comunica-compile-config config/config-default.json > engine-default.js",
+      "build:lib": "tsc",
+      "build": "npm run build:lib && npm run build:engine",
+      "postinstall": "npm run build"
+    },
+    "dependencies": {
+      "@comunica/actor-init-sparql": "^1.19.0"
+    },
+    "devDependencies": {
+      "typescript": "^4.0.0"
+    },
+    "license": "MIT",
+    "lsd:module": true,
+    "bin": {
+      "my-comunica": "./bin/query.js",
+      "my-comunica-http": "./bin/http.js",
+      "my-comunica-dynamic": "./bin/query-dynamic.js"
+    },
+    "browser": {
+      "./index.js": "./index-browser.js"
+    }
+  },
+  "bin": {
+    "http.js": "#!/usr/bin/env node\nimport {HttpServiceSparqlEndpoint} from \"@comunica/actor-init-sparql\";\nHttpServiceSparqlEndpoint.runArgsInProcess(process.argv.slice(2), process.stdout, process.stderr,\n    __dirname + '/../', process.env, __dirname + '/../config/config-default.json', () => process.exit(1));",
+    "query.js": "#!/usr/bin/env node\nimport {runArgsInProcessStatic} from \"@comunica/runner-cli\";\nrunArgsInProcessStatic(require('../engine-default.js'));",
+    "query-dynamic.js": "#!/usr/bin/env node\nimport {runArgsInProcess} from \"@comunica/runner-cli\";\nrunArgsInProcess(__dirname + '/../', __dirname + '/../config/config-default.json');"
+  },
+  ".gitignore": "engine-default.js\nnode_modules\nlib/**/*.js\nlib/**/*.js.map\nlib/**/*.d.ts\ntest/**/*.js\ntest/**/*.js.map\ntest/**/*.d.ts\nbin/**/*.js\nbin/**/*.js.map\nbin/**/*.d.ts\nindex.js\nindex.js.map\nindex.d.ts\nindex-browser.js\nindex-browser.js.map\nindex-browser.d.ts",
+  ".npmignore": "",
+  "tsconfig.json": "{\n  \"compileOnSave\": true,\n  \"compilerOptions\": {\n    \"module\": \"commonjs\",\n    \"lib\": [\n      \"es6\",\n      \"dom\"\n    ],\n    \"target\": \"es2017\",\n    \"noImplicitAny\": true,\n    \"removeComments\": false,\n    \"preserveConstEnums\": true,\n    \"sourceMap\": true,\n    \"inlineSources\": true,\n    \"declaration\": true\n  },\n  \"include\": [\n    \"index.ts\",\n    \"lib/**/*\",\n    \"bin/**/*\"\n  ],\n  \"exclude\": [\n    \"**/node_modules\",\n    \"**/test/*\"\n  ]\n}",
+  "index-browser.ts": "import {ActorInitSparql} from '@comunica/actor-init-sparql/lib/ActorInitSparql-browser';\n\n/**\n * Create a new comunica engine from the default config.\n * @return {ActorInitSparql} A comunica engine.\n */\nexport function newEngine(): ActorInitSparql {\n  return require('./engine-default.js');\n}",
+  "index.ts": "export {newEngine} from './index-browser';\n\nimport {ActorInitSparql} from '@comunica/actor-init-sparql/lib/ActorInitSparql-browser';\nimport {IQueryOptions, newEngineDynamicArged} from \"@comunica/actor-init-sparql/lib/QueryDynamic\";\n\n/**\n * Create a new dynamic comunica engine from a given config file.\n * @param {IQueryOptions} options Optional options on how to instantiate the query evaluator.\n * @return {Promise<QueryEngine>} A promise that resolves to a fully wired comunica engine.\n */\nexport function newEngineDynamic(options?: IQueryOptions): Promise<ActorInitSparql> {\n  return newEngineDynamicArged(options || {}, __dirname, __dirname + '/config/config-default.json');\n}"
+}
